@@ -40,7 +40,7 @@ class ECLI_Builder{
         return this
     }
     setNumber(number){
-        this.number = number.replace(/\W/g, ".").replace(/\.\./g, ".").replace(/^\./,"").replace(/\.$/,"")
+        this.number = number.replace(/\s-\s.*$/, "").replace(/\W/g, ".").replace(/\.+/g, ".").replace(/^\./,"").replace(/\.$/,"").toUpperCase()
         return this
     }
 
