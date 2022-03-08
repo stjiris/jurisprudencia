@@ -96,17 +96,17 @@ function getDescritores(table){
 
 function getTexto(table){
     if( "Decisão Texto Integral" in table ){
-        return table["Decisão Texto Integral"].innerHTML;
+        return table["Decisão Texto Integral"].innerHTML.replace(/color=\"#000000\"/g,"");
     }
     if( "Texto Integral" in table ){
-        return table["Texto Integral"].innerHTML;
+        return table["Texto Integral"].innerHTML.replace(/color=\"#000000\"/g,"");
     }
     return "N.A.";
 }
 
 function getSumario(table){
     if( "Sumário" in table ){
-        return table["Sumário"].innerHTML;
+        return table["Sumário"].innerHTML.replace(/color=\"#000000\"/g,"");
     }
     return "N.A.";
 }
