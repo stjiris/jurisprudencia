@@ -1,0 +1,104 @@
+{
+    "index": "jurisprudencia.0.0",
+    "mappings": {
+        "properties": {
+            "ECLI": {
+                "type": "keyword"
+            },
+            "Tribunal": {
+                "type": "keyword"
+            },
+            "Processo": {
+                "type": "keyword"
+            },
+            "Relator": {
+                "type": "keyword"
+            },
+            "Data": {
+                "type": "date",
+                "format": "dd/MM/yyyy"
+            },
+            "Descritores": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "Sumário": {
+                "type": "text"
+            },
+            "Texto": {
+                "type": "text"
+            },
+            "Original URL": {
+                "type": "keyword"
+            }
+        }
+    },
+    "settings": {
+        "index": {
+            "analysis": {
+                "analyzer": {
+                    "default": {
+                        "char_filter": ["html_strip", "iso_latin_1"],
+                        "filter": ["trim", "lowercase", "asciifolding", "synonym", "word_delimeter", "stopwords_pt"],
+                        "tokenizer": "whitespace"
+                    },
+                    "string_ci": {
+                        "char_filter": ["iso_latin_1"],
+                        "filter": ["trim", "lowercase", "asciifolding", "stopwords_pt", "synonym"],
+                        "tokenizer": "whitespace"
+                    },
+                    "text_suggest_ngram": {
+                        "filter": ["trim", "lowercase", "asciifolding", "stopwords_pt", "edgeNGram"],
+                        "tokenizer": "uax_url_email"
+                    }
+                },
+                "char_filter": {
+                    "iso_latin_1": {
+                        "mappings": ["À => A", "Á => A", "Â => A", "Ã => A", "Ä => A", "Å => A", "Æ => AE", "Ç => C", "È => E", "É => E", "Ê => E", "Ë => E", "Ì => I", "Í => I", "Î => I", "Ï => I", "Ĳ => IJ", "Ð => D", "Ñ => N", "Ò => O", "Ó => O", "Ô => O", "Õ => O", "Ö => O", "Ø => O", "Œ => OE", "Þ => TH", "Ù => U", "Ú => U", "Û => U", "Ü => U", "Ý => Y", "Ÿ => Y", "à => a", "á => a", "â => a", "ã => a", "ä => a", "å => a", "æ => ae", "ç => c", "è => e", "é => e", "ê => e", "ë => e", "ì => i", "í => i", "î => i", "ï => i", "ĳ => ij", "ð => d", "ñ => n", "ò => o", "ó => o", "ô => o", "õ => o", "ö => o", "ø => o", "œ => oe", "ß => ss", "þ => th", "ù => u", "ú => u", "û => u", "ü => u", "ý => y", "ÿ => y", "ﬀ => ff", "ﬁ => fi", "ﬂ => fl", "ﬃ => ffi", "ﬄ => ffl", "ﬅ => ft", "ﬆ => st"],
+                        "type": "mapping"
+                    }
+                },
+                "filter": {
+                    "edgeNGram": {
+                        "max_gram": "10",
+                        "min_gram": "2",
+                        "type": "edge_ngram"
+                    },
+                    "stopwords_pt": {
+                        "ignore_case": "true",
+                        "stopwords": ["de", "a", "o", "que", "e", "do", "da", "em", "um", "para", "com", "não", "uma", "os", "no", "se", "na", "por", "mais", "as", "dos", "como", "mas", "ao", "ele", "das", "à", "seu", "sua", "ou", "quando", "muito", "nos", "já", "eu", "também", "só", "pelo", "pela", "até", "isso", "ela", "entre", "depois", "sem", "mesmo", "aos", "seus", "quem", "nas", "me", "esse", "eles", "você", "essa", "num", "nem", "suas", "meu", "às", "minha", "numa", "pelos", "elas", "qual", "nós", "lhe", "deles", "essas", "esses", "pelas", "este", "dele", "tu", "te", "vocês", "vos", "lhes", "meus", "minhas", "teu", "tua", "teus", "tuas", "nosso", "nossa", "nossos", "nossas", "dela", "delas", "esta", "estes", "estas", "aquele", "aquela", "aqueles", "aquelas", "isto", "aquilo", "estou", "está", "estamos", "estão", "estive", "esteve", "estivemos", "estiveram", "estava", "estávamos", "estavam", "estivera", "estivéramos", "esteja", "estejamos", "estejam", "estivesse", "estivéssemos", "estivessem", "estiver", "estivermos", "estiverem", "hei", "há", "havemos", "hão", "houve", "houvemos", "houveram", "houvera", "houvéramos", "haja", "hajamos", "hajam", "houvesse", "houvéssemos", "houvessem", "houver", "houvermos", "houverem", "houverei", "houverá", "houveremos", "houverão", "houveria", "houveríamos", "houveriam", "sou", "somos", "são", "era", "éramos", "eram", "fui", "foi", "fomos", "foram", "fora", "fôramos", "seja", "sejamos", "sejam", "fosse", "fôssemos", "fossem", "for", "formos", "forem", "serei", "será", "seremos", "serão", "seria", "seríamos", "seriam", "tenho", "tem", "temos", "tém", "tinha", "tínhamos", "tinham", "tive", "teve", "tivemos", "tiveram", "tivera", "tivéramos", "tenha", "tenhamos", "tenham", "tivesse", "tivéssemos", "tivessem", "tiver", "tivermos", "tiverem", "terei", "terá", "teremos", "terão", "teria", "teríamos", "teriam"],
+                        "type": "stop"
+                    },
+                    "synonym": {
+                        "synonyms": ["abstraccao,abstracao", "abstracto,abstrato", "accao,acao", "accionar,acionar", "accionista,acionista", "acepcao,acecao", "acta,ata", "activamente,ativamente", "activar,ativar", "actividade,atividade", "activo,ativo", "acto,ato", "actor,ator", "actriz,atriz", "actuacao,atuacao", "actual,atual", "actualidade,atualidade", "actualissimo,atualissimo", "actualizar,atualizar", "actualizavel,atualizavel", "actualmente,atualmente", "actuar,atuar", "adjectivo,adjetivo", "adopcao,adocao", "adoptar,adotar", "adoptavel,adotavel", "adoptivo,adotivo", "afectar,afetar", "afectivo,afetivo", "afecto,afeto", "anafilactico,anafilatico", "anorectico,anoretico", "antarctico,antartico", "antarctida,antartida", "anteprojecto,anteprojeto", "apocaliptico,apocalitico", "arctico,artico", "arquitecto,arquiteto", "aspecto,aspeto", "asteroide,asteroide", "atraccao,atracao", "atractivo,atrativo", "baptismo,batismo", "baptizado,batizado", "baptizar,batizar", "bibliofilactico,bibliofilatico", "bioelectricidade,bioeletricidade", "bioelectrico,bioeletrico", "biotactico,biotatico", "birrefraccao,birrefracao", "bissectriz,bissetriz", "boia,boia", "cacto,cato", "cepticismo,ceticismo", "ceptico,cetico", "ceptro,cetro", "coaccao,coacao", "coarctar,coartar", "coleccao,colecao", "coleccionador,colecionador", "coleccionar,colecionar", "coleccionismo,colecionismo", "colecta,coleta", "colectanea,coletanea", "colectivo,coletivo", "concepcao,concecao", "conceptivo,concetivo", "confeccao,confecao", "conjectura,conjetura", "contraccao,contracao", "contracepcao,contracecao", "contrafaccao,contrafacao", "correccao,correcao", "correcto,correto", "decepcao,dececao", "deflectir,defletir", "deflector,defletor", "dejeccao,dejecao", "desactivar,desativar", "desactualizado,desatualizado", "desactualizar,desatualizar", "desafectacao,desafetacao", "descontraccao,descontracao", "desinfectante,desinfetante", "desinfectar,desinfetar", "deteccao,detecao", "dialecto,dialeto", "didactico,didatico", "didactismo,didatismo", "direccao,direcao", "direccional,direcional", "direccionamento,direcionamento", "direccionar,direcionar", "directiva,diretiva", "directo,direto", "director,diretor", "distraccao,distracao", "efectivo,efetivo", "efectuar,efetuar", "egipto,egito", "ejeccao,ejecao", "electricidade,eletricidade", "electrico,eletrico", "epilepsia,epilepsia", "epileptico,epiletico", "erecto,ereto", "espectacular,espetacular", "espectaculo,espetaculo", "espectavel,espectavel", "estupefaccao,estupefacao", "exacto,exato", "excepcao,excecao", "excepcional,excecional", "excepto,exceto", "expectoracao,expetoracao", "extraccao,extracao", "extractar,extratar", "extracto,extrato", "faccao,facao", "factor,fator", "factura,fatura", "fevereiro,fevereiro", "flectir,fletir", "fraccao,fracao", "fraccionar,fracionar", "fraccionario,fracionario", "fraccionavel,fracionavel", "fractura,fratura", "imperceptivel,impercetivel", "inaccao,inacao", "inactivar,inativar", "inactividade,inatividade", "incorreccao,incorrecao", "incorrectamente,incorretamente", "incorrecto,incorreto", "indefectivel,indefetivel", "indirecta,indireta", "infeccao,infecao", "infeccioso,infecioso", "infectar,infetar", "infractor,infrator", "injeccao,injecao", "insecto,inseto", "inspeccao,inspecao", "inspeccionador,inspecionador", "inspeccionar,inspecionar", "inspeccionavel,inspecionavel", "inspectivo,inspetivo", "inspector,inspetor", "insurrecto,insurreto", "interaccao,interacao", "interactivo,interativo", "interceptador,intercetador", "interceptar,intercetar", "interceptavel,intercetavel", "interceptivo,intercetivo", "interceptor,intercetor", "interruptor,interruptor", "introspeccao,introspecao", "inverno,inverno", "jacto,jato", "janeiro,janeiro", "joia,joia", "julho,julho", "junho,junho", "leccionador,lecionador", "leccionar,lecionar", "leccionavel,lecionavel", "lectivo,letivo", "liquefactor,liquefator", "maio,maio", "manufactura,manufatura", "manufacturacao,manufaturacao", "manufacturar,manufaturar", "manufacturavel,manufaturavel", "manufactureiro,manufatureiro", "marco,marco", "multinfeccao,multinfecao", "noctivago,noctivago", "nocturno,noturno", "novembro,novembro", "objeccao,objecao", "objectar,objetar", "objectavel,objetavel", "objectivacao,objetivacao", "objectivado,objetivado", "objectivamente,objetivamente", "objectivar,objetivar", "objectivavel,objetivavel", "objectividade,objetividade", "objectivismo,objetivismo", "objectivo,objetivo", "objecto,objeto", "objector,objetor", "olfactico,olfatico", "olfactivo,olfativo", "olfacto,olfato", "optico,otico", "optimismo,otimismo", "optimistico,otimistico", "optimizacao,otimizacao", "optimizar,otimizar", "optimo,otimo", "outono,outono", "outubro,outubro", "para,para", "paranoia,paranoia", "percepcao,percecao", "percepcionar,percecionar", "perceptivel,percetivel", "peremptorio,perentorio", "perspectiva,perspetiva", "polo,polo", "predilecto,predileto", "primavera,primavera", "profilactico,profilatico", "projeccao,projecao", "projectar,projetar", "projectil,projetil", "projecto,projeto", "prospeccao,prospecao", "prospecto,prospeto", "proteccao,protecao", "proteccional,protecional", "proteccionismo,protecionismo", "proteccionista,protecionista", "protector,protetor", "protectorado,protetorado", "radioactividade,radioatividade", "radioactivo,radioativo", "radioelectricidade,radioeletricidade", "radioelectrico,radioeletrico", "radiorreceptor,radiorrecetor", "rarefactor,rarefator", "reaccao,reacao", "reaccional,reacional", "reaccionaria,reacionaria", "reactancia,reactancia", "reactivacao,reativacao", "reactivar,reativar", "reactor,reator", "reactualizar,reatualizar", "readoptar,readotar", "rebaptismo,rebatismo", "rebaptizar,rebatizar", "recepcao,rececao", "recepcionado,rececionado", "recepcionar,rececionar", "recepcionista,rececionista", "receptacao,recetacao", "receptaculo,recetaculo", "receptar,recetar", "receptibilidade,recetibilidade", "receptivo,recetivo", "receptor,recetor", "recta,reta", "rectangular,retangular", "rectangulo,retangulo", "rectidao,retidao", "rectificacao,retificacao", "rectificador,retificador", "rectificar,retificar", "rectilineo,retilineo", "redaccao,redacao", "redactor,redator", "redactorial,redatorial", "redireccionar,redirecionar", "reflectir,refletir", "respectivo,respetivo", "ressurrecto,ressurreto", "retraccao,retracao", "retractar,retratar", "retrospectiva,retrospetiva", "sectorizacao,sectorizacao", "sectorizar,sectorizar", "seleccao,selecao", "seleccionador,selecionador", "seleccionar,selecionar", "seleccionavel,selecionavel", "selectivo,seletivo", "selecto,seleto", "sintactico,sintatico", "subdirector,subdiretor", "subjeccao,subjecao", "subjectivar,subjetivar", "subjectividade,subjetividade", "subjectivismo,subjetivismo", "subjectivista,subjetivista", "subjectivo,subjetivo", "subtraccao,subtracao", "subtractor,subtrator", "susceptibilidade,suscetibilidade", "susceptibilizar,suscetibilizar", "susceptivel,suscetivel", "tabloide,tabloide", "tactear,tatear", "tactica,tatica", "tacto,tato", "tecto,teto", "teleobjectiva,teleobjetiva", "torrefaccao,torrefacao", "traccao,tracao", "tracto,trato", "tractor,trator", "trajecto,trajeto", "trajectoria,trajetoria", "transaccao,transacao", "transacto,transato", "vector,vetor", "vectorial,vetorial", "dl,decreto-lei,decretolei,decreto,lei", "oe,orcamento de estado", "adocao,perfilhacao", "alugar,arrendamento,arrendar,locar", "alteracao,modificacao", "armas,explosivos,explosivo,municao,municoes,revolveres,revolver,engenho,bomba", "autarquia,camara,municipio,junta de freguesia,concelho", "autorizacao,permissao,licenca,aprovacao,placito,homologacao,ratificacao,confirmacao,validacao", "banca,banco,instituto bancario,intituicao bancaria", "recem-nascido => recemnascido", "bebe,nascituro,recemnascido,filho,infante,pueril,neonatal", "caca,cinegetico,venatorio", "cancro,doenca oncologica", "caprina,cabra,caprino,cabras", "casa,habitacao,apartamento,condominio,predio urbano,domicilio,predio,moradia,lar,morada,vivenda", "casamento,matrimonio,nupcias", "coletivo,plural", "comunicacoes,telecomunicacoes", "comissao,reuniao,grupo", "conjuges,casal", "contrato,acordo,negocio", "convencao,acordo,pacto,congresso,convenio", "crianca,menor,menino,menina", "deficiencia,incapacidade", "deposito,entrega", "droga,drogas,estupefaciente,estupefacientes,opiato,alucinogenio,remedio,medicacao,narcoticos", "e-mail => email", "email,correio eletronico,mail", "escola,ensino,formacao,educacao", "constituicao,composicao,disposicao,organizacao,suporte,sustentacao,apoio,nomenclatura,elenco", "exercito,autoridades,polícia,gnr,marinha,forca aerea,comandos,paraquedistas,militar,forcas armadas", "falencia,insolvencia,bancarrota", "feto,embriao,concepturo", "furto,roubo,assalto", "gay,homossexual,lesbica,bissexual,transexual", "gravida,gestante,prenha,gravidez", "imposto,tributo,taxa,contribuicao", "leilao,licitacao,hasta publica", "litigio,demanda,litigancia,disputa", "lixo,residuo,residuos,entulho,detrito,detritos", "mae,progenitora", "marido,esposo,mulher,esposa", "massa falida,massa insolvente", "migracao,emigracao,imigracao,migrante,emigrante,imigrante,refugiado,refugiados,exilado,exilados", "morte,falecimento,obito", "mutuo,emprestimo,permuta,partilhado", "onu,organizacao das nacoes unidas", "ordenado,salario,retribuicao,vencimento,honorario,pagamento", "ovina,ovelha,cordeiro,borrego,ovino,ovelhas", "pai,progenitor", "parentalidade,maternidade,paternidade", "parlamento,assembleia,governo", "penal,criminal", "perdao legal,amnistia,indulto", "poder paternal,responsabilidades parentais", "porco,porcos,suino,suinos,leitao,bacoro", "preso,detido,recluso,carcere,cativo,prisioneiro,criminoso", "prisao,estabelecimento prisional,cadeia,calabouco,cela,presidio,carcere", "captura,detencao", "protocolo,ata,regulamento", "requisito,exigencia", "retificacão,emenda,correcao", "salvaguarda,protecao", "sexo,sexualidade,intimidade,privacidade,genero", "telegrafo,telefone,telefonia,radio,comunicacao,telemovel", "terreno,predio rustico,propriedade,territorio,domínio,campo,lote", "texteis,tecidos", "trabalho,emprego,profissao", "ocupacao,atividade", "cargo,oficio,posicao hierarquica,categoria", "vaca,vacas,bovino,bovinos,novilho,boi,touro", "interrupcao voluntaria da gravidez,aborto"],
+                        "type": "synonym_graph",
+						"lenient": "true"
+                    },
+                    "word_delimeter": {
+                        "catenate_all": "false",
+                        "catenate_numbers": "true",
+                        "catenate_words": "true",
+                        "generate_number_parts": "true",
+                        "generate_word_parts": "true",
+                        "split_on_case_change": "false",
+                        "type": "word_delimiter_graph"
+                    }
+                }
+            },
+            "number_of_replicas": "0",
+            "number_of_shards": "1",
+            "requests": {
+                "cache": {
+                    "enable": "true"
+                }
+            },
+            "store": {
+                "preload": ["nvd", "dvd", "tim", "doc", "dim"]
+            }
+        }
+    }
+}
