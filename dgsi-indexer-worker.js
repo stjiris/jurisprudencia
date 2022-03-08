@@ -94,17 +94,17 @@ function getDescritores(table){
 
 function getTexto(table){
     if( "Decisão Texto Integral" in table ){
-        return strip_attrs(table["Decisão Texto Integral"])
+        return strip_attrs(table["Decisão Texto Integral"].innerHTML)
     }
     if( "Texto Integral" in table ){
-        return strip_attrs(table["Texto Integral"])
+        return strip_attrs(table["Texto Integral"].innerHTML)
     }
     return "N.A.";
 }
 
 function getSumario(table){
     if( "Sumário" in table ){
-        return strip_attrs(table["Sumário"])
+        return strip_attrs(table["Sumário"].innerHTML)
     }
     return "N.A.";
 }
