@@ -2,6 +2,7 @@ const { JSDOM, ResourceLoader } = require("jsdom");
 const { workerData } = require("worker_threads");
 const ecli = require('./ecli');
 const indexer = require('./indexer');
+const { strip_attrs } = require('./util')
 
 let sleep = (time) => new Promise(resolve => {
     setTimeout(resolve, time);
@@ -68,11 +69,8 @@ forEachCourtDecisionLink(async link => {
 
     }
     catch(e){
-        log(`=== === === ERROR === === ===`);
-        console.log(link)
+        console.log(`Error: ${link}`)
         console.log(e.stack)
-        log(`=== === ===  END  === === ===`);
-        return;
     }
 })
 
@@ -96,17 +94,17 @@ function getDescritores(table){
 
 function getTexto(table){
     if( "Decisão Texto Integral" in table ){
-        return table["Decisão Texto Integral"].innerHTML.replace(/color=\"[^"]*\"/g,"");
+        return strip_attrs(table["Decisão Texto Integral"])
     }
     if( "Texto Integral" in table ){
-        return table["Texto Integral"].innerHTML.replace(/color=\"[^"]*\"/g,"");
+        return strip_attrs(table["Texto Integral"])
     }
     return "N.A.";
 }
 
 function getSumario(table){
     if( "Sumário" in table ){
-        return table["Sumário"].innerHTML.replace(/color=\"[^"]*\"/g,"");
+        return strip_attrs(table["Sumário"])
     }
     return "N.A.";
 }
