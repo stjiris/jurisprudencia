@@ -45,7 +45,7 @@ init().then( async _ => {
                 "Texto": await JSDOM.fromURL(link).then(parseDomText),
                 "Original URL": link
             }
-            await index(body).catch(e => console.log(link, e))
+            await index(body).catch(e => console.log(`${link} len:${body.Texto.length}:`, e ))
         }
     }
 }).catch(e => {
