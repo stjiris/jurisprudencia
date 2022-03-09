@@ -56,9 +56,22 @@ init().then( async _ => {
     console.log(e)
 })
 
+function textElement(dom){
+    let elements;
+    elements = dom.window.document.getElementsByClassName("WordSection1");
+    if( elements.length > 0 ){
+        return elements[0]
+    }
+    elements = dom.window.document.getElementsByClassName("Section1");
+    if( elements.length > 0 ){
+        return elements[0]
+    }
+    throw new Error("No text element found")
+}
+
 function parseDomText(dom){
     try{
-        let wordSection = new JSDOM(strip_attrs(dom.window.document.getElementsByClassName("WordSection1")[0].innerHTML));
+        let wordSection = new JSDOM(strip_attrs(textElement(dom).innerHTML));
         let body = wordSection.window.document.body;
         let children = Array.from(body.childNodes);
         for( let child of children){
