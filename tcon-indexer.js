@@ -55,12 +55,11 @@ init().then( async _ => {
 function parseDomText(dom){
     let wordSection = new JSDOM(strip_attrs(dom.window.document.getElementsByClassName("WordSection1")[0].innerHTML));
     let body = wordSection.window.document.body;
-    let c = body.innerHTML;
     let children = Array.from(body.childNodes);
     for( let child of children){
         if( child.textContent.match(/^\s*$/) ){
             child.remove()
         }
     }
-    return strip_attrs(body);
+    return strip_attrs(body.innerHTML);
 }
