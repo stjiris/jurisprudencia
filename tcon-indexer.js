@@ -26,12 +26,11 @@ init().then( async _ => {
             if( await exists({'Tribunal': Tribunal, 'Processo': processo}) ){
                 continue
             }
-            console.log( link )
-
+            
             let Relator = tr.querySelector(".relator").textContent.trim();
             let data = tr.querySelector(".data").textContent.trim().replace(/\./g, "/");
             if( processo == "1209/21" && data == "03/00/2022" )
-                data = "03/02/2022";
+            data = "03/02/2022";
             
             let year = data.substr(6,4)
             let body = {
@@ -45,7 +44,12 @@ init().then( async _ => {
                 "Texto": await JSDOM.fromURL(link).then(parseDomText),
                 "Original URL": link
             }
-            await index(body).catch(e => console.log(`${link} len:${body.Texto.length}:`, e ))
+            console.log( link )
+            await index(body).then(_ => {
+                console.log(`${link} len:${body.Texto.length}: OK`)
+            }).catch(e => {
+                console.log(`${link} len:${body.Texto.length}:`, e )
+            })
         }
     }
 }).catch(e => {
