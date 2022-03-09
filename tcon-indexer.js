@@ -42,10 +42,10 @@ init().then( async _ => {
                 "Data": data,
                 "Descritores": [],
                 "Sumário": "N.A.",
-                "Texto": await JSDOM.fromURL(w3resource).then(dom => strip_attrs(dom.window.document.body.innerHTML) ),
+                "Texto": await JSDOM.fromURL(w3resource).then(dom => strip_attrs(dom.window.document.body.innerHTML) ).catch(e => "N.A. - Error Importing:" + e),
                 "Original URL": link
             }
-            await index(body)
+            await index(body).catch(e => console.log(link, e))
         }
     }
 }).catch(e => {
