@@ -33,7 +33,7 @@ init().then( async _ => {
                 data = "03/02/2022";
             
             let year = data.substr(6,4)
-
+            let w3resource = w3resourceFromLink(link)
             let body = {
                 "ECLI": builder.setYear(year).setNumber(processo).build(),
                 "Tribunal": Tribunal,
@@ -42,7 +42,7 @@ init().then( async _ => {
                 "Data": data,
                 "Descritores": [],
                 "Sumário": "N.A.",
-                "Texto": await JSDOM.fromURL(link).then(dom => strip_attrs(dom.window.document.querySelector(".WordSection1").innerHTML) ),
+                "Texto": await JSDOM.fromURL(w3resource).then(dom => strip_attrs(dom.window.document.body.innerHTML) ),
                 "Original URL": link
             }
             await index(body)
@@ -51,3 +51,20 @@ init().then( async _ => {
 }).catch(e => {
     console.log(e)
 })
+
+/*
+Converts a link to a w3 resource
+Example:
+    https://www.tribunalconstitucional.pt/tc/acordaos/20210001.html
+    =>
+    http://w3.tribunalconstitucional.pt/acordaos/Acordaos21/101-200/20210001.htm
+*/
+function w3resourceFromLink(link){
+    let id = link.match(/[0-9]{8}/).toString()
+    let year = id.substring(0, 4);
+    let YY = year.substring(2,4);
+    let process = id.substring(5, 8);
+    let nearestHundred = Math.floor(process / 100) * 100 + 1;
+    let nearestHundredUp = nearestHundred + 100 - 1;
+    return `http://w3.tribunalconstitucional.pt/acordaos/Acordaos${YY}/${nearestHundred}-${nearestHundredUp}/${id}.htm`
+}

@@ -80,8 +80,8 @@
                     },
                     "word_delimeter": {
                         "catenate_all": "false",
-                        "catenate_numbers": "true",
-                        "catenate_words": "true",
+                        "catenate_numbers": "false",
+                        "catenate_words": "false",
                         "generate_number_parts": "true",
                         "generate_word_parts": "true",
                         "split_on_case_change": "false",
