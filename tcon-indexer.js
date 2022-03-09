@@ -20,6 +20,7 @@ init().then( async _ => {
         let trs = Array.from(dom.window.document.querySelectorAll("#acbigger  tr:not(:first-child)"))
         for( let tr of trs){
             let anchor = tr.querySelector("a")
+            if( !anchor ) continue;
             let link = anchor.href;
             let processo = tr.querySelector(".processo").textContent.trim();
             if( await exists({'Tribunal': Tribunal, 'Processo': processo}) ){
