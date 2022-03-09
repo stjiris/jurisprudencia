@@ -66,9 +66,9 @@ function textElement(dom){
     if( elements.length > 0 ){
         return elements[0]
     }
-    elements = dom.window.document.getElementsByClassName("acimport");
-    if( elements.length > 0 ){
-        return elements[0]
+    let element = dom.window.document.getElementById("acimport");
+    if( element ){
+        return element
     }
     throw new Error("No text element found")
 }
