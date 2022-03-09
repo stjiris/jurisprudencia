@@ -116,6 +116,9 @@ function getData(table){
     if( "Data da Decisão Sumária" in table ){
         return table["Data da Decisão Sumária"].textContent.trim();
     }
+    if( "Data da Reclamação" in table ){
+        return table["Data da Reclamação"].textContent.trim();
+    }
     throw new Error("No date found")
 }
 
