@@ -53,13 +53,19 @@ init().then( async _ => {
 })
 
 function parseDomText(dom){
-    let wordSection = new JSDOM(strip_attrs(dom.window.document.getElementsByClassName("WordSection1")[0].innerHTML));
-    let body = wordSection.window.document.body;
-    let children = Array.from(body.childNodes);
-    for( let child of children){
-        if( child.textContent.match(/^\s*$/) ){
-            child.remove()
+    try{
+        let wordSection = new JSDOM(strip_attrs(dom.window.document.getElementsByClassName("WordSection1")[0].innerHTML));
+        let body = wordSection.window.document.body;
+        let children = Array.from(body.childNodes);
+        for( let child of children){
+                if( child.textContent.match(/^\s*$/) ){
+                child.remove()
+                }
         }
+        return strip_attrs(body.innerHTML);
     }
-    return strip_attrs(body.innerHTML);
+    catch(e){
+            console.log(dom.window.location.href, e.stack)
+            return ""
+    }
 }
