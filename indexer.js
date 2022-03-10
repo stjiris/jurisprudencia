@@ -11,6 +11,29 @@ module.exports.init = async (removeOld=false) => {
     }
 }
 
+module.exports.updateProperties = () => client.indices.putMapping({index: mapping.index, properties: mapping.mappings.properties})
+
+module.exports._client = client;
+
+module.exports.updateDocument = () =>
+    client.updateByQuery({
+        index: mapping.index,
+        script: {
+            source: "ctx._source['Origem'] = ctx._source['Original URL'].indexOf('dgsi') >= 0 ? 'dgsi-indexer' : 'tcon-indexer'",
+            lang: "painless"
+        },
+        query: {
+            bool: {
+                must_not: {
+                    "exists": {
+                        "field": "Origem"
+                    }
+                }
+            }
+        },
+        conflicts: "proceed"
+    })
+
 module.exports.index = (json) =>{
     let body = {}
     for( let key in mapping.mappings.properties ){
@@ -47,3 +70,5 @@ module.exports.dry_run = function dry_run(json){
     }
     return body
 }
+
+module.set

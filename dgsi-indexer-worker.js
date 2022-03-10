@@ -62,7 +62,8 @@ forEachCourtDecisionLink(async link => {
             "Descritores": getDescritores(table),
             "Sumário": getSumario(table),
             "Texto": getTexto(table),
-            "Original URL": link
+            "Original URL": link,
+            "Origem": "dgsi-indexer"
         }
         await indexer.index(body);
         count++;

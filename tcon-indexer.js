@@ -42,7 +42,8 @@ init().then( async _ => {
                 "Descritores": [],
                 "Sumário": "N.A.",
                 "Texto": await JSDOM.fromURL(link).then(parseDomText),
-                "Original URL": link
+                "Original URL": link,
+                "Origem": "tcon-indexer"
             }
             console.log( link )
             await index(body).then(_ => {
