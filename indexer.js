@@ -15,22 +15,14 @@ module.exports.updateProperties = () => client.indices.putMapping({index: mappin
 
 module.exports._client = client;
 
-module.exports.updateDocument = () =>
+module.exports.updateDocument = (source, query) =>
     client.updateByQuery({
         index: mapping.index,
         script: {
-            source: "ctx._source['Origem'] = ctx._source['Original URL'].indexOf('dgsi') >= 0 ? 'dgsi-indexer' : 'tcon-indexer'",
+            source: source,
             lang: "painless"
         },
-        query: {
-            bool: {
-                must_not: {
-                    "exists": {
-                        "field": "Origem"
-                    }
-                }
-            }
-        },
+        query: query,
         conflicts: "proceed"
     })
 
@@ -71,4 +63,28 @@ module.exports.dry_run = function dry_run(json){
     return body
 }
 
-module.set
+/*
+    1# Update: set Origem from the original URL
+    source:
+        "ctx._source['Origem'] = ctx._source['Original URL'].indexOf('dgsi') >= 0 ? 'dgsi-indexer' : 'tcon-indexer'"
+    query:
+    {
+        bool: {
+            must_not: {
+                "exists": {
+                    "field": "Origem"
+                }
+            }
+        }
+    }
+
+    2# Update: remove (até 1998) from Tribunal Constitucional
+    source:
+        "ctx._source['Tribunal'] = 'Tribunal Constitucional'"
+    query:
+    {
+        term: {
+            Tribunal: "Tribunal Constitucional (até 1998)"
+        }
+    }
+*/
