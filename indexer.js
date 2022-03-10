@@ -87,4 +87,16 @@ module.exports.dry_run = function dry_run(json){
             Tribunal: "Tribunal Constitucional (até 1998)"
         }
     }
+
+    3# Update: remove ver acórdão ... from Processo
+    source:
+        "ctx._source['Processo'] = /ver.*\/.matcher(ctx._source['Processo']).replaceAll('')"
+    query:
+    {
+        wildcard: {
+            Processo: {
+                value: "*ver *"
+            }
+        }
+    }
 */

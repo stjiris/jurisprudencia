@@ -44,7 +44,7 @@ forEachCourtDecisionLink(async link => {
                 return acc;
             }, {})
     
-    let processo = table.Processo.textContent.trim().replace(/\s-\s.*$/, "");
+    let processo = table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, "");
     if( await indexer.exists({"Tribunal": Tribunal,"Processo": processo}) ){
         return;
     }
