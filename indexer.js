@@ -99,4 +99,16 @@ module.exports.dry_run = function dry_run(json){
             }
         }
     }
+
+    4# Updade: remove VER.* from ECLI
+    source:
+        "ctx._source['ECLI'] = /VER.AC.*\/.matcher(ctx._source['ECLI']).replaceAll('')"
+    query:
+    {
+        wildcard: {
+            ECLI: {
+                value: "*VER.AC.*"
+            }
+        }
+    }
 */
