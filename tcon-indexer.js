@@ -2,7 +2,7 @@ const { JSDOM } = require("jsdom")
 const { Worker } = require("worker_threads")
 const { init, exists, index } = require("./indexer")
 const ecli = require("./ecli")
-const { strip_attrs } = require("./util")
+const { strip_empty_html } = require("./util")
 
 const Tribunal = "Tribunal Constitucional"
 const TribunalCode = "TCO"
@@ -42,6 +42,7 @@ init().then( async _ => {
                 "Descritores": [],
                 "Sumário": "N.A.",
                 "Texto": await JSDOM.fromURL(link).then(parseDomText),
+                "Tipo": "Acórdão",
                 "Original URL": link,
                 "Origem": "tcon-indexer"
             }
@@ -76,15 +77,7 @@ function textElement(dom){
 
 function parseDomText(dom){
     try{
-        let wordSection = new JSDOM(strip_attrs(textElement(dom).innerHTML));
-        let body = wordSection.window.document.body;
-        let children = Array.from(body.childNodes);
-        for( let child of children){
-                if( child.textContent.match(/^\s*$/) ){
-                child.remove()
-                }
-        }
-        return strip_attrs(body.innerHTML);
+        return strip_empty_html(textElement(dom).innerHTML);
     }
     catch(e){
             console.log(dom.window.location.href, e.stack)

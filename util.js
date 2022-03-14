@@ -19,3 +19,9 @@ module.exports.strip_attrs = function strip_attrs(string){
     var comments = /<!--[\s\S]*?-->/gi;
     return string.replace(comments, '').replace(regex, "<$1$2>");
 }
+
+module.exports.strip_empty_html = function strip_empty_html(string){
+    let html = this.strip_attrs(string);
+    let regex = /<(\w+)>\s*<\/\1>/g;
+    return html.replace(regex, '');
+}

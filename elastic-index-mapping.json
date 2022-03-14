@@ -32,6 +32,9 @@
             "Texto": {
                 "type": "text"
             },
+            "Tipo": {
+                "type": "keyword"
+            },
             "Original URL": {
                 "type": "keyword"
             },
@@ -101,7 +104,8 @@
             },
             "store": {
                 "preload": ["nvd", "dvd", "tim", "doc", "dim"]
-            }
+            },
+            "max_result_window": 550000
         }
     }
 }
