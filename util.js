@@ -1,4 +1,4 @@
-module.exports.strip_html = function strip_html(string, allowtags, keepattrs){
+function strip_html(string, allowtags, keepattrs){
     var allowtags = allowtags || '';
     let regex = /<(?<closing>\/?)(?<tag>\w+)(?<attrs>[^>]*)>/g;
     var comments = /<!--[\s\S]*?-->/gi;
@@ -14,14 +14,20 @@ module.exports.strip_html = function strip_html(string, allowtags, keepattrs){
     });
 }
 
-module.exports.strip_attrs = function strip_attrs(string){
+function strip_attrs(string){
     let regex = /<(?<closing>\/?)(?<tag>\w+)(?<attrs>[^>]*)>/g;
     var comments = /<!--[\s\S]*?-->/gi;
     return string.replace(comments, '').replace(regex, "<$1$2>");
 }
 
-module.exports.strip_empty_html = function strip_empty_html(string){
+function strip_empty_html(string){
     let html = strip_attrs(string);
     let regex = /<(\w+)>\s*<\/\1>/g;
     return html.replace(regex, '');
+}
+
+module.exports = {
+    strip_html,
+    strip_attrs,
+    strip_empty_html,
 }
