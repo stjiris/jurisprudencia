@@ -30,11 +30,11 @@ function strip_empty_html(string){
         r = html.replace(regex, '');
     }
     // Loop to remove font tags
-    let regex2 = /<font>(.*)<\/font>/sg;
-    r = html.replace(regex2, '$1');
+    let regex2 = /<\/?font>/g;
+    r = html.replace(regex2, '');
     while( r != html ){
         html = r;
-        r = html.replace(regex2, '$1');
+        r = html.replace(regex2, '');
     }
     return r;
 }
