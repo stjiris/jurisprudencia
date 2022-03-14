@@ -29,7 +29,7 @@ module.exports.updateDocument = (source, query) =>
 module.exports.index = (json) =>{
     let body = {}
     for( let key in mapping.mappings.properties ){
-        if( !json[key] ){
+        if( !(key in json) ){
             Promise.reject(`Missing key: ${key}`)
         }
         body[key] = json[key]

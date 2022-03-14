@@ -23,7 +23,13 @@ function strip_attrs(string){
 function strip_empty_html(string){
     let html = strip_attrs(string);
     let regex = /<(\w+)>\s*<\/\1>/g;
-    return html.replace(regex, '');
+    let r = html.replace(regex, '');
+    // Loop until no more empty tags
+    while( r != html ){
+        html = r;
+        r = html.replace(regex, '');
+    }
+    return r;
 }
 
 module.exports = {
