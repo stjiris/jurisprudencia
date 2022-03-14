@@ -28,6 +28,7 @@ const { Tribunal, TribunalCode, link } = workerData;
 const log = (msg) => console.log(`[WORKER ${TribunalCode}] ${msg}`)
 log(`${link} - ${Tribunal}`);
 let builder = new ecli.ECLI_Builder().setCountry("PT").setJurisdiction(TribunalCode).setYear("0000");
+const Origem = `dgsi-indexer-${TribunalCode}`;
 
 forEachCourtDecisionLink(async link => {
     let page = await getPage(link+'&ExpandSection=1');
@@ -45,7 +46,7 @@ forEachCourtDecisionLink(async link => {
             }, {})
     
     let processo = table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, "");
-    if( await indexer.exists({"Tribunal": Tribunal,"Processo": processo}) ){
+    if( await indexer.exists({"Tribunal": Tribunal,"Processo": processo, "Origem": Origem}) ){
         return;
     }
     try{
@@ -64,7 +65,7 @@ forEachCourtDecisionLink(async link => {
             "Texto": getTexto(table),
             "Tipo": "Acordão",
             "Original URL": link,
-            "Origem": "dgsi-indexer"
+            "Origem": Origem
         }
         await indexer.index(body);
         count++;

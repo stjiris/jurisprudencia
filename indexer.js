@@ -43,10 +43,13 @@ module.exports.exists = (json) =>
         body: {
             query: {
                 term: {
-                    Tribunal: json.Tribunal,
+                    Tribunal: json.Tribunal
                 },
                 term: {
-                    Processo: json.Processo,
+                    Processo: json.Processo
+                },
+                term: {
+                    Origem: json.Origem
                 }
             }
         }

@@ -4,6 +4,7 @@ const { init, exists, index } = require("./indexer")
 const ecli = require("./ecli")
 const { strip_empty_html } = require("./util")
 
+const Origem = "tcon-indexer"
 const Tribunal = "Tribunal Constitucional"
 const TribunalCode = "TCO"
 const builder = new ecli.ECLI_Builder().setCountry("PT").setJurisdiction(TribunalCode);
@@ -23,7 +24,7 @@ init().then( async _ => {
             if( !anchor ) continue;
             let link = anchor.href;
             let processo = tr.querySelector(".processo").textContent.trim();
-            if( await exists({'Tribunal': Tribunal, 'Processo': processo}) ){
+            if( await exists({'Tribunal': Tribunal, 'Processo': processo, "Origem": Origem}) ){
                 continue
             }
             
@@ -44,7 +45,7 @@ init().then( async _ => {
                 "Texto": await JSDOM.fromURL(link).then(parseDomText),
                 "Tipo": "Acórdão",
                 "Original URL": link,
-                "Origem": "tcon-indexer"
+                "Origem": Origem
             }
             console.log( link )
             await index(body).then(_ => {
