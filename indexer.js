@@ -42,14 +42,24 @@ module.exports.exists = (json) =>
         index: mapping.index, 
         body: {
             query: {
-                term: {
-                    Tribunal: json.Tribunal
-                },
-                term: {
-                    Processo: json.Processo
-                },
-                term: {
-                    Origem: json.Origem
+                bool: {
+                    must: [
+                        {
+                            term: {
+                                Tribunal: json.Tribunal
+                            }
+                        },
+                        {
+                            term: {
+                                Processo: json.Processo
+                            }
+                        },
+                        {
+                            term: {
+                                Origem: json.Origem
+                            }
+                        }
+                    ]
                 }
             }
         }
