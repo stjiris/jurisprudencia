@@ -81,6 +81,6 @@ function parseDomText(dom){
     }
     catch(e){
             console.log(dom.window.location.href, e.stack)
-            return ""
+            return "N.A. - " + e.message
     }
 }

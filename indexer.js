@@ -30,7 +30,7 @@ module.exports.index = (json) =>{
     let body = {}
     for( let key in mapping.mappings.properties ){
         if( !json[key] ){
-            throw new Error(`Missing field ${key}`)
+            Promise.reject(`Missing key: ${key}`)
         }
         body[key] = json[key]
     }
