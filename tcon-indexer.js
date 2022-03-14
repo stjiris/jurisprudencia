@@ -47,10 +47,7 @@ init().then( async _ => {
                 "Original URL": link,
                 "Origem": Origem
             }
-            console.log( link )
-            await index(body).then(_ => {
-                console.log(`${link} len:${body.Texto.length}: OK`)
-            }).catch(e => {
+            await index(body).catch(e => {
                 console.log(`${link} len:${body.Texto.length}:`, e )
             })
         }
