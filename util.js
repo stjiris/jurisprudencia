@@ -21,7 +21,7 @@ module.exports.strip_attrs = function strip_attrs(string){
 }
 
 module.exports.strip_empty_html = function strip_empty_html(string){
-    let html = this.strip_attrs(string);
+    let html = strip_attrs(string);
     let regex = /<(\w+)>\s*<\/\1>/g;
     return html.replace(regex, '');
 }
