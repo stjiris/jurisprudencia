@@ -89,6 +89,7 @@ function USADateToYear(date){
 
 function getDescritores(table){
     if( table.Descritores ){
+        // TODO: handle , and ; in descritores (e.g. "Ação Civil; Ação Civil e Administrativa") however dont split some cases (e.g. "Art 321º, do código civil")
         return table.Descritores.textContent.trim().split(/\n|;/).map( desc => desc.trim().replace(/\.$/g,'').replace(/^(:|-|,)/,'').trim() ).filter( desc => desc.length > 0 )
     }
     return []
