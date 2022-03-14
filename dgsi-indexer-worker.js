@@ -89,7 +89,7 @@ function USADateToYear(date){
 
 function getDescritores(table){
     if( table.Descritores ){
-        return table.Descritores.textContent.trim().split(/\n|;/).map( desc => desc.trim().replace(/\.$/g,'').replace(/^:/,'').trim() ).filter( desc => desc.length > 0 )
+        return table.Descritores.textContent.trim().split(/\n|;/).map( desc => desc.trim().replace(/\.$/g,'').replace(/^(:|-)/,'').trim() ).filter( desc => desc.length > 0 )
     }
     return []
 }
