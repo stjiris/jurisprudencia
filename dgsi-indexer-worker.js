@@ -51,6 +51,9 @@ forEachCourtDecisionLink(async link => {
     }
     try{
         let Data = getData(table);
+        if( link == "http://www.dgsi.pt/jtre.nsf/134973db04f39bf2802579bf005f080b/f0611ae129477aae8025827b002d2a47?OpenDocument" ){
+            Data = "04/10/2018"
+        }
         let datePT = USADateToPT(Data);
         let year = USADateToYear(Data);
 
