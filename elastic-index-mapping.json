@@ -101,7 +101,6 @@
                 "normalizer": {
                     "term_normalizer": {
                         "type": "custom",
-                        "tokenizer": "keyword",
                         "filter": ["uppercase", "asciifolding"]
                     }
                 }
