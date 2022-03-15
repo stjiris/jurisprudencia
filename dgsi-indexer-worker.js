@@ -30,6 +30,11 @@ log(`${link} - ${Tribunal}`);
 let builder = new ecli.ECLI_Builder().setCountry("PT").setJurisdiction(TribunalCode).setYear("0000");
 const Origem = `dgsi-indexer-${TribunalCode}`;
 
+const dateFixes = {
+    "http://www.dgsi.pt/jtrl.nsf/33182fc732316039802565fa00497eec/9a5395430007aec6802582cf004eeeb3?OpenDocument": "06/21/2018",
+    "http://www.dgsi.pt/jtre.nsf/134973db04f39bf2802579bf005f080b/f0611ae129477aae8025827b002d2a47?OpenDocument": "04/10/2018"
+}
+
 forEachCourtDecisionLink(async link => {
     let page = await getPage(link+'&ExpandSection=1');
     let tables = Array.from(page.window.document.querySelectorAll("table")).filter( o => o.parentElement.closest("table") == null );
@@ -51,8 +56,8 @@ forEachCourtDecisionLink(async link => {
     }
     try{
         let Data = getData(table);
-        if( link == "http://www.dgsi.pt/jtre.nsf/134973db04f39bf2802579bf005f080b/f0611ae129477aae8025827b002d2a47?OpenDocument" ){
-            Data = "04/10/2018"
+        if( link in dateFixes ){
+            Data = dateFixes[link];
         }
         let datePT = USADateToPT(Data);
         let year = USADateToYear(Data);
