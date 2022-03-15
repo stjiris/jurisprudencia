@@ -3,16 +3,19 @@
     "mappings": {
         "properties": {
             "ECLI": {
-                "type": "keyword"
+                "type": "keyword",
+                "normalizer": "term_normalizer"
             },
             "Tribunal": {
                 "type": "keyword"
             },
             "Processo": {
-                "type": "keyword"
+                "type": "keyword",
+                "normalizer": "term_normalizer"
             },
             "Relator": {
-                "type": "keyword"
+                "type": "keyword",
+                "normalizer": "term_normalizer"
             },
             "Data": {
                 "type": "date",
@@ -22,7 +25,8 @@
                 "type": "text",
                 "fields": {
                     "keyword": {
-                        "type": "keyword"
+                        "type": "keyword",
+                        "normalizer": "term_normalizer"
                     }
                 }
             },
@@ -60,6 +64,9 @@
                     "text_suggest_ngram": {
                         "filter": ["trim", "lowercase", "asciifolding", "stopwords_pt", "edgeNGram"],
                         "tokenizer": "uax_url_email"
+                    },
+                    "term_normalizer": {
+                        "filter": ["uppercase", "asciifolding"]
                     }
                 },
                 "char_filter": {
