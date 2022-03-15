@@ -67,6 +67,7 @@
                     },
                     "term_normalizer": {
                         "type": "custom",
+                        "char_filter": [],
                         "filter": ["uppercase", "asciifolding"]
                     }
                 },
