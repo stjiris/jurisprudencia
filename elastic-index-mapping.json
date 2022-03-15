@@ -64,11 +64,6 @@
                     "text_suggest_ngram": {
                         "filter": ["trim", "lowercase", "asciifolding", "stopwords_pt", "edgeNGram"],
                         "tokenizer": "uax_url_email"
-                    },
-                    "term_normalizer": {
-                        "type": "custom",
-                        "tokenizer": "keyword",
-                        "filter": ["uppercase", "asciifolding"]
                     }
                 },
                 "char_filter": {
@@ -101,6 +96,13 @@
                         "generate_word_parts": "true",
                         "split_on_case_change": "false",
                         "type": "word_delimiter_graph"
+                    }
+                },
+                "normalizer": {
+                    "term_normalizer": {
+                        "type": "custom",
+                        "tokenizer": "keyword",
+                        "filter": ["uppercase", "asciifolding"]
                     }
                 }
             },
