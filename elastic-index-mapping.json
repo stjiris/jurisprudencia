@@ -66,6 +66,7 @@
                         "tokenizer": "uax_url_email"
                     },
                     "term_normalizer": {
+                        "type": "custom",
                         "filter": ["uppercase", "asciifolding"]
                     }
                 },
