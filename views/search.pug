@@ -22,7 +22,7 @@ block content
                     .row.p-2
                         form(method="post").col-12
                             input(type="search", name="q", value=q, hidden)
-                            details(open)
+                            details(open=!!open)
                                 summary.d-block
                                     h4.d-inline
                                         i.bi-funnel 

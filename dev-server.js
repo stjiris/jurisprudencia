@@ -125,7 +125,7 @@ app.post("/", express.urlencoded({extended: true}), (req, res) => {
     }
     let page = parseInt(req.body.page) || 0;
     search(queryObject(req.body.q), sfilters, page).then(body => {
-        res.render("search", {q: req.body.q, hits: body.hits.hits, aggs: body.aggregations, filters: filters, page: page, pages: Math.ceil(body.hits.total.value/RESULTS_PER_PAGE)});
+        res.render("search", {q: req.body.q, hits: body.hits.hits, aggs: body.aggregations, filters: filters, page: page, pages: Math.ceil(body.hits.total.value/RESULTS_PER_PAGE), open: true});
     }).catch(err => {
         console.log(err)
         res.render("search", {q: req.body.q, hits: [], error: err, aggs: {}, filters: {}, page: 0, pages: 0});
@@ -222,10 +222,10 @@ app.post("/stats", express.urlencoded({extended: true}), (req, res) => {
         }
     }
     search(queryObject(req.body.q), sfilters, 0, saggs, 0).then(body => {
-        res.render("stats", {q: req.query.q, aggs: body.aggregations, filters: filters});
+        res.render("stats", {q: req.body.q, aggs: body.aggregations, filters: filters, open: true});
     }).catch(err => {
         console.log(err)
-        res.render("stats", {q: req.query.q, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
+        res.render("stats", {q: req.body.q, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
     });
 })
 
