@@ -1,0 +1,60 @@
+extends head.pug 
+block head 
+    title Document !{ecli}
+
+block content
+    header.p-2.container
+        form.row.align-items-center
+            h1.col-12.col-md-4: a(href="..") Jurisprudência
+            .col-12.col-md-8
+    main.container
+        if !source
+            .alert.alert-warning.mb-0
+                | Nenhum documento encontrado.
+        else
+            .row(data-tribunal=source.Tribunal)
+                .col-12.col-md-3
+                    .row.p-2
+                        .col-12
+                            .d-block
+                                h4.d-inline
+                                    i.bi-info-circle
+                                    | Informação
+                            mixin metadata(key)
+                                .d-flex.align-items-center.justify-content-between.text-right.my-1
+                                    span !{key}:
+                                    b: a(href=`../?q=${key}:"${source[key]}"`) !{source[key]}
+                            +metadata("Processo")
+                            +metadata("Relator")
+                            +metadata("Data")
+                            +metadata("Tribunal")
+                            .d-flex.align-items-center.justify-content-between
+                                span Descritores:
+                                .d-flex.flex-column
+                                    for d in source.Descritores
+                                        span !{d}
+                            a(href=source["Original URL"]).d-flex.align-items-center
+                                i.bi-link
+                                | URL Original
+            
+                .col-12.col-md-9
+                    .row.p-2
+                        h4.col-12.pb-2.trib-spacer Sumário 
+                        | !{source.Sumário}
+                    .row.p-2
+                        h4.col-12.pb-2.trib-spacer Texto
+                        | !{source.Texto}
+            style.
+                .trib-spacer{
+                    position: relative;
+                }
+                .trib-spacer::before {
+                    content: '';
+                    background: var(--tribunal-color);
+                    position: absolute;
+                    border-radius: 10px;
+                    bottom: 0px;
+                    left: 10px;
+                    right: 10px;
+                    height: 5px;
+                }
