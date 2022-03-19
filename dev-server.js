@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const {Client} = require('@elastic/elasticsearch');
 const client = new Client({node: 'http://localhost:9200'});
+const path = require('path');
 
 app.set('view engine', 'pug');
 app.set('views', './views');
@@ -51,6 +52,7 @@ let queryObject = (string) => {
     return {
         query_string: {
             query: string,
+            default_operator: "AND"
         }
     };
 }
@@ -71,6 +73,9 @@ let search = (query, filters={pre: [], after: []}, page=0, saggs={Tribunal: aggs
     aggs: saggs,
     size: rpp,
     from: page*rpp,
+    sort: [
+        { Data: "desc" }
+    ],
     track_total_hits: true
 });
 
@@ -94,7 +99,10 @@ app.post("/", express.urlencoded({extended: true}), (req, res) => {
         }
         if( req.body[key] ) {
             filters[key] = (Array.isArray(req.body[key]) ? req.body[key] : [req.body[key]]).filter(o => o.length > 0);
-            sfilters.pre.push({
+            let when = "pre";
+            if( key == "Tribunal" ) 
+                when = "after";
+            sfilters[when].push({
                 terms: {
                     [aggs[key][field].field]: filters[key]
                 }
@@ -103,7 +111,7 @@ app.post("/", express.urlencoded({extended: true}), (req, res) => {
     }
     if( req.body.MinAnos ) {
         filters.MinAnos = req.body.MinAnos;
-        sfilters.pre.push({
+        sfilters.after.push({
             range: {
                 Data: {
                     gte: req.body.MinAnos,
@@ -114,7 +122,7 @@ app.post("/", express.urlencoded({extended: true}), (req, res) => {
     }
     if( req.body.MaxAnos ) {
         filters.MaxAnos = req.body.MaxAnos;
-        sfilters.pre.push({
+        sfilters.after.push({
             range: {
                 Data: {
                     lte: parseInt(req.body.MaxAnos)+1,
@@ -172,7 +180,10 @@ app.post("/stats", express.urlencoded({extended: true}), (req, res) => {
         }
         if( req.body[key] ) {
             filters[key] = (Array.isArray(req.body[key]) ? req.body[key] : [req.body[key]]).filter(o => o.length > 0);
-            sfilters.pre.push({
+            let when = "pre";
+            if( key == "Tribunal" ) 
+                when = "after";
+            sfilters[when].push({
                 terms: {
                     [aggs[key][field].field]: filters[key]
                 }
@@ -181,7 +192,7 @@ app.post("/stats", express.urlencoded({extended: true}), (req, res) => {
     }
     if( req.body.MinAnos ) {
         filters.MinAnos = req.body.MinAnos;
-        sfilters.pre.push({
+        sfilters.after.push({
             range: {
                 Data: {
                     gte: req.body.MinAnos,
@@ -192,7 +203,7 @@ app.post("/stats", express.urlencoded({extended: true}), (req, res) => {
     }
     if( req.body.MaxAnos ) {
         filters.MaxAnos = req.body.MaxAnos;
-        sfilters.pre.push({
+        sfilters.after.push({
             range: {
                 Data: {
                     lte: parseInt(req.body.MaxAnos)+1,
@@ -242,7 +253,7 @@ app.get("/:ecli(ECLI:*)", (req, res) => {
         }
     }).then((body) => {
         if( body.hits.total.value == 0 ){
-            throw new Error(`ECLI ${ecli} not found`);
+            res.render("document", {ecli});
         } else {
             res.render("document", {ecli, source: body.hits.hits[0]._source});
         }
@@ -276,5 +287,7 @@ app.get("/datalist", (req, res) => {
         res.render("datalist", {aggs: [], error: err, id: req.query.id});
     });
 });
+
+app.use(express.static(path.join(__dirname, "static")));
 
 app.listen(9100)

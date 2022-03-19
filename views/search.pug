@@ -2,195 +2,57 @@ extends head
 block head
     title Pesquisa
 
-block content
-    header.p-2.container
-        form.row.align-items-baseline
-            h1.col-12.col-md-4 Jurisprudência
-            .col-12.col-md-8.no-print
-                .input-group
-                    input.form-control(type="search", name="q", placeholder="Pesquisar...", value=q)
-                    .input-group-append
-                        button.btn.btn-primary(type="submit"): i.bi-search
-            .col-12.col-md-8.only-print
-                p Resultados da pesquisa: !{q}
-    main.container
-        if error 
-            pre.alert.alert-danger: code !{error.stack}
-        else
-            .row
-                .col-12.col-md-3.no-print
-                    .row.p-2
-                        form(method="post").col-12
-                            input(type="search", name="q", value=q, hidden)
-                            details(open=!!open)
-                                summary.d-block
-                                    h4.d-inline
-                                        i.bi-funnel 
-                                        | Filtrar 
-                                        small: i.bi-minimizemaximize
-                                .d-flex.flex-column.my-2
-                                    -let tribunais = []
-                                    h5 Tribunal
-                                    -let key = "Tribunal"
-                                    for bucket in aggs[key].buckets
-                                        -let checked = filters[key] && filters[key].indexOf(bucket.key) > -1
-                                        if checked
-                                            -tribunais.push(bucket.key)
-                                        .form-check.form-check-inline(data-tribunal=bucket.key)
-                                            input.form-check-input(type="checkbox", name=key, value=bucket.key, checked=checked, id=bucket.key.replace(/\s/g, ""), hidden)
-                                            label.form-check-label(for=bucket.key.replace(/\s/g, "")).d-flex.justify-content-between.align-items-center.w-100
-                                                span.d-block !{bucket.key} 
-                                                span.d-block (!{bucket.doc_count})
-                                .d-flex.flex-column.my-2
-                                    h5 Relator
-                                    +await(`/datalist?id=relatores&agg=Relator&tribunais=${tribunais.join(",")}&q=${q || ""}`)
-                                    //datalist#relatores
-                                        for bucket in aggs["Relator"].buckets
-                                            option= bucket.key
-                                    input.form-control(type="text", name="Relator", autocomplete="off", list="relatores", placeholder="Filtrar relator...")
-                                    if "Relator" in filters
-                                        for f in filters["Relator"]
-                                            .form-check.form-check-inline(style="--tribunal-color: #0f0")
-                                                input.form-check-input(type="checkbox", name="Relator", value=f, checked, id=f.replace(/\s/g, ""), hidden)
-                                                label.form-check-label(for=f.replace(/\s/g, "")).d-flex.justify-content-between.align-items-center.w-100
-                                                    span.d-block !{f} 
-                                                    i.d-blocl.bi-trash
-                                .d-flex.flex-column.my-2
-                                    h5 Descritor
-                                    +await(`/datalist?id=descritores&agg=Descritores&tribunais=${tribunais.join(",")}&q=${q || ""}`)
-                                    //datalist#descritores
-                                        for bucket in aggs["Descritores"].buckets
-                                            option= bucket.key
-                                    input.form-control(type="text", name="Descritores", autocomplete="off", list="descritores", placeholder="Filtrar descritores...")
-                                    if "Descritores" in filters
-                                        for f in filters["Descritores"]
-                                            .form-check.form-check-inline(style="--tribunal-color: #0f0")
-                                                input.form-check-input(type="checkbox", name="Descritores", value=f, checked, id=f.replace(/\s/g, ""), hidden)
-                                                label.form-check-label(for=f.replace(/\s/g, "")).d-flex.justify-content-between.align-items-center.w-100
-                                                    span.d-block !{f} 
-                                                    i.d-blocl.bi-trash
-                                .d-flex.flex-column.my-2
-                                    h5 Data
-                                    .input-group
-                                        .input-group-prepend.w-25
-                                            label(for="data_inicio").input-group-text.w-100 De
-                                        input.form-control(type="number", name="MinAnos", min="1900", max=new Date().getFullYear(), value=filters["MinAnos"], step="1")#data_inicio
-                                    .input-group
-                                        .input-group-prepend.w-25
-                                            label(for="data_fim").input-group-text.w-100 Até
-                                        input.form-control(type="number", name="MaxAnos", min="1900", max=new Date().getFullYear(), value=filters["MaxAnos"], step="1")#data_fim
-                                .d-flex.flex-row.my-2.justify-content-between.align-items-center
-                                    button.btn.btn-primary(type="submit") Aplicar
-                                    a.btn.btn-danger(href=`?q=${q || ""}`) Limpar    
-                                .d-flex.flex-row.my-2.justify-content-center.align-items-center
-                                    button.btn.btn-primary(type="submit", formaction="../stats") Ver estatísticas
+block printpageinfo
+    p Resultados da pesquisa por: "!{q || ""}" (Página !{page+1} de !{pages} páginas)
 
-                            
-                            // Not used 
-                            mixin filter(agg, key)
-                                details 
-                                    summary !{key}
-                                    ul.list-group.list-group-flush
-                                        for bucket in agg.buckets
-                                            li.list-group-item
-                                                label.form-check-label.w-100.d-flex.justify-content-between.align-items-center
-                                                    input.form-check-input(type="checkbox", name=key, value=bucket.key, checked=filters[key] && filters[key].indexOf(bucket.key) > -1)
-                                                    | !{bucket.key}
-                                                    span.badge.badge-primary.badge-pill 
-                                                        | !{bucket.doc_count}
-                            //+filter(aggs["Tribunal"], "Tribunal")
-                            //+filter(aggs["Relator"], "Relator")
-                            //+filter(aggs["Descritores"], "Descritores")
-                            nav.my-2
-                                ul.pagination.justify-content-between
-                                    li.page-item
-                                        button.btn(type="submit", name="page", value=0, disabled=page<=0).page-link: i.bi.bi-chevron-double-left
-                                    li.page-item
-                                        button.btn(type="submit", name="page", value=page-1, disabled=page<=0).page-link: i.bi.bi-chevron-left
-                                    li.page-item.w-50
-                                        button.btn(type="submit", name="page", value=page, disabled).page-link.w-100 !{page+1}/!{pages}
-                                    li.page-item
-                                        button.btn(type="submit", name="page", value=page+1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-right
-                                    li.page-item
-                                        button.btn(type="submit", name="page", value=pages-1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-double-right
-                                small (A pesquisa está limitada a !{550000/50} páginas)
-                                
-                                
-                                    
+append form
+    .d-flex.my-2.justify-content-center.align-items-center
+        button.btn.w-100(type="submit", formaction="/stats"): u Ver estatíticas
+    .d-flex.flex-row.my-2.justify-content-center.align-items-center
+        button.btn.w-100(type="submit", formaction="/relatores"): u Ver relatores
 
-                .col-12.col-md-9.print-main
-                    if hits.length == 0
-                        .alert.alert-warning Sem resultados
-                    else
-                        .row.p-2
-                            .col-12.d-none.d-md-block.col-md-4: h4 Processo
-                            .col-12.d-none.d-md-block.col-md-8: h4 Sumário
-                        for doc in hits
-                            article.row(data-tribunal=doc._source.Tribunal)
-                                .col-12.col-sm-4.d-flex.flex-column
-                                        a(href=`/${doc._source.ECLI}`, target="_blank")
-                                            span #{doc._source.Processo}
-                                        span #{doc._source.Relator}
-                                        span #{doc._source.Data}
-                                        span #{doc._source.Tribunal}
-                                        if doc._source.Descritores.length > 0
-                                            .d-flex.flex-column.mt-1
-                                                b Descritores
-                                                for d in doc._source.Descritores
-                                                    span #{d}
-                                .col-12.col-sm-8
-                                    h5.d-block.d-md-none.font-weight-bold.mt-2 Sumário
-                                    .sumario !{doc._source.Sumário}
-            
+block main
+    if hits.length == 0
+        .alert.alert-info(role="alert")
+            h4.alert-heading Sem resultados...
+            strong
+                i.bi.bi-lightbulb-fill
+                | Sugestões:
+            ol
+                li Verifique os filtros utilizados (tribunais, relator, descritores, data)
+                li Verifique o termo pesquisado
+    else
+        .row.p-2
+            .col-12.d-none.d-lg-block.col-lg-4: h4 Processo
+            .col-12.d-none.d-lg-block.col-lg-8: h4 Sumário
+        for doc in hits
+            article.row(data-tribunal=doc._source.Tribunal)
+                .col-12.col-sm-4.d-flex.flex-column
+                        a(href=`/${doc._source.ECLI}`, target="_blank")
+                            span #{doc._source.Processo}
+                        span #{doc._source.Relator}
+                        span #{doc._source.Data}
+                        span #{doc._source.Tribunal}
+                        if doc._source.Descritores.length > 0
+                            .d-flex.flex-column.mt-1
+                                b Descritores
+                                for d in doc._source.Descritores
+                                    span #{d}
+                .col-12.col-sm-8
+                    h5.d-block.d-lg-none.font-weight-bold.mt-2 Sumário
+                    .sumario !{doc._source.Sumário}
     style.
         @media print{
-            .no-print{
-                display: none;
-            }
-
-            .print-main{
-                max-width: 100% !important;
-                width: 100% !important;
-                flex: 100%;
-            }
-
             article[data-tribunal] {
                 page-break-inside: avoid;
                 max-height: none !important;
             }
-
-            .only-print{
-                display: block !important;
-            }
         }
-        .only-print{
-            display: none;
-        }
-
         details[open] .bi-minimizemaximize::before{
             content: "\F14B";
         }
         details .bi-minimizemaximize::before{
             content: "\F14C";
-        }
-
-        input[type=checkbox] ~ label{
-            position: relative;
-            cursor: pointer;
-        }
-        input[type=checkbox] ~ label:before{
-            content: "";
-            position: absolute;
-            top: 5px;
-            bottom: 5px;
-            left: -10px;
-            width: 0px;
-            background-color: var(--tribunal-color);
-            border-radius: 10px;
-            transition: 0.2s;
-        }
-        input[type=checkbox]:checked ~ label:before{
-            width: 5px;
         }
         article[data-tribunal] {
             position: relative;

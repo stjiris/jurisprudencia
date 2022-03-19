@@ -2,59 +2,78 @@ extends head.pug
 block head 
     title Document !{ecli}
 
-block content
-    header.p-2.container
-        form.row.align-items-center
-            h1.col-12.col-md-4: a(href="..") Jurisprudência
-            .col-12.col-md-8
-    main.container
-        if !source
-            .alert.alert-warning.mb-0
-                | Nenhum documento encontrado.
-        else
-            .row(data-tribunal=source.Tribunal)
-                .col-12.col-md-3
-                    .row.p-2
-                        .col-12
-                            .d-block
-                                h4.d-inline
-                                    i.bi-info-circle
-                                    | Informação
-                            mixin metadata(key)
-                                .d-flex.align-items-center.justify-content-between.text-right.my-1
-                                    span !{key}:
-                                    b: a(href=`../?q=${key}:"${source[key]}"`) !{source[key]}
-                            +metadata("Processo")
-                            +metadata("Relator")
-                            +metadata("Data")
-                            +metadata("Tribunal")
-                            .d-flex.align-items-center.justify-content-between
-                                span Descritores:
-                                .d-flex.flex-column
-                                    for d in source.Descritores
-                                        span !{d}
-                            a(href=source["Original URL"]).d-flex.align-items-center
-                                i.bi-link
-                                | URL Original
-            
-                .col-12.col-md-9
-                    .row.p-2
-                        h4.col-12.pb-2.trib-spacer Sumário 
-                        | !{source.Sumário}
-                    .row.p-2
-                        h4.col-12.pb-2.trib-spacer Texto
-                        | !{source.Texto}
-            style.
-                .trib-spacer{
-                    position: relative;
-                }
-                .trib-spacer::before {
-                    content: '';
-                    background: var(--tribunal-color);
-                    position: absolute;
-                    border-radius: 10px;
-                    bottom: 0px;
-                    left: 10px;
-                    right: 10px;
-                    height: 5px;
-                }
+block header
+    header.p-4.mb-2
+        .container.row.align-items-center.m-auto
+            a(href="/").col-12.col-lg-6.align-items-center.d-flex.py-2
+                img(src="/stj-logo.png", style="max-height: 70px;")
+                h1.pl-2 Jurisprudência
+            .col-12.col-lg-6
+                block printpageinfo
+                    h6 !{ecli}
+
+block form
+    if source
+        .d-block
+            h4.d-inline #{source.Processo}
+        mixin metadata(key)
+            .d-flex.align-items-center.my-1(data-tribunal=source.Tribunal)
+                h5: a(href=`../?q=${key}:"${source[key]}"`) !{source[key]}
+        +metadata("Relator")
+        +metadata("Data")
+        +metadata("Tribunal")
+        .d-flex.flex-column.align-items-right.justify-content-between(data-tribunal=source.Tribunal)
+            h6: b Descritores:
+            .d-flex.flex-column
+                for d in source.Descritores
+                    a(href=`../?q=Descritores:"${d}"`) !{d}
+        .d-flex.align-items-center.my-2(data-tribunal=source.Tribunal)
+            h6: a(href=source["Original URL"]).d-flex.align-items-center Original
+
+block main
+    if !source
+        .alert.alert-info(role="alert")
+            h4.alert-heading Sem resultados...
+            strong 
+                i.bi.bi-lightbulb-fill
+                | Sugestões:
+            ol
+                li O recurso não foi encontrado ou ainda não foi publicado neste arquivo
+    else
+        .row.p-2(data-tribunal=source.Tribunal)
+            h4.col-12.pb-2.trib-spacer Sumário 
+            | !{source.Sumário}
+        .row.p-2(data-tribunal=source.Tribunal)
+            h4.col-12.pb-2.trib-spacer Texto
+            | !{source.Texto}
+    style.
+        .trib-spacer{
+            position: relative;
+        }
+        .trib-spacer::before {
+            content: '';
+            background: var(--tribunal-color);
+            position: absolute;
+            border-radius: 10px;
+            bottom: 0px;
+            left: 10px;
+            right: 10px;
+            height: 5px;
+        }
+        [data-tribunal] a{
+            color: var(--tribunal-color);
+        }
+        header h6 {
+            color: var(--color-white)
+        }
+        @media print{
+            header h6 {
+                color: var(--color-black)
+            }
+            header {
+                background: var(#fff)
+            }
+            .no-print{
+                display: block;
+            }
+        }

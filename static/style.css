@@ -1,0 +1,113 @@
+@import url('https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css');
+@import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+@import url('./theme-colors.css');
+
+body {
+    font-family: 'Noto Sans Serif', sans-serif;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Cinzel', serif;
+}
+
+header{
+    background-color: var(--color-dark);
+}
+
+.btn-gold {
+    color: var(--color-gray);
+    background-color: var(--color-gold);
+    border-color: var(--color-gold);
+    transition: 0.2s;
+}
+.btn-gold:hover {
+    color: var(--color-white);
+    background-color: var(--color-gold);
+    border-color: var(--color-gold);
+}
+
+input[type=checkbox] ~ label{
+    position: relative;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+input[type=checkbox] ~ label:before{
+    content: "";
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: -10px;
+    width: 0px;
+    background-color: var(--tribunal-color);
+    border-radius: 10px;
+    transition: 0.2s;
+}
+
+input[type=checkbox]:checked ~ label{
+    opacity: 1;
+}
+
+input[type=checkbox]:checked ~ label:before{
+    width: 5px;
+}
+
+@media print{
+    .no-print{
+        display: none;
+    }
+
+    .print-main{
+        max-width: 100% !important;
+        width: 100% !important;
+        flex: 100%;
+    }
+    .only-print{
+        display: block !important;
+    }
+    header{
+        background: none;
+    }
+    header a{
+        color: #000 !important;
+        text-decoration: none !important;
+    }
+}
+.only-print{
+    display: none;
+}
+header a{
+    color: var(--color-white);
+    text-decoration: none;
+}
+header a:hover{
+    text-decoration: none;
+    color: var(--color-white);
+}
+details[open] .bi-minimizemaximize::before{
+    content: "\F14B";
+}
+details .bi-minimizemaximize::before{
+    content: "\F14C";
+}
+
+input[type=checkbox] ~ label{
+    position: relative;
+    cursor: pointer;
+}
+input[type=checkbox] ~ label:before{
+    content: "";
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: -10px;
+    width: 0px;
+    background-color: var(--tribunal-color);
+    border-radius: 10px;
+    transition: 0.2s;
+}
+input[type=checkbox]:checked ~ label:before{
+    width: 5px;
+}
