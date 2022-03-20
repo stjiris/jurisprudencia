@@ -31,33 +31,47 @@ block main
             .col-12.d-none.d-lg-block.col-lg-8: h4 Sumário
         for doc in hits
             article.row(data-tribunal=doc._source.Tribunal)
-                .col-12.col-sm-4.d-flex.flex-column
-                        a(href=`/${doc._source.ECLI}`, target="_blank")
+                .col-12.col-sm-4
+                        a(href=`/${doc._source.ECLI}`, target="_blank").d-block
                             span #{doc._source.Processo}
-                        span #{doc._source.Relator}
-                        span #{doc._source.Data}
-                        span #{doc._source.Tribunal}
+                        span.d-block #{doc._source.Relator}
+                        span.d-block #{doc._source.Data}
+                        span.d-block #{doc._source.Tribunal}
                         if doc._source.Descritores.length > 0
                             .d-flex.flex-column.mt-1
                                 b Descritores
                                 for d in doc._source.Descritores
                                     span #{d}
                 .col-12.col-sm-8
-                    h5.d-block.d-lg-none.font-weight-bold.mt-2 Sumário
+                    h5.d-block.d-lg-none.d-print-block.font-weight-bold.mt-2 Sumário
                     .sumario !{doc._source.Sumário}
+                .break
     style.
         @media print{
             article[data-tribunal] {
-                page-break-inside: avoid;
                 max-height: none !important;
+                width: 100%;
+                display: block;
+            }
+
+            article[data-tribunal]::after{
+                top:100% !important;
+            }
+
+            article .col-12{
+                break-before: avoid !important;
+                page-break-before: avoid !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+
+            article .break{
+                page-break-after: always !important;
             }
         }
-        details[open] .bi-minimizemaximize::before{
-            content: "\F14B";
-        }
-        details .bi-minimizemaximize::before{
-            content: "\F14C";
-        }
+
         article[data-tribunal] {
             position: relative;
             max-height: 150px;
@@ -66,6 +80,7 @@ block main
             padding-bottom: 15px;
             margin-bottom: 10px;
         }
+
         article[data-tribunal]:focus-within, article[data-tribunal]:hover {
             max-height: 1000px;
         }

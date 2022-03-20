@@ -19,58 +19,20 @@ block main
     .row.p-2
         .col-12.d-none.d-lg-block.col-lg-4: h4 Relator
         .col-12.d-none.d-lg-block.col-lg-8: h4 Tribunal(is)
-    for aggRelator in aggs.Relator.buckets
-        article.row.align-items-center
+    -let firstLeter = null
+    for aggRelator in aggs.Relator.buckets.sort(({key:a}, {key:b}) => a.localeCompare(b))
+        -let currLeter = aggRelator.key[0].replace(/[^a-zA-Z]/g, "#").toUpperCase()
+        if (firstLeter != currLeter)
+            .row.p-2
+                .col-12.d-flex.flex-wrap
+                    h3(id=currLeter) !{currLeter}
+                    for l in "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
+                        a(href="#"+l, class="m-1") !{l}
+            -firstLeter = currLeter
+        .row.align-items-center
             .col-12.col-sm-4.d-flex.flex-column
                 a(href=`/?q=Relator:"${aggRelator.key}"`, target="_blank") !{aggRelator.key}
             .col-12.col-sm-8.d-flex.flex-column
                 for aggRelatorTribunal in aggRelator.Tribunal.buckets
-                    a(href=`/?q=Tribunal:"${aggRelatorTribunal.key}"`,data-tribunal=aggRelatorTribunal.key) !{aggRelatorTribunal.key}
-    style.
-        @media print{
-            article[data-tribunal] {
-                page-break-inside: avoid;
-                max-height: none !important;
-            }
-        }
-        details[open] .bi-minimizemaximize::before{
-            content: "\F14B";
-        }
-        details .bi-minimizemaximize::before{
-            content: "\F14C";
-        }
-        article[data-tribunal] {
-            position: relative;
-            max-height: 150px;
-            overflow: hidden;
-            transition: 0.5s 0.3s;
-            padding-bottom: 15px;
-            margin-bottom: 10px;
-        }
-        article[data-tribunal]:focus-within, article[data-tribunal]:hover {
-            max-height: 1000px;
-        }
-
-        article[data-tribunal]::before {
-            content: '';
-            background: var(--tribunal-color);
-            top: 5px;
-            width: 5px;
-            position: absolute;
-            border-radius: 10px;
-            bottom: 30px;
-        }
-        article[data-tribunal]::after {
-            content: "";
-            position: absolute; 
-            top: 50%;
-            bottom: 0;
-            left: -15px;
-            right: -15px;
-            box-shadow: inset white 0 -45px 20px;
-            transition: 0.5s 0.3s;
-        }
-
-        article[data-tribunal]:focus-within::after, article[data-tribunal]:hover::after{
-            box-shadow: inset white 0 0px 0px;
-        }
+                    span.d-print-none
+                        a(href=`/?q=Tribunal:"${aggRelatorTribunal.key}"`,data-tribunal=aggRelatorTribunal.key) !{aggRelatorTribunal.key}

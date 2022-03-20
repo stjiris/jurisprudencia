@@ -18,15 +18,15 @@ html(lang="en")
                     a(href="/").col-12.col-lg-6.align-items-center.d-flex.flex-wrap.py-2
                         img(src="/stj-logo.png", style="max-height: 70px;")
                         h2.ps-2 Jurisprudência
-                    .col-12.col-lg-6.no-print
+                    .col-12.col-lg-6.d-print-none
                         .input-group
                             input.form-control(type="search", name="q", placeholder="Pesquisar...", value=q||"", style="color: var(--color-gray);")
                             .input-group-append
                                 button.btn.btn-gold(type="submit"): i.bi-search
-                    .col-12.col-lg-6.only-print
+                    .col-12.col-lg-6.d-none.d-print-block
                         block printpageinfo
                             p Sem informação da página
-                nav.w-100
+                nav.w-100.d-print-none
                     ul.container.d-flex.nav.align-items-center.justify-content-evenly.flex-wrap
                         li.nav-item.py-1.px-2.mx-1
                             a.nav-link(href="/", class=currentPage=="search"?"active":""): h5.m-0 Pesquisa
@@ -39,7 +39,7 @@ html(lang="en")
                 pre.alert.alert-danger: code !{error.stack}
             else
                 .row
-                    .col-12.col-md-3.no-print
+                    .col-12.col-md-3.d-print-none
                         .row.p-2
                             form(method="post").col-12
                                 block form
@@ -111,9 +111,8 @@ html(lang="en")
                                                     button.btn(type="submit", name="page", value=page+1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-right
                                                 li.page-item
                                                     button.btn(type="submit", name="page", value=pages-1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-double-right
-                                        small (A pesquisa está limitada a !{550000/50} páginas)
-                                
-                    .col-12.col-md-9.print-main
+                                        small (A pesquisa está limitada a !{550000/50} páginas)      
+                    .col-12.col-md-9
                         block main
         script.
             for(let i = 0; i < !{awaitCounter}; i++){

@@ -86,7 +86,7 @@ app.get("/", (req, res) => search(queryObject(req.query.q)).then(body => {
     res.render("search", {q: req.query.q, hits: [], error: err, aggs: {}, filters: {}, page: 0, pages: 0});
 }));
 
-const populateFilters = (filters, body={}) => { // filters={pre: [], after: []}
+const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters={pre: [], after: []}
     const filtersUsed = {}
     for( let key in aggs ){
         let aggName = key;
@@ -96,7 +96,7 @@ const populateFilters = (filters, body={}) => { // filters={pre: [], after: []}
         if( body[aggName] ){
             filtersUsed[aggName] = (Array.isArray(body[aggName]) ? body[aggName] : [body[aggName]]).filter(o => o.length > 0);
             let when = "pre";
-            if( aggName == "Tribunal" ){
+            if( afters.indexOf(aggName) != -1 ){
                 when = "after";
             }
             filters[when].push({
@@ -209,7 +209,7 @@ app.get("/relatores", (req, res) => {
 });
 app.post("/relatores", express.urlencoded({extended: true}), (req, res) => {
     const sfilters = {pre: [], after: []};
-    const filters = populateFilters(sfilters, req.body);
+    const filters = populateFilters(sfilters, req.body, []);
     search(queryObject(req.body.q), sfilters, 0, relatoresAggs, 0).then(body => {
         res.render("relatores", {q: req.body.q, aggs: body.aggregations, filters: filters, open: true});
     }).catch(err => {

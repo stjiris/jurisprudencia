@@ -71,18 +71,6 @@ input[type=checkbox]:checked ~ label:before{
 }
 
 @media print{
-    .no-print{
-        display: none;
-    }
-
-    .print-main{
-        max-width: 100% !important;
-        width: 100% !important;
-        flex: 100%;
-    }
-    .only-print{
-        display: block !important;
-    }
     header{
         background: none;
     }
@@ -90,10 +78,16 @@ input[type=checkbox]:checked ~ label:before{
         color: #000 !important;
         text-decoration: none !important;
     }
+    * {
+        -webkit-transition: none !important;
+        transition: none !important;
+    }
+    .container .row{
+        display: block;
+        width: 100%;
+    }
 }
-.only-print{
-    display: none;
-}
+
 header a{
     color: var(--color-white);
     text-decoration: none;
