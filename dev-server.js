@@ -84,53 +84,56 @@ app.get("/", (req, res) => search(queryObject(req.query.q)).then(body => {
 }).catch(err => {
     console.log(err)
     res.render("search", {q: req.query.q, hits: [], error: err, aggs: {}, filters: {}, page: 0, pages: 0});
-}))
+}));
 
-app.post("/", express.urlencoded({extended: true}), (req, res) => {
-    const sfilters = {pre: [], after: []};
-    const filters = {};
-    for( let key in aggs ) {
-        let field = "terms";
-        if( !aggs[key][field] ) {
-            field = "significant_terms";
-        }
-        if( !aggs[key][field] ) {
-            continue;
-        }
-        if( req.body[key] ) {
-            filters[key] = (Array.isArray(req.body[key]) ? req.body[key] : [req.body[key]]).filter(o => o.length > 0);
+const populateFilters = (filters, body={}) => { // filters={pre: [], after: []}
+    const filtersUsed = {}
+    for( let key in aggs ){
+        let aggName = key;
+        let aggObj = aggs[key];
+        let aggField = aggObj.terms ? "terms" : "significant_terms";
+        if( !aggObj[aggField] ) continue;
+        if( body[aggName] ){
+            filtersUsed[aggName] = (Array.isArray(body[aggName]) ? body[aggName] : [body[aggName]]).filter(o => o.length > 0);
             let when = "pre";
-            if( key == "Tribunal" ) 
+            if( aggName == "Tribunal" ){
                 when = "after";
-            sfilters[when].push({
+            }
+            filters[when].push({
                 terms: {
-                    [aggs[key][field].field]: filters[key]
+                    [aggObj[aggField].field]: filtersUsed[aggName]
                 }
             });
         }
     }
-    if( req.body.MinAnos ) {
-        filters.MinAnos = req.body.MinAnos;
-        sfilters.after.push({
+    if( body.MinAno ){
+        filtersUsed.MinAno = body.MinAno;
+        filters.pre.push({
             range: {
                 Data: {
-                    gte: req.body.MinAnos,
+                    gte: body.MinAno,
                     format: "yyyy"
                 }
             }
         });
     }
-    if( req.body.MaxAnos ) {
-        filters.MaxAnos = req.body.MaxAnos;
-        sfilters.after.push({
+    if( body.MaxAno ){
+        filtersUsed.MaxAno = body.MaxAno;
+        filters.pre.push({
             range: {
                 Data: {
-                    lte: parseInt(req.body.MaxAnos)+1,
+                    lt: parseInt(body.MaxAno)+1 || new Date().getFullYear(),
                     format: "yyyy"
                 }
             }
         });
     }
+    return filtersUsed;
+}
+
+app.post("/", express.urlencoded({extended: true}), (req, res) => {
+    const sfilters = {pre: [], after: []};
+    const filters = populateFilters(sfilters, req.body);
     let page = parseInt(req.body.page) || 0;
     search(queryObject(req.body.q), sfilters, page).then(body => {
         res.render("search", {q: req.body.q, hits: body.hits.hits, aggs: body.aggregations, filters: filters, page: page, pages: Math.ceil(body.hits.total.value/RESULTS_PER_PAGE), open: true});
@@ -139,106 +142,81 @@ app.post("/", express.urlencoded({extended: true}), (req, res) => {
         res.render("search", {q: req.body.q, hits: [], error: err, aggs: {}, filters: {}, page: 0, pages: 0});
     });  
 })
-app.get("/stats", (req, res) => {
-    let saggs = {
-        Tribunal: aggs.Tribunal,
-        MinAno: aggs.MinAno,
-        MaxAno: aggs.MaxAno,
-        Anos: {
-            terms: {
-              field: "Tribunal",
-              size: 20
-            },
-            aggs: {
-                Anos: {
-                    date_histogram: {
-                        field: "Data",
-                        interval: "year",
-                        format: "yyyy"
-                    }
+
+const statsAggs = {
+    Tribunal: aggs.Tribunal,
+    MinAno: aggs.MinAno,
+    MaxAno: aggs.MaxAno,
+    Anos: {
+        terms: {
+            field: 'Tribunal',
+            size: 20,
+        },
+        aggs: {
+            Anos: {
+                date_histogram: {
+                    field: 'Data',
+                    interval: 'year',
+                    format: 'yyyy'
                 }
             }
         }
     }
-    search(queryObject(req.query.q), [], 0, saggs, 0).then(body => {
+}
+app.get("/stats", (req, res) => {
+    search(queryObject(req.query.q), [], 0, statsAggs, 0).then(body => {
         res.render("stats", {q: req.query.q, aggs: body.aggregations, filters: {}});
     }).catch(err => {
         console.log(err)
         res.render("stats", {q: req.query.q, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
     });
-})
+});
 app.post("/stats", express.urlencoded({extended: true}), (req, res) => {
     const sfilters = {pre: [], after: []};
-    const filters = {};
-    for( let key in aggs ) {
-        let field = "terms";
-        if( !aggs[key][field] ) {
-            field = "significant_terms";
-        }
-        if( !aggs[key][field] ) {
-            continue;
-        }
-        if( req.body[key] ) {
-            filters[key] = (Array.isArray(req.body[key]) ? req.body[key] : [req.body[key]]).filter(o => o.length > 0);
-            let when = "pre";
-            if( key == "Tribunal" ) 
-                when = "after";
-            sfilters[when].push({
-                terms: {
-                    [aggs[key][field].field]: filters[key]
-                }
-            });
-        }
-    }
-    if( req.body.MinAnos ) {
-        filters.MinAnos = req.body.MinAnos;
-        sfilters.after.push({
-            range: {
-                Data: {
-                    gte: req.body.MinAnos,
-                    format: "yyyy"
-                }
-            }
-        });
-    }
-    if( req.body.MaxAnos ) {
-        filters.MaxAnos = req.body.MaxAnos;
-        sfilters.after.push({
-            range: {
-                Data: {
-                    lte: parseInt(req.body.MaxAnos)+1,
-                    format: "yyyy"
-                }
-            }
-        });
-    }
-    let saggs = {
-        Tribunal: aggs.Tribunal,
-        MinAno: aggs.MinAno,
-        MaxAno: aggs.MaxAno,
-        Anos: {
-            terms: {
-              field: "Tribunal",
-              size: 20
-            },
-            aggs: {
-                Anos: {
-                    date_histogram: {
-                        field: "Data",
-                        interval: "year",
-                        format: "yyyy"
-                    }
-                }
-            }
-        }
-    }
-    search(queryObject(req.body.q), sfilters, 0, saggs, 0).then(body => {
+    const filters = populateFilters(sfilters, req.body);
+    search(queryObject(req.body.q), sfilters, 0, statsAggs, 0).then(body => {
         res.render("stats", {q: req.body.q, aggs: body.aggregations, filters: filters, open: true});
     }).catch(err => {
         console.log(err)
         res.render("stats", {q: req.body.q, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
     });
-})
+});
+
+const relatoresAggs = {
+    Tribunal: aggs.Tribunal,
+    Relator: {
+        terms: {
+            field: 'Relator',
+            size: 1000000
+        },
+        aggs: {
+            Tribunal: {
+                terms: {
+                    field: 'Tribunal',
+                    size: 20
+                }
+            }
+        }
+    },
+};
+app.get("/relatores", (req, res) => {
+    search(queryObject(req.query.q), [], 0, relatoresAggs, 0).then(body => {
+        res.render("relatores", {q: req.query.q, aggs: body.aggregations, filters: {}});
+    }).catch(err => {
+        console.log(err)
+        res.render("relatores", {q: req.query.q, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
+    });
+});
+app.post("/relatores", express.urlencoded({extended: true}), (req, res) => {
+    const sfilters = {pre: [], after: []};
+    const filters = populateFilters(sfilters, req.body);
+    search(queryObject(req.body.q), sfilters, 0, relatoresAggs, 0).then(body => {
+        res.render("relatores", {q: req.body.q, aggs: body.aggregations, filters: filters, open: true});
+    }).catch(err => {
+        console.log(err)
+        res.render("relatores", {q: req.body.q, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
+    });
+});
 
 app.get("/:ecli(ECLI:*)", (req, res) => {
     let ecli = req.params.ecli;

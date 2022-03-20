@@ -13,19 +13,27 @@ html(lang="en")
         block head
     body
         block header
-            header.p-4.mb-2
-                form.container.row.align-items-center.m-auto
+            header.mb-2
+                form.container.row.align-items-center.m-auto.p-4
                     a(href="/").col-12.col-lg-6.align-items-center.d-flex.py-2
                         img(src="/stj-logo.png", style="max-height: 70px;")
-                        h1.pl-2 Jurisprudência
+                        h2.pl-2 Jurisprudência
                     .col-12.col-lg-6.no-print
                         .input-group
-                            input.form-control(type="search", name="q", placeholder="Pesquisar...", value=q, style="color: var(--color-gray);")
+                            input.form-control(type="search", name="q", placeholder="Pesquisar...", value=q||"", style="color: var(--color-gray);")
                             .input-group-append
                                 button.btn.btn-gold(type="submit"): i.bi-search
                     .col-12.col-lg-6.only-print
                         block printpageinfo
                             p Sem informação da página
+                nav.w-100
+                    ul.container.d-flex.nav
+                        li.nav-item.py-1.px-2.mx-1
+                            a.nav-link(href="/", class=currentPage=="search"?"active":""): h5.m-0 Pesquisa
+                        li.nav-item.py-1.px-2.mx-1
+                            a.nav-link(href="/stats", class=currentPage=="stats"?"active":""): h5.m-0 Estatística
+                        li.nav-item.py-1.px-2.mx-1
+                            a.nav-link(href="/relatores", class=currentPage=="relatores"?"active":""): h5.m-0 Relatores
         main.container
             if error 
                 pre.alert.alert-danger: code !{error.stack}
@@ -82,11 +90,11 @@ html(lang="en")
                                             .input-group
                                                 .input-group-prepend.w-25
                                                     label(for="data_inicio").input-group-text.w-100 De
-                                                input.form-control(type="number", name="MinAnos", min="1900", max=new Date().getFullYear(), value=filters["MinAnos"], step="1")#data_inicio
+                                                input.form-control(type="number", name="MinAno", min="1900", max=new Date().getFullYear(), value=filters["MinAno"], step="1")#data_inicio
                                             .input-group
                                                 .input-group-prepend.w-25
                                                     label(for="data_fim").input-group-text.w-100 Até
-                                                input.form-control(type="number", name="MaxAnos", min="1900", max=new Date().getFullYear(), value=filters["MaxAnos"], step="1")#data_fim
+                                                input.form-control(type="number", name="MaxAno", min="1900", max=new Date().getFullYear(), value=filters["MaxAno"], step="1")#data_fim
                                         .d-flex.flex-row.my-2.justify-content-between.align-items-center
                                             button.btn.btn-primary(type="submit") Aplicar
                                             a.btn.btn-danger(href=`?q=${q || ""}`) Limpar

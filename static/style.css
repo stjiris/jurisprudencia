@@ -16,6 +16,22 @@ header{
     background-color: var(--color-dark);
 }
 
+header nav{
+    background-color: var(--color-gold);
+    color: var(--color-dark);
+}
+
+header nav a{
+    color: var(--color-gray);
+    transition: 0.2s;
+}
+header nav a.active, header nav a.active:hover{
+    color: var(--color-dark);
+}
+header nav a:hover{
+    color: var(--color-white);
+}
+
 .btn-gold {
     color: var(--color-gray);
     background-color: var(--color-gold);

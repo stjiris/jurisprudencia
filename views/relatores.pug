@@ -1,50 +1,31 @@
 extends head 
 block head
     title Pesquisa
+    script(src="https://cdn.jsdelivr.net/npm/chart.js")
 
 prepend header
-    -currentPage = "search"
+    -currentPage = "relatores"
 
 block printpageinfo
-    p Resultados da pesquisa por: "!{q || ""}" (Página !{page+1} de !{pages} páginas)
-
+    p Relatores da pesquisa por: "!{q || ""}"
 
 append form
+    .d-flex.my-2.justify-content-center.align-items-center
+        button.btn.w-100(type="submit", formaction=`/?q=${q || ""}`): u Ver resultados da pesquisa
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
         button.btn.w-100(type="submit", formaction=`/stats?q=${q || ""}`): u Ver estatísticas da pesquisa
-    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`/relatores?q=${q || ""}`): u Ver relatores da pesquisa
 
 block main
-    if hits.length == 0
-        .alert.alert-info(role="alert")
-            h4.alert-heading Sem resultados...
-            strong
-                i.bi.bi-lightbulb-fill
-                | Sugestões:
-            ol
-                li Verifique os filtros utilizados (tribunais, relator, descritores, data)
-                li Verifique o termo pesquisado
-    else
-        .row.p-2
-            .col-12.d-none.d-lg-block.col-lg-4: h4 Processo
-            .col-12.d-none.d-lg-block.col-lg-8: h4 Sumário
-        for doc in hits
-            article.row(data-tribunal=doc._source.Tribunal)
-                .col-12.col-sm-4.d-flex.flex-column
-                        a(href=`/${doc._source.ECLI}`, target="_blank")
-                            span #{doc._source.Processo}
-                        span #{doc._source.Relator}
-                        span #{doc._source.Data}
-                        span #{doc._source.Tribunal}
-                        if doc._source.Descritores.length > 0
-                            .d-flex.flex-column.mt-1
-                                b Descritores
-                                for d in doc._source.Descritores
-                                    span #{d}
-                .col-12.col-sm-8
-                    h5.d-block.d-lg-none.font-weight-bold.mt-2 Sumário
-                    .sumario !{doc._source.Sumário}
+    .row.p-2
+        .col-12.d-none.d-lg-block.col-lg-4: h4 Relator
+        .col-12.d-none.d-lg-block.col-lg-8: h4 Tribunal(is)
+    for aggRelator in aggs.Relator.buckets
+        article.row.align-items-center
+            .col-12.col-sm-4.d-flex.flex-column
+                a(href=`/?q=Relator:"${aggRelator.key}"`, target="_blank") !{aggRelator.key}
+            .col-12.col-sm-8.d-flex.flex-column
+                for aggRelatorTribunal in aggRelator.Tribunal.buckets
+                    a(href=`/?q=Tribunal:"${aggRelatorTribunal.key}"`,data-tribunal=aggRelatorTribunal.key) !{aggRelatorTribunal.key}
     style.
         @media print{
             article[data-tribunal] {
