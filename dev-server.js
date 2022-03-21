@@ -208,7 +208,10 @@ const relatoresAggs = {
             Relator: {
                 terms: {
                     field: 'Relator',
-                    size: 100000
+                    size: 100000,
+                    order: {
+                        "_term": "asc"
+                    }
                 },
                 aggs: {
                     Tribunal: {
