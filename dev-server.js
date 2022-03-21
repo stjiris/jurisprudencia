@@ -217,7 +217,10 @@ const relatoresAggs = {
                     Tribunal: {
                         terms: {
                             field: 'Tribunal',
-                            size: 25
+                            size: 25,
+                            order: {
+                                "_term": "asc"
+                            }
                         }
                     }
                 }
