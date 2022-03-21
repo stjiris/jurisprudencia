@@ -57,7 +57,7 @@ let queryObject = (string) => {
     };
 }
 
-let search = (query, filters={pre: [], after: []}, page=0, saggs={Tribunal: aggs.Tribunal, MinAno: aggs.MinAno, MaxAno: aggs.MaxAno}, rpp=RESULTS_PER_PAGE) => client.search({
+let search = (query, filters={pre: [], after: []}, page=0, saggs={Tribunal: aggs.Tribunal, MinAno: aggs.MinAno, MaxAno: aggs.MaxAno}, rpp=RESULTS_PER_PAGE, extras={}) => client.search({
     index: 'jurisprudencia.0.0',
     query: {
         bool: {
@@ -76,7 +76,8 @@ let search = (query, filters={pre: [], after: []}, page=0, saggs={Tribunal: aggs
     sort: [
         { Data: "desc" }
     ],
-    track_total_hits: true
+    track_total_hits: true,
+    ...extras
 });
 
 app.get("/", (req, res) => search(queryObject(req.query.q)).then(body => {
@@ -182,25 +183,47 @@ app.post("/stats", express.urlencoded({extended: true}), (req, res) => {
     });
 });
 
+const extras = {
+    runtime_mappings: {
+        FirstLetter: {
+            type: 'keyword',
+            script: {
+                lang: 'painless',
+                source: `
+                        Pattern p = /[^a-zA-Z]/;
+                        emit(p.matcher(doc['Relator'].value.substring(0, 1)).replaceAll('#'));
+                `
+            }
+        }
+    }
+}
 const relatoresAggs = {
     Tribunal: aggs.Tribunal,
-    Relator: {
+    FirstLetter: {
         terms: {
-            field: 'Relator',
-            size: 1000000
+            field: 'FirstLetter',
+            size: 26, // A-Z and #
         },
         aggs: {
-            Tribunal: {
+            Relator: {
                 terms: {
-                    field: 'Tribunal',
-                    size: 20
+                    field: 'Relator',
+                    size: 100000
+                },
+                aggs: {
+                    Tribunal: {
+                        terms: {
+                            field: 'Tribunal',
+                            size: 25
+                        }
+                    }
                 }
             }
         }
-    },
+    }
 };
 app.get("/relatores", (req, res) => {
-    search(queryObject(req.query.q), [], 0, relatoresAggs, 0).then(body => {
+    search(queryObject(req.query.q), [], 0, relatoresAggs, 0, extras).then(body => {
         res.render("relatores", {q: req.query.q, aggs: body.aggregations, filters: {}});
     }).catch(err => {
         console.log(err)
@@ -210,7 +233,7 @@ app.get("/relatores", (req, res) => {
 app.post("/relatores", express.urlencoded({extended: true}), (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.body, []);
-    search(queryObject(req.body.q), sfilters, 0, relatoresAggs, 0).then(body => {
+    search(queryObject(req.body.q), sfilters, 0, relatoresAggs, 0, extras).then(body => {
         res.render("relatores", {q: req.body.q, aggs: body.aggregations, filters: filters, open: true});
     }).catch(err => {
         console.log(err)

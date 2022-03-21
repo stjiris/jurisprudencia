@@ -19,8 +19,30 @@ block main
     .row.p-2
         .col-12.d-none.d-lg-block.col-lg-4: h4 Relator
         .col-12.d-none.d-lg-block.col-lg-8: h4 Tribunal(is)
-    -let firstLeter = null
-    for aggRelator in aggs.Relator.buckets.sort(({key:a}, {key:b}) => a.localeCompare(b))
+    .row.p-2
+        //-pre: code !{JSON.stringify(aggs.FirstLetter, null, 2)}
+        -let available = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(l => aggs.FirstLetter.buckets.find(o => o.key == l));
+        for l of available
+            -let letter = aggs.FirstLetter.buckets.find(b => b.key == l)
+            if letter
+                article.col-12.row.mb-3(id=`${letter.key}`)
+                    .col-12.row
+                        h5.col-1 !{letter.key}
+                        .col-11.d-print-none
+                            for a of available
+                                if a != l
+                                    a.p-1.m-1(href=`#${a}`) !{a}
+                                else
+                                    span.p-1.m-1 !{a}
+                    for relator in letter.Relator.buckets
+                        .row.col-12.my-2.pb-2.align-items-center.relator
+                            .col-4: a(href=`/?q=Relator:"${relator.key}"`) !{relator.key}
+                            .col-8.d-flex.flex-column
+                                for tribunal in relator.Tribunal.buckets
+                                    span(data-tribunal=tribunal.key) !{tribunal.key}
+    style.
+
+    //- for aggRelator in aggs.Relator.buckets.sort(({key:a}, {key:b}) => a.localeCompare(b))
         -let currLeter = aggRelator.key[0].replace(/[^a-zA-Z]/g, "#").toUpperCase()
         if (firstLeter != currLeter)
             .row.p-2

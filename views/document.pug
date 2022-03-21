@@ -2,15 +2,8 @@ extends head.pug
 block head 
     title Document !{ecli}
 
-block header
-    header.p-4.mb-2
-        .container.row.align-items-center.m-auto
-            a(href="/").col-12.col-lg-6.align-items-center.d-flex.py-2
-                img(src="/stj-logo.png", style="max-height: 70px;")
-                h1.ps-2 Jurisprudência
-            .col-12.col-lg-6
-                block printpageinfo
-                    h6 !{ecli}
+block printpageinfo
+    h6 !{ecli}
 
 block form
     if source
