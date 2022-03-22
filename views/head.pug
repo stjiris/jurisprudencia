@@ -1,9 +1,7 @@
 doctype html
 html(lang="en")
-    -let awaitCounter = 0
     mixin await(url)
-        span(data-await=url,id=`await-${awaitCounter}`).await-loading
-        -awaitCounter++
+        span(data-await=url).await-loading
     head
         meta(charset="UTF-8")
         meta(http-equiv="X-UA-Compatible", content="IE=edge")
@@ -65,8 +63,15 @@ html(lang="en")
                                                         span.d-block !{bucket.key} 
                                                         span.d-block (!{bucket.doc_count})
                                         .d-flex.flex-column.my-2
+                                            -let relatores = filters["Relatores"] || []
+                                            -let descritores = filters["Descritores"] || []
+                                            -let query = tribunais.map(t => `Tribunal=${t}`).concat(relatores.map(r => `Relator=${r}`)).concat(descritores.map(d => `Descritores=${d}`)).join("&")
+                                            if filters["MinAno"]
+                                                -query += `&MinAno=${filters["MinAno"]}`
+                                            if filters["MaxAno"]
+                                                -query += `&MaxAno=${filters["MaxAno"]}`
                                             h5 Relator
-                                            +await(`/datalist?id=relatores&agg=Relator&tribunais=${tribunais.join(",")}&q=${q || ""}`)
+                                            +await(`/datalist?id=relatores&agg=Relator&${query}&q=${q || ""}`)
                                             input.form-control(type="text", name="Relator", autocomplete="off", list="relatores", placeholder="Filtrar relator...")
                                             if "Relator" in filters
                                                 for f in filters["Relator"]
@@ -77,7 +82,7 @@ html(lang="en")
                                                             i.d-blocl.bi-trash
                                         .d-flex.flex-column.my-2
                                             h5 Descritor
-                                            +await(`/datalist?id=descritores&agg=Descritores&tribunais=${tribunais.join(",")}&q=${q || ""}`)
+                                            +await(`/datalist?id=descritores&agg=Descritores&&${query}&q=${q || ""}`)
                                             input.form-control(type="text", name="Descritores", autocomplete="off", list="descritores", placeholder="Filtrar descritores...")
                                             if "Descritores" in filters
                                                 for f in filters["Descritores"]
@@ -116,10 +121,12 @@ html(lang="en")
                     .col-12.col-md-9
                         block main
         script.
-            for(let i = 0; i < !{awaitCounter}; i++){
-                let elem = document.getElementById(`await-${i}`);
-                fetch(elem.dataset.await).then(response => response.text()).then(text => {
-                    elem.classList.remove("await-loading");
-                    elem.innerHTML = text;
+            window.addEventListener('DOMContentLoaded', function(){
+                let elems = Array.from(document.getElementsByClassName(`await-loading`));
+                elems.forEach(elem => {
+                    fetch(elem.dataset.await).then(response => response.text()).then(text => {
+                        elem.classList.remove("await-loading");
+                        elem.innerHTML = text;
+                    });
                 });
-            }
+            })

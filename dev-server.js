@@ -13,20 +13,26 @@ const aggs = {
             field: 'Tribunal',
             size: 20,
             order: {
-                "_term": "asc"
+                _term: "asc"
             }
         }
     },
     Relator: {
-        significant_terms: {
+        terms: {
             field: 'Relator',
-            size: 100000
+            size: 65536,
+            order: {
+                _term: "asc"
+            }
         }
     },
     Descritores: {
-        significant_terms: {
+        terms: {
             field: 'Descritores.keyword',
-            size: 100000
+            size: 65536,
+            order: {
+                _term: "asc"
+            }
         }
     },
     MinAno: {
@@ -100,11 +106,22 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
             if( afters.indexOf(aggName) != -1 ){
                 when = "after";
             }
-            filters[when].push({
-                terms: {
-                    [aggObj[aggField].field]: filtersUsed[aggName]
-                }
-            });
+            if( aggName != "Descritores" ){
+                filters[when].push({
+                    terms: {
+                        [aggObj[aggField].field]: filtersUsed[aggName]
+                    }
+                });
+            }
+            else {
+                filtersUsed[aggName].forEach(desc => {
+                    filters[when].push({
+                        term: {
+                            [aggObj[aggField].field]: desc
+                        }
+                    });
+                });
+            }
         }
     }
     if( body.MinAno ){
@@ -279,18 +296,13 @@ app.get("/datalist", (req, res) => {
         res.render("datalist", {aggs: [], error: "Aggregation not found", id: req.query.id});
         return;
     }
-    let filter = [];
-    if( req.query.tribunais ) {
-        filter.push({
-            terms: {
-                Tribunal: req.query.tribunais.split(",")
-            }
-        });
-    }
-    search(queryObject(req.query.q), filter, 0, { [aggKey]: agg}).then(body => {
+    const sfilters = {pre: [], after: []};
+    const filters = populateFilters(sfilters, req.query, [], []);
+    console.log(filters);
+    search(queryObject(req.query.q), sfilters, 0, { [aggKey]: agg}).then(body => {
         res.render("datalist", {aggs: body.aggregations[aggKey].buckets, id: req.query.id});
     }).catch(err => {
-        console.log(err);
+        console.log(req.originalUrl, err.body.error);
         res.render("datalist", {aggs: [], error: err, id: req.query.id});
     });
 });
