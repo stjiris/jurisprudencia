@@ -2,6 +2,7 @@ const { Client } = require('@elastic/elasticsearch')
 const client = new Client({ node: 'http://localhost:9200' });
 
 const mapping = require('./elastic-index-mapping.json');
+const fixKnownErrors = require('./fix-known-errors');
 
 module.exports.init = async (removeOld=false) => {
     if( removeOld ) await client.indices.delete({index: mapping.index})
@@ -34,7 +35,7 @@ module.exports.index = (json) =>{
         }
         body[key] = json[key]
     }
-    return client.index({index: mapping.index,body});
+    return client.index({index: mapping.index, fixKnownErrors(body)});
 }
 
 module.exports.exists = (json) => 

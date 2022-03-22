@@ -16,9 +16,8 @@ ECLI : PT : TRC : 2017 : 198.15.3GCACB.C1
 
 que corresponde a uma decisão proferida em Portugal, pelo Tribunal da Relação de Coimbra, em 2017, no processo 198.15.3GCACB
 */
-function validate(ecli){
-    return !!ecli.match(/^ECLI:PT:(?<court>[A-Z]{3}):(?<year>\d{4}):(?<number>([A-Z0-9]+\.?)+)$/)
-}
+let matchEcli = (text) => text.match(/^ECLI:(?<country>PT):(?<court>[A-Z]{3}):(?<year>\d{4}):(?<number>([A-Z0-9]+\.?)+)$/);
+let validate = (ecli) => !!matchEcli(ecli);
 
 class ECLI_Builder{
     constructor(){
@@ -55,6 +54,13 @@ class ECLI_Builder{
         throw new Error("Invalid ECLI " + this.toString())
     }
 
+    static fromString(ecli){
+        let m = matchEcli(ecli)
+        if( m ){
+            return new ECLI_Builder().setCountry(m.groups.country).setJurisdiction(m.groups.court).setYear(m.groups.year).setNumber(m.groups.number);
+        }
+        throw new Error("Invalid ECLI " + ecli)
+    }
 
 }
 

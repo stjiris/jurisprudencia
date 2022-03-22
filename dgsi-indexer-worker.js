@@ -30,17 +30,6 @@ log(`${link} - ${Tribunal}`);
 let builder = new ecli.ECLI_Builder().setCountry("PT").setJurisdiction(TribunalCode).setYear("0000");
 const Origem = `dgsi-indexer-${TribunalCode}`;
 
-const dateFixes = {
-    "http://www.dgsi.pt/jtrl.nsf/33182fc732316039802565fa00497eec/9a5395430007aec6802582cf004eeeb3?OpenDocument": "06/21/2018",
-    "http://www.dgsi.pt/jtre.nsf/134973db04f39bf2802579bf005f080b/f0611ae129477aae8025827b002d2a47?OpenDocument": "04/10/2018",
-    "http://www.dgsi.pt/jtca.nsf/170589492546a7fb802575c3004c6d7d/ecf6730f98261130802571f800347524?OpenDocument": "09/26/2006",
-    "http://www.dgsi.pt/jtrg.nsf/86c25a698e4e7cb7802579ec004d3832/765d9792c9acf919802581ad0052038e?OpenDocument": "06/29/2017",
-    "http://www.dgsi.pt/jtcn.nsf/89d1c0288c2dd49c802575c8003279c7/75619824943bd597802580020032792e?OpenDocument": "07/01/2016",
-    "http://www.dgsi.pt/jtre.nsf/134973db04f39bf2802579bf005f080b/32227fea7dac58e4802581d900341950?OpenDocument": "10/26/2017",
-    "http://www.dgsi.pt/jtca.nsf/170589492546a7fb802575c3004c6d7d/f4e14249caaf440580257685005a67ad?OpenDocument": "12/03/2009",
-    "http://www.dgsi.pt/jtca.nsf/170589492546a7fb802575c3004c6d7d/c46ce01b55ca0f7480257760005a89fe?OpenDocument": "07/08/2010"
-}
-
 forEachCourtDecisionLink(async link => {
     let page = await getPage(link+'&ExpandSection=1');
     let tables = Array.from(page.window.document.querySelectorAll("table")).filter( o => o.parentElement.closest("table") == null );
@@ -62,9 +51,6 @@ forEachCourtDecisionLink(async link => {
     }
     try{
         let Data = getData(table);
-        if( link in dateFixes ){
-            Data = dateFixes[link];
-        }
         let datePT = USADateToPT(Data);
         let year = USADateToYear(Data);
 
