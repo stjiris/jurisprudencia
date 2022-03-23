@@ -11,7 +11,7 @@ block printpageinfo
 
 append form
     .d-flex.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`/?q=${q || ""}`): u Ver resultados da pesquisa
+        button#onclickgraph.btn.w-100(type="submit", formaction=`/?q=${q || ""}`): u Ver resultados da pesquisa
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
         button.btn.w-100(type="submit", formaction=`/relatores?q=${q || ""}`): u Ver relatores da pesquisa
 
@@ -34,6 +34,22 @@ block main
             let labels = strRange(minYear,maxYear);
             function tribColor(trib){
                 return getComputedStyle(document.querySelector(`[data-tribunal="${trib}"]`)).getPropertyValue("--tribunal-color") || "#000"
+            }
+            function chartClick(event, elems){
+                if( elems.length <= 0 ){
+                    return
+                };
+                let bucket = buckets[elems[0].datasetIndex];
+                let trib = bucket.key;
+                let year = bucket.Anos.buckets[elems[0].index].key_as_string;
+                // Option 1: Redirect to the page with the results
+                //window.location.href = `/?q=!{q} Tribunal:"${trib}" Data:[01/01/${year} TO 31/12/${year}]`
+                // Option 2: POST form for the results
+                document.querySelectorAll("input[name=Tribunal]").forEach(o => o.checked = false)
+                document.querySelector(`input[name=Tribunal][value="${trib}"]`).checked = true
+                document.querySelector("input[name=MinAno]").value = year
+                document.querySelector("input[name=MaxAno]").value = year
+                document.querySelector("#onclickgraph").dispatchEvent(event.native)
             }
             new Chart(document.getElementById("graph"), {
                 type: "bar",
@@ -62,7 +78,8 @@ block main
                             stacked: true
                         }
                     },
-                    maintainAspectRatio: false
+                    maintainAspectRatio: false,
+                    onClick: chartClick
                 }
             });
     style.

@@ -274,7 +274,7 @@ app.get("/relatores", (req, res) => {
 });
 app.post("/relatores", express.urlencoded({extended: true}), (req, res) => {
     const sfilters = {pre: [], after: []};
-    const filters = populateFilters(sfilters, req.body, []);
+    const filters = populateFilters(sfilters, req.body);
     search(queryObject(req.body.q), sfilters, 0, relatoresAggs, 0, extras).then(body => {
         res.render("relatores", {q: req.body.q, aggs: body.aggregations, filters: filters, open: true});
     }).catch(err => {
