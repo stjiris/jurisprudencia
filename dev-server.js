@@ -45,10 +45,18 @@ const aggs = {
 
 const RESULTS_PER_PAGE = 50;
 
-let queryObject = (string) => {
+let queryObject = (string, safe=false) => {
     if( !string ) return {
         match_all: {}
     };
+    if( safe ){
+        return {
+            multi_match: {
+                query: string, 
+                type: "cross_fields"
+            }
+        }
+    }
     return {
         query_string: {
             query: string,
@@ -78,7 +86,15 @@ let search = (query, filters={pre: [], after: []}, page=0, saggs={Tribunal: aggs
     ],
     track_total_hits: true,
     ...extras
-});
+}).catch(e => {
+    if( e.message.indexOf("Reason: Failed to parse query") != -1 ){
+        console.log("Safe retrying after:", e.message);
+        return search(queryObject(`${query.query_string.query}`, true), filters, page, saggs, rpp, extras);
+    }
+    else{
+        return Promise.reject(e);
+    }
+})
 
 app.get("/", (req, res) => search(queryObject(req.query.q)).then(body => {
     res.render("search", {q: req.query.q, hits: body.hits.hits, aggs: body.aggregations, filters: {}, page: 0, pages: Math.ceil(body.hits.total.value/RESULTS_PER_PAGE)});
