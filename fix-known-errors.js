@@ -7,13 +7,17 @@ const fixes = {
     "http://www.dgsi.pt/jtcn.nsf/89d1c0288c2dd49c802575c8003279c7/75619824943bd597802580020032792e?OpenDocument": {Data: "01/07/2016"},
     "http://www.dgsi.pt/jtre.nsf/134973db04f39bf2802579bf005f080b/32227fea7dac58e4802581d900341950?OpenDocument": {Data: "26/10/2017"},
     "http://www.dgsi.pt/jtca.nsf/170589492546a7fb802575c3004c6d7d/f4e14249caaf440580257685005a67ad?OpenDocument": {Data: "03/12/2009"},
-    "http://www.dgsi.pt/jtca.nsf/170589492546a7fb802575c3004c6d7d/c46ce01b55ca0f7480257760005a89fe?OpenDocument": {Data: "08/07/2010"}
+    "http://www.dgsi.pt/jtca.nsf/170589492546a7fb802575c3004c6d7d/c46ce01b55ca0f7480257760005a89fe?OpenDocument": {Data: "08/07/2010"},
+    "http://www.dgsi.pt/jtrp.nsf/56a6e7121657f91e80257cda00381fdf/ea09f737fc55389b80257290003ba162?OpenDocument": {Relator: "PEDRO M MENEZES"}
 }
 
 module.exports = (jsonBody) => {
     let res = {};
     for( let key in jsonBody){
         res[key] = jsonBody[key];
+        if( key == "Relator" ){
+            res[key] = res[key].replace(/\s{2,10}/g, " ").replace(/\./g, "").trim(); // Remove dots and spaces
+        }
     }
     let link = jsonBody["Original URL"];
     if( fixes[link] ){

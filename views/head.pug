@@ -35,7 +35,9 @@ html(lang="en")
                             a.nav-link(href="/relatores", class=currentPage=="relatores"?"active":""): h5.m-0 Relatores
         main.container
             if error 
-                pre.alert.alert-danger: code !{error.stack}
+                pre.alert.alert-danger
+                    code !{error.stack}
+                    code !{JSON.stringify(error.meta.body.error, null, 2)}
             else
                 .row
                     .col-12.col-md-3.d-print-none.infofilters
@@ -63,7 +65,7 @@ html(lang="en")
                                                         span.d-block !{bucket.key} 
                                                         span.d-block (!{bucket.doc_count})
                                         .d-flex.flex-column.my-2
-                                            -let relatores = filters["Relatores"] || []
+                                            -let relatores = filters["Relator"] || []
                                             -let descritores = filters["Descritores"] || []
                                             -let query = tribunais.map(t => `Tribunal=${t}`).concat(relatores.map(r => `Relator=${r}`)).concat(descritores.map(d => `Descritores=${d}`)).join("&")
                                             if filters["MinAno"]
