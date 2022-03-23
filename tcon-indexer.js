@@ -28,7 +28,7 @@ init().then( async _ => {
                 continue
             }
             
-            let Relator = tr.querySelector(".relator").textContent.trim();
+            let Relator = tr.querySelector(".relator").textContent.trim().replace(/\s+/g, " ").replace(/\./g, "");
             let data = tr.querySelector(".data").textContent.trim().replace(/\./g, "/");
             if( processo == "1209/21" && data == "03/00/2022" )
             data = "03/02/2022";
