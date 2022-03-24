@@ -1,5 +1,5 @@
 {
-    "index": "jurisprudencia.0.0.test",
+    "index": "jurisprudencia.0.0",
     "mappings": {
         "properties": {
             "ECLI": {
