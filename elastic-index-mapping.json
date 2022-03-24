@@ -55,6 +55,10 @@
             "Aditamento": {
                 "type": "text"
             },
+            "Espécie": {
+                "type": "keyword",
+                "normalizer": "term_normalizer"
+            },
             "Tipo": {
                 "type": "keyword",
                 "normalizer": "term_normalizer"

@@ -68,6 +68,7 @@ forEachCourtDecisionLink(async link => {
             "Votação": getFirst(table, ["Votação"], link),
             "Meio Processual": getFirst(table, ["Meio Processual"], link),
             "Secção": getFirst(table, ["Tribunal", "Nº Convencional", "Secção"], link), // STA tem tribunal (secção) e Nº convecional 
+            "Espécie": getFirst(table, ["Espécie"], link),
             "Decisão": getDecisao(table),
             "Aditamento": getFirst(table, ["Aditamento"], link),
             "Origem": Origem
@@ -144,7 +145,6 @@ function getFirst(table, keys, link){
             return table[key].textContent.trim();
         }
     }
-    console.error(`WARN: ${link}\t${keys.join(", ")}`)
     return "N.A.";
 }
 
