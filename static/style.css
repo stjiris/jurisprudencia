@@ -12,7 +12,7 @@ h1, h2, h3, h4 {
     font-family: 'Cinzel', serif;
 }
 
-header{
+header, footer{
     background-color: var(--color-dark);
 }
 
@@ -88,11 +88,11 @@ input[type=checkbox]:checked ~ label:before{
     }
 }
 
-header a{
+header a, footer a{
     color: var(--color-white);
     text-decoration: none;
 }
-header a:hover{
+header a:hover, footer a:hover{
     text-decoration: none;
     color: var(--color-white);
 }

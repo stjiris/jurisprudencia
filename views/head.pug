@@ -33,7 +33,7 @@ html(lang="en")
                             a.nav-link(href="/stats", class=currentPage=="stats"?"active":""): h5.m-0 Estatística
                         li.nav-item.py-1.px-2.mx-1
                             a.nav-link(href="/relatores", class=currentPage=="relatores"?"active":""): h5.m-0 Relatores
-        main.container
+        main.container#top
             if error 
                 pre.alert.alert-danger
                     code !{error.stack}
@@ -122,6 +122,12 @@ html(lang="en")
                                         small (A pesquisa está limitada a !{550000/50} páginas)      
                     .col-12.col-md-9
                         block main
+        footer.d-print-none.mt-2
+            .container.row.align-items-center.m-auto.p-4
+                a(href="#top").col-12.col-lg-6.align-items-center.d-flex.flex-wrap.py-2
+                    i.bi.bi-chevron-up.mr-2
+                    | Voltar ao topo
+                    
         script.
             window.addEventListener('DOMContentLoaded', function(){
                 let elems = Array.from(document.getElementsByClassName(`await-loading`));
