@@ -66,7 +66,7 @@ let queryObject = (string, safe=false) => {
 }
 
 let search = (query, filters={pre: [], after: []}, page=0, saggs={Tribunal: aggs.Tribunal, MinAno: aggs.MinAno, MaxAno: aggs.MaxAno}, rpp=RESULTS_PER_PAGE, extras={}) => client.search({
-    index: 'jurisprudencia.0.0.test',
+    index: 'jurisprudencia.0.0',
     query: {
         bool: {
             must: query,
@@ -251,7 +251,7 @@ function listAggregation(term){ // {extras, aggs}
                 aggs: {
                     [term]: {
                         terms: {
-                            field: term,  
+                            field: aggs[term].terms.field,  
                             size: 65,
                             order: {
                                 _term: "asc",
