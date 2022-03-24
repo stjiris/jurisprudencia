@@ -136,7 +136,8 @@ function getFirst(table, keys, link){
             return table[key].textContent.trim();
         }
     }
-    console.error("WARN: No value found for " + keys.join(", ") + " in " + link)
+    console.error(`WARN: ${link}\t${keys.join(", ")}`)
+    return "N.A.";
 }
 
 async function forEachCourtDecisionLink( fn ){
