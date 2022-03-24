@@ -43,14 +43,16 @@ init().then( async _ => {
                 "Relator": Relator,
                 "Data": data,
                 "Descritores": [],
-                "Secção": seccao,
-                "Decisão": "N.A.",
                 "Sumário": "N.A.",
                 "Texto": await JSDOM.fromURL(link).then(parseDomText),
-                "Aditamento": "N.A.",
-                "Espécie": especie,
                 "Tipo": "Acórdão",
                 "Original URL": link,
+                "Votação": "N.A.",
+                "Meio Processual": "N.A.",
+                "Secção": seccao,
+                "Espécie": especie,
+                "Decisão": "N.A.",
+                "Aditamento": "N.A.",
                 "Origem": Origem
             }
             await index(body).catch(e => {
