@@ -39,7 +39,7 @@
                 "type": "keyword",
                 "normalizer": "term_normalizer"
             },
-            "Número Convencional": {
+            "Secção": {
                 "type": "keyword",
                 "normalizer": "term_normalizer"
             },

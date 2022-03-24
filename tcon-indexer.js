@@ -30,6 +30,7 @@ init().then( async _ => {
             
             let Relator = tr.querySelector(".relator").textContent.trim().replace(/\s+/g, " ").replace(/\./g, "");
             let data = tr.querySelector(".data").textContent.trim().replace(/\./g, "/");
+            let seccao = tr.querySelector(".seccao").textContent.trim();
             if( processo == "1209/21" && data == "03/00/2022" )
             data = "03/02/2022";
             
@@ -41,8 +42,11 @@ init().then( async _ => {
                 "Relator": Relator,
                 "Data": data,
                 "Descritores": [],
+                "Secção": seccao,
+                "Decisão": "N.A.",
                 "Sumário": "N.A.",
                 "Texto": await JSDOM.fromURL(link).then(parseDomText),
+                "Aditamento": "N.A.",
                 "Tipo": "Acórdão",
                 "Original URL": link,
                 "Origem": Origem
