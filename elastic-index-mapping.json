@@ -1,5 +1,5 @@
 {
-    "index": "jurisprudencia.0.0",
+    "index": "jurisprudencia.0.0.test",
     "mappings": {
         "properties": {
             "ECLI": {
@@ -23,12 +23,22 @@
             },
             "Descritores": {
                 "type": "text",
+                "fielddata": true,
                 "fields": {
                     "keyword": {
                         "type": "keyword",
                         "normalizer": "term_normalizer"
                     }
                 }
+            },
+            "Votação": {
+                "type": "keyword"
+            },
+            "Meio Processual": {
+                "type": "keyword"
+            },
+            "Número Convencional": {
+                "type": "keyword"
             },
             "Sumário": {
                 "type": "text"

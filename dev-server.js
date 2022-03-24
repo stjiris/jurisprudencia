@@ -219,43 +219,53 @@ app.post("/stats", express.urlencoded({extended: true}), (req, res) => {
     });
 });
 
-const extras = {
-    runtime_mappings: {
-        FirstLetter: {
-            type: 'keyword',
-            script: {
-                lang: 'painless',
-                source: `
-                        Pattern p = /[^a-zA-Z]/;
-                        emit(p.matcher(doc['Relator'].value.substring(0, 1)).replaceAll('#'));
-                `
+function listAggregation(term){ // {extras, aggs}
+    console.log(aggs[term]);
+    return {
+        extras: {
+            runtime_mappings: {
+                FirstLetter: {
+                    type: 'keyword',
+                    script: {
+                        lang: 'painless',
+                        source: `
+                                Pattern p = /[^a-zA-Z]/;
+                                int c = 0;
+                                for( def value : doc['${term}'] ){
+                                    emit(p.matcher(value.substring(0, 1)).replaceAll('#'));
+                                    c++;
+                                    if( c == 100 ) break;
+                                }
+                        `
+                    }
+                }
             }
-        }
-    }
-}
-const relatoresAggs = {
-    Tribunal: aggs.Tribunal,
-    FirstLetter: {
-        terms: {
-            field: 'FirstLetter',
-            size: 26, // A-Z and #
         },
         aggs: {
-            Relator: {
+            Tribunal: aggs.Tribunal,
+            FirstLetter: {
                 terms: {
-                    field: 'Relator',
-                    size: 100000,
-                    order: {
-                        "_term": "asc"
-                    }
+                    field: 'FirstLetter',
+                    size: 26, // A-Z and #
                 },
                 aggs: {
-                    Tribunal: {
+                    [term]: {
                         terms: {
-                            field: 'Tribunal',
-                            size: 25,
+                            field: aggs[term].terms.field,  
+                            size: 65,
                             order: {
-                                "_term": "asc"
+                                _term: "asc",
+                            }
+                        },
+                        aggs: {
+                            Tribunal: {
+                                terms: {
+                                    field: 'Tribunal',
+                                    size: 25,
+                                    order: {
+                                        _term: "asc"
+                                    }
+                                }
                             }
                         }
                     }
@@ -263,23 +273,29 @@ const relatoresAggs = {
             }
         }
     }
-};
-app.get("/relatores", (req, res) => {
-    search(queryObject(req.query.q), [], 0, relatoresAggs, 0, extras).then(body => {
-        res.render("relatores", {q: req.query.q, aggs: body.aggregations, filters: {}});
+}
+
+app.get("/list", (req, res) => {
+    const term = req.query.term;
+    const { aggs, extras } = listAggregation(term);
+    search(queryObject(req.query.q), [], 0, aggs, 0, extras).then(body => {
+        res.render("list", {q: req.query.q, aggs: body.aggregations, filters: {}, term: term});
     }).catch(err => {
-        console.log(req.originalUrl, err.meta.body.error)
-        res.render("relatores", {q: req.query.q, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
+        console.log(req.originalUrl, err)
+        res.render("list", {q: req.query.q, error: err, aggs: {}, filters: {}, term: term, page: 0, pages: 0});
     });
 });
-app.post("/relatores", express.urlencoded({extended: true}), (req, res) => {
+
+app.post("/list", express.urlencoded({extended: true}), (req, res) => {
+    const term = req.query.term;
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.body);
-    search(queryObject(req.body.q), sfilters, 0, relatoresAggs, 0, extras).then(body => {
-        res.render("relatores", {q: req.body.q, aggs: body.aggregations, filters: filters, open: true});
+    const { aggs, extras } = listAggregation(term);
+    search(queryObject(req.body.q), sfilters, 0, aggs, 0, extras).then(body => {
+        res.render("list", {q: req.body.q, aggs: body.aggregations, filters: filters, term: term, open: true});
     }).catch(err => {
-        console.log("/relatores", err.meta.body.error)
-        res.render("relatores", {q: req.body.q, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
+        console.log(req.originalUrl, err.meta.body.error);
+        res.render("list", {q: req.body.q, error: err, aggs: {}, filters: {}, term: term, page: 0, pages: 0});
     });
 });
 
