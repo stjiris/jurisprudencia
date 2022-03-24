@@ -35,7 +35,7 @@ module.exports.index = (json) =>{
         }
         body[key] = json[key]
     }
-    return client.index({index: mapping.index, fixKnownErrors(body)});
+    return client.index({index: mapping.index, document: fixKnownErrors(body)});
 }
 
 module.exports.exists = (json) => 
