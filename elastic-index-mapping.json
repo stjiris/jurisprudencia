@@ -32,13 +32,19 @@
                 }
             },
             "Votação": {
-                "type": "keyword"
+                "type": "keyword",
+                "normalizer": "term_normalizer"
             },
             "Meio Processual": {
-                "type": "keyword"
+                "type": "keyword",
+                "normalizer": "term_normalizer"
             },
             "Número Convencional": {
-                "type": "keyword"
+                "type": "keyword",
+                "normalizer": "term_normalizer"
+            },
+            "Decisão": {
+                "type": "text"
             },
             "Sumário": {
                 "type": "text"
@@ -50,7 +56,8 @@
                 "type": "text"
             },
             "Tipo": {
-                "type": "keyword"
+                "type": "keyword",
+                "normalizer": "term_normalizer"
             },
             "Original URL": {
                 "type": "keyword"
