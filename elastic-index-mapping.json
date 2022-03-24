@@ -46,6 +46,9 @@
             "Texto": {
                 "type": "text"
             },
+            "Aditamento": {
+                "type": "text"
+            },
             "Tipo": {
                 "type": "keyword"
             },

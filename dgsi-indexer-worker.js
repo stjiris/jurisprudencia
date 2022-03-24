@@ -65,9 +65,10 @@ forEachCourtDecisionLink(async link => {
             "Texto": getTexto(table),
             "Tipo": "Acordão",
             "Original URL": link,
-            "Votação": getFirst(table, ["Votação"]),
-            "Meio Processual": getFirst(table, ["Meio Processual"]),
-            "Número Convencional": getFirst(table, ["Nº Convencional"]),
+            "Votação": getFirst(table, ["Votação"], link),
+            "Meio Processual": getFirst(table, ["Meio Processual"], link),
+            "Número Convencional": getFirst(table, ["Nº Convencional", "Secção"], link),
+            "Aditamento": getFirst(table, ["Aditamento"], link),
             "Origem": Origem
         }
         await indexer.index(body);
@@ -129,13 +130,13 @@ function getData(table){
     throw new Error("No date found")
 }
 
-function getFirst(table, keys){
+function getFirst(table, keys, link){
     for( let key of keys ){
         if( key in table ){
             return table[key].textContent.trim();
         }
     }
-    throw new Error("Unable to get any of the following keys: " + keys.join(", "))
+    console.error("WARN: No value found for " + keys.join(", ") + " in " + link)
 }
 
 async function forEachCourtDecisionLink( fn ){

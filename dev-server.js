@@ -66,7 +66,7 @@ let queryObject = (string, safe=false) => {
 }
 
 let search = (query, filters={pre: [], after: []}, page=0, saggs={Tribunal: aggs.Tribunal, MinAno: aggs.MinAno, MaxAno: aggs.MaxAno}, rpp=RESULTS_PER_PAGE, extras={}) => client.search({
-    index: 'jurisprudencia.0.0',
+    index: 'jurisprudencia.0.0.test',
     query: {
         bool: {
             must: query,
@@ -251,7 +251,7 @@ function listAggregation(term){ // {extras, aggs}
                 aggs: {
                     [term]: {
                         terms: {
-                            field: aggs[term].terms.field,  
+                            field: term,  
                             size: 65,
                             order: {
                                 _term: "asc",
@@ -289,7 +289,7 @@ app.get("/list", (req, res) => {
 app.post("/list", express.urlencoded({extended: true}), (req, res) => {
     const term = req.query.term;
     const sfilters = {pre: [], after: []};
-    const filters = populateFilters(sfilters, req.body);
+    const filters = populateFilters(sfilters, req.body, []);
     const { aggs, extras } = listAggregation(term);
     search(queryObject(req.body.q), sfilters, 0, aggs, 0, extras).then(body => {
         res.render("list", {q: req.body.q, aggs: body.aggregations, filters: filters, term: term, open: true});
