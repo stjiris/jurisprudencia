@@ -67,7 +67,7 @@ forEachCourtDecisionLink(async link => {
             "Original URL": link,
             "Votação": getFirst(table, ["Votação"], link),
             "Meio Processual": getFirst(table, ["Meio Processual"], link),
-            "Número Convencional": getFirst(table, ["Nº Convencional", "Secção"], link),
+            "Número Convencional": getFirst(table, ["Tribunal", "Nº Convencional", "Secção"], link), // STA tem tribunal (secção) e Nº convecional 
             "Aditamento": getFirst(table, ["Aditamento"], link),
             "Origem": Origem
         }
