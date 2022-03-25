@@ -53,6 +53,7 @@ init().then( async _ => {
                 "Espécie": especie,
                 "Decisão": "N.A.",
                 "Aditamento": "N.A.",
+                "Jurisprudência": "unknown",
                 "Origem": Origem
             }
             await index(body).catch(e => {

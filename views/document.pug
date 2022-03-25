@@ -15,9 +15,13 @@ block form
         mixin metadata(key)
             .d-flex.align-items-center.my-1(data-tribunal=source.Tribunal)
                 h5: a(href=`../?q=${key}:"${source[key]}"`) !{source[key]}
+        +metadata("Tribunal")
         +metadata("Relator")
         +metadata("Data")
-        +metadata("Tribunal")
+        +metadata("Votação")
+        +metadata("Meio Processual")
+        +metadata("Espécie")
+        +metadata("Secção")
         .d-flex.flex-column.align-items-right.justify-content-between(data-tribunal=source.Tribunal)
             h6: b Descritores:
             .d-flex.flex-column
@@ -37,8 +41,14 @@ block main
                 li O recurso não foi encontrado ou ainda não foi publicado neste arquivo
     else
         .row.p-2(data-tribunal=source.Tribunal)
+            h4.col-12.pb-2.trib-spacer Decisão
+            | !{source.Decisão}
+        .row.p-2(data-tribunal=source.Tribunal)
             h4.col-12.pb-2.trib-spacer Sumário 
             | !{source.Sumário}
+        .row.p-2(data-tribunal=source.Tribunal)
+            h4.col-12.pb-2.trib-spacer Aditamento
+            | !{source.Aditamento}
         .row.p-2(data-tribunal=source.Tribunal)
             h4.col-12.pb-2.trib-spacer Texto
             | !{source.Texto}

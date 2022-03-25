@@ -32,7 +32,7 @@ html(lang="en")
                         li.nav-item.py-1.px-2.mx-1
                             a.nav-link(href="/stats", class=currentPage=="stats"?"active":""): h5.m-0 Estatística
                         li.nav-item.py-1.px-2.mx-1
-                            a.nav-link(href="/relatores", class=currentPage=="relatores"?"active":""): h5.m-0 Relatores
+                            a.nav-link(href="/list", class=currentPage=="list"?"active":""): h5.m-0 Listas
         main.container#top
             if error 
                 pre.alert.alert-danger
@@ -53,14 +53,16 @@ html(lang="en")
                                                 small: i.bi-minimizemaximize
                                         .d-flex.flex-column.my-2
                                             -let tribunais = []
-                                            h5 Tribunal
+                                            .form-check.form-check-inline
+                                                input.form-check-input(type="checkbox", id="tribunais-all")
+                                                label.form-check-label(for="tribunais-all"): h5 Tribunal
                                             -let key = "Tribunal"
                                             for bucket in aggs[key].buckets
                                                 -let checked = !filters[key] || filters[key].indexOf(bucket.key) > -1
                                                 if checked
                                                     -tribunais.push(bucket.key)
                                                 .form-check.form-check-inline(data-tribunal=bucket.key)
-                                                    input.form-check-input(type="checkbox", name=key, value=bucket.key, checked=checked, id=bucket.key.replace(/\s/g, ""), hidden)
+                                                    input.form-check-input.tribunal-checkbox(type="checkbox", name=key, value=bucket.key, checked=checked, id=bucket.key.replace(/\s/g, ""), hidden)
                                                     label.form-check-label(for=bucket.key.replace(/\s/g, "")).d-flex.justify-content-between.align-items-center.w-100
                                                         span.d-block !{bucket.key} 
                                                         span.d-block (!{bucket.doc_count})
@@ -137,4 +139,31 @@ html(lang="en")
                         elem.innerHTML = text;
                     });
                 });
+
+                let overallCheckbox = document.getElementById("tribunais-all");
+                let checkboxes = document.getElementsByClassName("tribunal-checkbox");
+                let setOverallCheckboxState = () => {
+                    let checked = false;
+                    let indeterminate = false;
+                    let c = 0;
+                    for( let i = 0; i < checkboxes.length; i++ ) {
+                        if( checkboxes[i].checked ) {
+                            checked = true;
+                            c++;
+                        }
+                    }
+                    overallCheckbox.checked = checked;
+                    overallCheckbox.indeterminate = c < checkboxes.length && c > 0;
+                }
+                if( overallCheckbox ){
+                    setOverallCheckboxState();                    
+                    overallCheckbox.addEventListener("change", () => {
+                        for( let i = 0; i < checkboxes.length; i++ ) {
+                            checkboxes[i].checked = overallCheckbox.checked;
+                        }
+                    });
+                    for( let i = 0; i < checkboxes.length; i++ ) {
+                        checkboxes[i].addEventListener("change", setOverallCheckboxState);
+                    }
+                }
             })

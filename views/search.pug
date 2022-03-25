@@ -13,7 +13,7 @@ append form
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
         button.btn.w-100(type="submit", formaction=`/stats?q=${q || ""}`): u Ver estatísticas da pesquisa
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`/relatores?q=${q || ""}`): u Ver relatores da pesquisa
+        button.btn.w-100(type="submit", formaction=`/list?term=Relator&q=${q || ""}`): u Ver relatores da pesquisa
 
 block main
     if hits.length == 0
@@ -27,24 +27,33 @@ block main
                 li Verifique o termo pesquisado
     else
         .row.p-2
-            .col-12.d-none.d-lg-block.col-lg-4: h4 Processo
-            .col-12.d-none.d-lg-block.col-lg-8: h4 Sumário
+            .col-12.d-none.d-lg-block: h4 !{body.hits.total.value} Resultados:
         for doc in hits
             article.row(data-tribunal=doc._source.Tribunal)
-                .col-12.col-sm-4
-                        a(href=`/${doc._source.ECLI}`, target="_blank").d-block
-                            span #{doc._source.Processo}
-                        span.d-block #{doc._source.Relator}
-                        span.d-block #{doc._source.Data}
-                        span.d-block #{doc._source.Tribunal}
-                        if doc._source.Descritores.length > 0
-                            .d-flex.flex-column.mt-1
-                                b Descritores
-                                for d in doc._source.Descritores
-                                    span #{d}
-                .col-12.col-sm-8
-                    h5.d-block.d-lg-none.d-print-block.font-weight-bold.mt-2 Sumário
-                    .sumario !{doc._source.Sumário}
+                .col-12.d-flex.flex-wrap.py-2
+                    span.mx-2(style="color: var(--tribunal-color)") #{doc._source.Tipo} - #{doc._source.Tribunal} - #{doc._source.Secção}
+                    a(href=`/${doc._source.ECLI}`, target="_blank").d-block.mx-2
+                        span #{doc._source.Processo}
+                    span.mx-2 #{doc._source.Data}
+                .col-12 
+                    b Relator:&nbsp;
+                    span #{doc._source.Relator}
+                .col-12
+                    b Descritores:&nbsp;
+                    span #{doc._source.Descritores.join(", ")}
+                .col-12
+                    b Espécie:&nbsp;
+                    span #{doc._source["Espécie"]}
+                .col-12
+                    b Votação:&nbsp;
+                    span #{doc._source.Votação}
+                .col-12
+                    b Meio Processual:&nbsp;
+                    span #{doc._source["Meio Processual"]}
+                .col-12.pt-2: h5: b Decisão:
+                div.col-12 !{doc._source["Decisão"]}
+                .col-12.pt-2: h5: b Sumário:
+                div.col-12 !{doc._source["Sumário"]}
                 .break
     style.
         @media print{
@@ -74,7 +83,7 @@ block main
 
         article[data-tribunal] {
             position: relative;
-            max-height: 150px;
+            max-height: 300px;
             overflow: hidden;
             transition: 0.5s 0.3s;
             padding-bottom: 15px;

@@ -13,7 +13,7 @@ append form
     .d-flex.my-2.justify-content-center.align-items-center
         button#onclickgraph.btn.w-100(type="submit", formaction=`/?q=${q || ""}`): u Ver resultados da pesquisa
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`/relatores?q=${q || ""}`): u Ver relatores da pesquisa
+        button.btn.w-100(type="submit", formaction=`/list?term=Relator&q=${q || ""}`): u Ver relatores da pesquisa
 
 block main
     .row.p-2

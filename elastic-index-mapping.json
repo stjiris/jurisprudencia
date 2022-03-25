@@ -63,6 +63,10 @@
                 "type": "keyword",
                 "normalizer": "term_normalizer"
             },
+            "Jurisprudência": {
+                "type": "keyword",
+                "normalizer": "term_normalizer"
+            },
             "Original URL": {
                 "type": "keyword"
             },
