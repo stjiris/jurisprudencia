@@ -199,7 +199,11 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
     }
     if( body.MinAno ){
         filtersUsed.MinAno = body.MinAno;
-        filters.pre.push({
+        let when = "pre";
+        if( afters.indexOf("MinAno") != -1 ){
+            when = "after";
+        }
+        filters[when].push({
             range: {
                 Data: {
                     gte: body.MinAno,
@@ -210,7 +214,11 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
     }
     if( body.MaxAno ){
         filtersUsed.MaxAno = body.MaxAno;
-        filters.pre.push({
+        let when = "pre";
+        if( afters.indexOf("MaxAno") != -1 ){
+            when = "after";
+        }
+        filters[when].push({
             range: {
                 Data: {
                     lt: parseInt(body.MaxAno)+1 || new Date().getFullYear(),
@@ -299,15 +307,13 @@ function listAggregation(term){
     }
 }
 
-function groupByLetter(aggregations, ftribunais=[]){
+function groupByLetter(aggregations){
     const letters = {};
     for( let agg of aggregations ){
         let letter = agg.key.replace(/[^a-zA-Z]/g, "#")[0] || "N.A.";
         if( !letters[letter] ) letters[letter] = [];
         let tribunais = agg.Tribunal.buckets.map( o => o.key );
-        if( ftribunais.length == 0 || ftribunais.some(o => tribunais.findIndex(so => o == so) >= 0) ){
-            letters[letter].push({value: agg.key, Tribunais: tribunais});
-        }
+        letters[letter].push({value: agg.key, Tribunais: tribunais});
     }
     return letters
 }
@@ -327,7 +333,7 @@ app.post("/list", express.urlencoded({extended: true}), (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.body, []);
     search(queryObject(req.body.q), sfilters, 0, listAggregation(term), 0).then(body => {
-        res.render("list", {q: req.body.q, aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets, filters.Tribunal), filters: filters, term: term, open: true});
+        res.render("list", {q: req.body.q, aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: true});
     }).catch(err => {
         console.log(req.originalUrl, err.meta.body.error);
         res.render("list", {q: req.body.q, error: err, aggs: {}, letters: {}, filters: {}, term: term, page: 0, pages: 0});
