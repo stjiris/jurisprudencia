@@ -12,16 +12,19 @@ block form
     if source
         .d-block
             h4.d-inline #{source.Processo}
-        mixin metadata(key)
+        mixin metadata(key, show)
             .d-flex.align-items-center.my-1(data-tribunal=source.Tribunal)
-                h5: a(href=`../?q=${key}:"${source[key]}"`) !{source[key]}
+                if show
+                    b #{key}:&nbsp;
+                h5: a(href=`../?${key}=${source[key]}`) !{source[key]}
         +metadata("Tribunal")
         +metadata("Relator")
         +metadata("Data")
-        +metadata("Votação")
-        +metadata("Meio Processual")
-        +metadata("Espécie")
-        +metadata("Secção")
+        +metadata("Votação", true)
+        +metadata("Meio Processual", true)
+        +metadata("Espécie", true)
+        +metadata("Secção", true)
+        +metadata("Jurisprudência", true)
         .d-flex.flex-column.align-items-right.justify-content-between(data-tribunal=source.Tribunal)
             h6: b Descritores:
             .d-flex.flex-column

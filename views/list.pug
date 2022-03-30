@@ -36,7 +36,7 @@ block main
                                     span.p-1.m-1 !{a}
                     for obj in letter
                         .row.col-12.my-2.pb-2.align-items-center.term
-                            .col-4: a(href=`/?q=${term}:"${obj.value}"`) !{obj.value}
+                            .col-4: a(href=`/?${term}=${obj.value}`) !{obj.value}
                             .col-8.d-flex.flex-column
                                 for tribunal in obj.Tribunais
                                     span(data-tribunal=tribunal) !{tribunal}

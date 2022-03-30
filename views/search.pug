@@ -12,8 +12,6 @@ block printpageinfo
 append form
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
         button.btn.w-100(type="submit", formaction=`/stats?q=${q || ""}`): u Ver estatísticas da pesquisa
-    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`/list?term=Relator&q=${q || ""}`): u Ver relatores da pesquisa
 
 block main
     if hits.length == 0
@@ -30,30 +28,40 @@ block main
             .col-12.d-none.d-lg-block: h4 !{body.hits.total.value} Resultados:
         for doc in hits
             article.row(data-tribunal=doc._source.Tribunal)
-                .col-12.d-flex.flex-wrap.py-2
-                    span.mx-2(style="color: var(--tribunal-color)") #{doc._source.Tipo} - #{doc._source.Tribunal} - #{doc._source.Secção}
-                    a(href=`/${doc._source.ECLI}`, target="_blank").d-block.mx-2
-                        span #{doc._source.Processo}
-                    span.mx-2 #{doc._source.Data}
-                .col-12 
-                    b Relator:&nbsp;
-                    span #{doc._source.Relator}
+                .col-12.pt-2
+                    a(href=`/${doc._source.ECLI}`, target="_blank", style="color: var(--tribunal-color);").text-decoration-none !{doc._source.ECLI}
+                .col-12.d-flex.flex-wrap
+                    div.mx-1
+                        b Tribunal:&nbsp;
+                        span #{doc._source.Tribunal}&nbsp;
+                        span (#{doc._source.Secção})
+                    div.mx-1
+                        b Relator:&nbsp;
+                        span #{doc._source.Relator}
+                    div.mx-1
+                        b Data:&nbsp;
+                        span #{doc._source.Data}
+                .col-12.d-flex.flex-wrap
+                    div.mx-1
+                        b Espécie:&nbsp;
+                        span #{doc._source["Espécie"]}
+                    div.mx-1
+                        b Meio Processual:&nbsp;
+                        span #{doc._source["Meio Processual"]}
                 .col-12
-                    b Descritores:&nbsp;
-                    span #{doc._source.Descritores.join(", ")}
+                    div.mx-1
+                        b Descritores:&nbsp;
+                        span #{doc._source.Descritores.join(", ")}
                 .col-12
-                    b Espécie:&nbsp;
-                    span #{doc._source["Espécie"]}
-                .col-12
-                    b Votação:&nbsp;
-                    span #{doc._source.Votação}
-                .col-12
-                    b Meio Processual:&nbsp;
-                    span #{doc._source["Meio Processual"]}
-                .col-12.pt-2: h5: b Decisão:
-                div.col-12 !{doc._source["Decisão"]}
-                .col-12.pt-2: h5: b Sumário:
-                div.col-12 !{doc._source["Sumário"]}
+                    div.mx-1
+                        b Votação:&nbsp;
+                        span #{doc._source.Votação}
+                    div.mx-1.d-flex
+                        b Decisão:&nbsp;
+                        div !{doc._source.Decisão}
+                .col-12.pt-2
+                    h5: b Sumário:
+                    div.col-12 !{doc._source["Sumário"]}
                 .break
     style.
         @media print{

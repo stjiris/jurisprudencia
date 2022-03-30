@@ -86,25 +86,26 @@ const aggs = { // All possible aggregations, it should not be directly used, sea
                 _term: "asc"
             }
         }
+    },
+    "Jurisprudência": {
+        terms: {
+            field: 'Jurisprudência',
+            size: 65536,
+            order: {
+                _term: "asc"
+            }
+        }
     }
 }
 
 const RESULTS_PER_PAGE = 50;
 
-let queryObject = (string, safe=false) => {
+let queryObject = (string) => {
     if( !string ) return {
         match_all: {}
     };
-    if( safe ){
-        return {
-            multi_match: {
-                query: string, 
-                type: "cross_fields"
-            }
-        }
-    }
     return {
-        query_string: { // TODO: change to simple_query_string
+        simple_query_string: {
             query: string,
             default_operator: "AND"
         }
@@ -118,7 +119,7 @@ let search = (
     saggs={Tribunal: aggs.Tribunal, MinAno: aggs.MinAno, MaxAno: aggs.MaxAno}, // aggregations to be applied
     rpp=RESULTS_PER_PAGE, // results per page
     extras={}  // extra fields to aply to the search if needed
-    ) => client.search({
+) => client.search({
     index: 'jurisprudencia.0.0',
     query: {
         bool: {
@@ -148,14 +149,7 @@ let search = (
     else{
         return Promise.reject(e);
     }
-})
-
-app.get("/", (req, res) => search(queryObject(req.query.q)).then(body => {
-    res.render("search", {q: req.query.q, body: body, hits: body.hits.hits, aggs: body.aggregations, filters: {}, page: 0, pages: Math.ceil(body.hits.total.value/RESULTS_PER_PAGE)});
-}).catch(err => {
-    console.log(req.originalUrl, err)
-    res.render("search", {q: req.query.q, body: {}, hits: [], error: err, aggs: {}, filters: {}, page: 0, pages: 0});
-}));
+});
 
 const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters={pre: [], after: []}
     const filtersUsed = {}
@@ -170,14 +164,16 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
             if( afters.indexOf(aggName) != -1 ){
                 when = "after";
             }
-            if( aggName == "Tribunal" ){
-                filters[when].push({
-                    terms: {
-                        [aggObj[aggField].field]: filtersUsed[aggName]
-                    }
+            if( aggName == "Descritores" ){
+                filtersUsed[aggName].forEach(descritor => {
+                    filters[when].push({
+                        wildcard: {
+                            [aggObj[aggField].field]: { value: `*${descritor}*` }
+                        }
+                    });
                 });
             }
-            if( aggName == "Relator" ){
+            else if( aggName == "Relator" ){
                 filtersUsed[aggName].forEach(relator => {
                     filters[when].push({
                         wildcard: {
@@ -186,13 +182,11 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
                     });
                 });
             }
-            if( aggName == "Descritores" ){
-                filtersUsed[aggName].forEach(descritor => {
-                    filters[when].push({
-                        wildcard: {
-                            [aggObj[aggField].field]: { value: `*${descritor}*` }
-                        }
-                    });
+            else{
+                filters[when].push({
+                    terms: {
+                        [aggObj[aggField].field]: filtersUsed[aggName]
+                    }
                 });
             }
         }
@@ -230,17 +224,36 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
     return filtersUsed;
 }
 
-app.post("/", express.urlencoded({extended: true}), (req, res) => {
+app.get("/", (req, res) => {
     const sfilters = {pre: [], after: []};
-    const filters = populateFilters(sfilters, req.body);
-    let page = parseInt(req.body.page) || 0;
-    search(queryObject(req.body.q), sfilters, page).then(body => {
-        res.render("search", {q: req.body.q, body: body, hits: body.hits.hits, aggs: body.aggregations, filters: filters, page: page, pages: Math.ceil(body.hits.total.value/RESULTS_PER_PAGE), open: true});
-    }).catch(err => {
-        console.log(req.originalUrl, err)
-        res.render("search", {q: req.body.q, body: {}, hits: [], error: err, aggs: {}, filters: {}, page: 0, pages: 0});
-    });  
-})
+    const filtersUsed = populateFilters(sfilters, req.query);
+    let page = parseInt(req.query.page) || 0;
+    search(queryObject(req.query.q), sfilters, page).then(results => {
+        res.render("search", {
+            q: req.query.q, querystring: new URLSearchParams(req.query).toString(),            
+            body: results,
+            hits: results.hits.hits,
+            aggs: results.aggregations,
+            filters: filtersUsed,
+            page: page,
+            pages: Math.ceil(results.hits.total.value/RESULTS_PER_PAGE),
+            open: Object.keys(filtersUsed).length > 0
+        });
+    }).catch(e => {
+        console.log(e);
+        res.render("search", {
+            q: req.query.q, querystring: new URLSearchParams(req.query).toString(),
+            body: {},
+            hits: [],
+            aggs: {},
+            filters: {},
+            page: page,
+            pages: 0,
+            open: true,
+            error: e
+        });
+    });
+});
 
 const statsAggs = {
     Tribunal: aggs.Tribunal,
@@ -263,21 +276,13 @@ const statsAggs = {
     }
 }
 app.get("/stats", (req, res) => {
-    search(queryObject(req.query.q), [], 0, statsAggs, 0).then(body => {
-        res.render("stats", {q: req.query.q, aggs: body.aggregations, filters: {}});
-    }).catch(err => {
-        console.log(req.originalUrl, err)
-        res.render("stats", {q: req.query.q, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
-    });
-});
-app.post("/stats", express.urlencoded({extended: true}), (req, res) => {
     const sfilters = {pre: [], after: []};
-    const filters = populateFilters(sfilters, req.body, []);
-    search(queryObject(req.body.q), sfilters, 0, statsAggs, 0).then(body => {
-        res.render("stats", {q: req.body.q, aggs: body.aggregations, filters: filters, open: true});
+    const filters = populateFilters(sfilters, req.query, []);
+    search(queryObject(req.query.q), sfilters, 0, statsAggs, 0).then(body => {
+        res.render("stats", {q: req.query.q, querystring: new URLSearchParams(req.query).toString(), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
     }).catch(err => {
         console.log(req.originalUrl, err)
-        res.render("stats", {q: req.body.q, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
+        res.render("stats", {q: req.query.q, querystring: new URLSearchParams(req.query).toString(), error: err, aggs: {}, filters: {}, page: 0, pages: 0});
     });
 });
 
@@ -320,23 +325,13 @@ function groupByLetter(aggregations){
 
 app.get("/list", (req, res) => {
     const term = req.query.term || "Relator";
-    search(queryObject(req.query.q), [], 0, listAggregation(term), 0).then(body => {
-        res.render("list", {q: req.query.q, aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: {}, term: term});
+    const sfilters = {pre: [], after: []};
+    const filters = populateFilters(sfilters, req.query, []);
+    search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then(body => {
+        res.render("list", {q: req.query.q, querystring: new URLSearchParams(req.query).toString(), aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: Object.keys(filters).length > 0});
     }).catch(err => {
         console.log(req.originalUrl, err)
-        res.render("list", {q: req.query.q, error: err, aggs: {}, letters: {}, filters: {}, term: term, page: 0, pages: 0});
-    });
-});
-
-app.post("/list", express.urlencoded({extended: true}), (req, res) => {
-    const term = req.query.term || "Relator";
-    const sfilters = {pre: [], after: []};
-    const filters = populateFilters(sfilters, req.body, []);
-    search(queryObject(req.body.q), sfilters, 0, listAggregation(term), 0).then(body => {
-        res.render("list", {q: req.body.q, aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: true});
-    }).catch(err => {
-        console.log(req.originalUrl, err.meta.body.error);
-        res.render("list", {q: req.body.q, error: err, aggs: {}, letters: {}, filters: {}, term: term, page: 0, pages: 0});
+        res.render("list", {q: req.query.q, querystring: new URLSearchParams(req.query).toString(), error: err, aggs: {}, letters: {}, filters: {}, term: term});
     });
 });
 
@@ -364,7 +359,6 @@ app.get("/:ecli(ECLI:*)", (req, res) => {
 });
 
 app.get("/datalist", (req, res) => {
-    // id=relatores&agg=Relator&tribunais=
     let aggKey = req.query.agg;
     let agg = aggs[aggKey];
     let id = req.query.id || "";
@@ -373,18 +367,21 @@ app.get("/datalist", (req, res) => {
         return;
     }
     let finalAgg = {
-        significant_terms: agg.terms
+        significant_terms: {
+            field: agg.terms.field,
+            size: agg.terms.size
+        }
     }
     const sfilters = {pre: [], after: []};
     populateFilters(sfilters, req.query, [], []);
     search(queryObject(req.query.q), sfilters, 0, { [aggKey]: finalAgg}, 0).then(async body => {
         if( body.aggregations[aggKey].buckets.length < 10 ){
-            body = await search(queryObject(req.query.q), sfilters, 0, { [aggKey]: agg });
+            body = await search(queryObject(req.query.q), sfilters, 0, { [aggKey]: agg }, 0);
         }
-        res.render("datalist", {aggs: body.aggregations[aggKey].buckets, id: req.query.id});
+        res.render("datalist", {aggs: body.aggregations[aggKey].buckets, id: id});
     }).catch(err => {
         console.log(req.originalUrl, err.body.error);
-        res.render("datalist", {aggs: [], error: err, id: req.query.id});
+        res.render("datalist", {aggs: [], error: err, id: id});
     });
 });
 
