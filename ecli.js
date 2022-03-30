@@ -16,7 +16,8 @@ ECLI : PT : TRC : 2017 : 198.15.3GCACB.C1
 
 que corresponde a uma decisão proferida em Portugal, pelo Tribunal da Relação de Coimbra, em 2017, no processo 198.15.3GCACB
 */
-let matchEcli = (text) => text.match(/^ECLI:(?<country>PT):(?<court>[A-Z]{3}):(?<year>\d{4}):(?<number>([A-Z0-9]+\.?)+)$/);
+//let matchEcli = (text) => text.match(/^ECLI:(?<country>PT):(?<court>[A-Z]{3}):(?<year>\d{4}):(?<number>([A-Z0-9]+\.?)+)$/); // strictier version of ECLI (3 letters court code), year with 4 numbers, and number cannot have dots in a row
+let matchEcli = (text) => text.match(/^ECLI:(?<country>PT):(?<court>[A-Z]+):(?<year>\d+):(?<number>([A-Z0-9]*\.?)+)$/);
 let validate = (ecli) => !!matchEcli(ecli);
 
 class ECLI_Builder{
@@ -60,6 +61,10 @@ class ECLI_Builder{
             return new ECLI_Builder().setCountry(m.groups.country).setJurisdiction(m.groups.court).setYear(m.groups.year).setNumber(m.groups.number);
         }
         throw new Error("Invalid ECLI " + ecli)
+    }
+
+    static fromObject(obj){
+        return new ECLI_Builder().setCountry(obj.country).setJurisdiction(obj.jurisdiction).setYear(obj.year).setNumber(obj.number);
     }
 
 }

@@ -1,6 +1,10 @@
 const getUrl = (off=0, pp=100) => `https://jurisprudencia.csm.org.pt/items/loadItems?sorts%5BdataAcordao%5D=1&perPage=${pp}&offset=${off}`
 const https = require('https');
 const { JSDOM } = require('jsdom');
+const {ECLI_Builder} = require('./ecli');
+const {Client} = require('@elastic/elasticsearch');
+const esClient = new Client({ node: 'http://localhost:9200' });
+const fs = require('fs/promises');
 const httpsPromise = (url) => new Promise((resolve, reject) => {
     https.get(url, (res) => {
         let data = ''
@@ -17,7 +21,7 @@ const httpsPromise = (url) => new Promise((resolve, reject) => {
 
 async function forEachCSMRecord(fn){
     let offset = 0;
-    let perPage = 10;
+    let perPage = 500;
     let url = getUrl(offset, perPage);
     while(true){
         let { records, queryRecordCount } = await httpsPromise(url);
@@ -32,21 +36,35 @@ async function forEachCSMRecord(fn){
 }
 
 console.log("Starting...");
-forEachCSMRecord(record => JSDOM.fromURL(`https://jurisprudencia.csm.org.pt/ecli/${record.ecli}/`).then(dom => {
-        let meta = getChildRemoveTitle(dom, "#descriptors");
-        let summary = getChildRemoveTitle(dom, "#summary");
-        let intText = getChildRemoveTitle(dom, "#integral-text");
-        let parText = getChildRemoveTitle(dom, "#parcial-text");
-        if( parText.textContent.trim() != "Não disponível." ){
-            console.log(`${record.ecli} ${parText.textContent.trim()}`);
-        }
-    })).catch(e => console.log(e));
-
-function getChildRemoveTitle(dom, selector){
-    let child = dom.window.document.querySelector(selector);
-    let title = child.querySelector(".main-title");
-    if( title ){
-        title.remove();
+forEachCSMRecord(async record => {
+    let ECLI = ECLI_Builder.fromString(record.ecli);
+    if( await fs.readFile(`./data/${record.ecli}.html`).then(_ => true).catch(_ => false) ){ return false; }
+    if( await findEcli(ECLI) ){ return true; }
+    
+    let years = Object.values(record).filter(o => o.match(/\/\d{4}/g)).flatMap(o => o.match(/\/(\d{4})/g).map(s => s.substring(1)));
+    for(let year of years){
+        ECLI.setYear(year);
+        if( await findEcli(ECLI) ){ return true; }
     }
-    return child;
+    let dom = await JSDOM.fromURL(`https://jurisprudencia.csm.org.pt/ecli/${record.ecli}`);
+    years = dom.window.document.querySelector("#descriptors").textContent.match(/\/\d{4}/g).map(s => s.substring(1));
+    for(let year of years){
+        ECLI.setYear(year);
+        if( await findEcli(ECLI) ){ return true; }
+    }
+    await fs.writeFile(`./data/${record.ecli}.html`, dom.serialize());
+});
+
+async function findEcli(ecliObj){
+    let E = ECLI_Builder.fromObject(ecliObj);
+    E.setNumber(E.number.substr(0, Math.ceil(E.number.length/2)));
+    let res = await esClient.search({
+        index: 'jurisprudencia.0.0',
+        query: {
+            wildcard: {
+                ECLI: `${E.build()}*`
+            }
+        }
+    });
+    return res.hits.total.value > 0;
 }
