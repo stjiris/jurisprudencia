@@ -30,7 +30,7 @@ block main
             article.row(data-tribunal=doc._source.Tribunal)
                 .col-12.pt-2
                     a(href=`/${doc._source.ECLI}`, target="_blank", style="color: var(--tribunal-color);").text-decoration-none !{doc._source.ECLI}
-                .col-12.d-flex.flex-wrap
+                .col-12.d-flex.flex-wrap.my-1
                     div.mx-1
                         b Tribunal:&nbsp;
                         span #{doc._source.Tribunal}&nbsp;
@@ -41,26 +41,27 @@ block main
                     div.mx-1
                         b Data:&nbsp;
                         span #{doc._source.Data}
-                .col-12.d-flex.flex-wrap
+                .col-12.d-flex.flex-wrap.my-1
                     div.mx-1
                         b Espécie:&nbsp;
                         span #{doc._source["Espécie"]}
                     div.mx-1
                         b Meio Processual:&nbsp;
                         span #{doc._source["Meio Processual"]}
-                .col-12
+                .col-12.my-1
                     div.mx-1
                         b Descritores:&nbsp;
                         span #{doc._source.Descritores.join(", ")}
-                .col-12
+                .col-12.my-1
                     div.mx-1
                         b Votação:&nbsp;
                         span #{doc._source.Votação}
+                .col-12.my-1
                     div.mx-1.d-flex
                         b Decisão:&nbsp;
                         div !{doc._source.Decisão}
-                .col-12.pt-2
-                    h5: b Sumário:
+                details.col-12.my-1
+                    summary.mx-1: b.mouse-click Sumário:
                     div.col-12 !{doc._source["Sumário"]}
                 .break
     style.
@@ -91,16 +92,16 @@ block main
 
         article[data-tribunal] {
             position: relative;
-            max-height: 300px;
+            /*max-height: 300px;*/
             overflow: hidden;
             transition: 0.5s 0.3s;
             padding-bottom: 15px;
             margin-bottom: 10px;
         }
 
-        article[data-tribunal]:focus-within, article[data-tribunal]:hover {
+        /*article[data-tribunal]:focus-within, article[data-tribunal]:hover {
             max-height: 1000px;
-        }
+        }*/
 
         article[data-tribunal]::before {
             content: '';
@@ -112,7 +113,7 @@ block main
             bottom: 30px;
         }
         article[data-tribunal]::after {
-            content: "";
+            /*content: "";*/
             position: absolute; 
             top: 50%;
             bottom: 0;
