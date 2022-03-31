@@ -48,10 +48,13 @@ forEachCSMRecord(async record => {
         if( await findEcli(ECLI) ){ return true; }
     }
     let dom = await JSDOM.fromURL(`https://jurisprudencia.csm.org.pt/ecli/${record.ecli}`);
-    years = dom.window.document.querySelector("#descriptors").textContent.match(/\/\d{4}/g).map(s => s.substring(1));
-    for(let year of years){
-        ECLI.setYear(year);
-        if( await findEcli(ECLI) ){ return true; }
+    let meta = dom.window.document.querySelector("#descriptors");
+    if(meta){
+        years = dom.window.document.querySelector("#descriptors").textContent.match(/\/\d{4}/g).map(s => s.substring(1));
+        for(let year of years){
+            ECLI.setYear(year);
+            if( await findEcli(ECLI) ){ return true; }
+        }
     }
     await fs.writeFile(`./data/${record.ecli}.html`, dom.serialize());
 });
