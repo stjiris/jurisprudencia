@@ -37,7 +37,7 @@ async function forEachCSMRecord(fn){
 
 console.log("Starting...");
 forEachCSMRecord(async record => {
-    record.ecli = record.ecli.replace(":TCONS:", ":TCO:").replace(":TCONF:", ":COF:").replace(/ver\..*$/, "");
+    record.ecli = record.ecli.replace(":TCONS:", ":TCN:").replace(":TCONF:", ":COF:").replace(":TCAS:", ":TCA:").replace(":TCAN:",":TCN:").replace(/ver\..*$/, "").toUpperCase();
     let ECLI = ECLI_Builder.fromString(record.ecli);
     if( await fs.readFile(`./data/${record.ecli}.html`).then(_ => true).catch(_ => false) ){ return false; }
     if( await findEcli(ECLI) ){ return true; }
