@@ -12,7 +12,7 @@ const httpsPromise = (url) => new Promise((resolve, reject) => {
             data += chunk
         })
         res.on('end', () => {
-            resolve(JSON.parse(data))
+            resolve(data)
         })
     }).on('error', (e) => {
         reject(e)
@@ -24,7 +24,7 @@ async function forEachCSMRecord(fn){
     let perPage = 500;
     let url = getUrl(offset, perPage);
     while(true){
-        let { records, queryRecordCount } = await httpsPromise(url);
+        let { records, queryRecordCount } = await httpsPromise(url).then(JSON.parse);
         console.log(offset,"/", queryRecordCount);
         for(let r of records){
             await fn(r);
@@ -37,6 +37,7 @@ async function forEachCSMRecord(fn){
 
 console.log("Starting...");
 forEachCSMRecord(async record => {
+    let originalEcli = record.ecli;
     record.ecli = record.ecli.replace(":TCONS:", ":TCN:").replace(":TCONF:", ":COF:").replace(":TCAS:", ":TCA:").replace(":TCAN:",":TCN:").replace(/ver\..*$/, "").toUpperCase();
     let ECLI = ECLI_Builder.fromString(record.ecli);
     if( await fs.readFile(`./data/${record.ecli}.html`).then(_ => true).catch(_ => false) ){ return false; }
@@ -47,7 +48,12 @@ forEachCSMRecord(async record => {
         ECLI.setYear(year);
         if( await findEcli(ECLI) ){ return true; }
     }
-    let dom = await JSDOM.fromURL(`https://jurisprudencia.csm.org.pt/ecli/${record.ecli}`);
+    let html = await httpsPromise(`https://jurisprudencia.csm.org.pt/ecli/${originalEcli}`);
+    let dom = new JSDOM(html, {
+        url: `https://jurisprudencia.csm.org.pt/ecli/${originalEcli}`,
+        contentType: 'text/html',
+        referrer: 'https://jurisprudencia.csm.org.pt/ecli/'
+    });
     let meta = dom.window.document.querySelector("#descriptors");
     if(meta){
         years = dom.window.document.querySelector("#descriptors").textContent.match(/\/\d{4}/g).map(s => s.substring(1));

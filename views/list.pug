@@ -21,7 +21,7 @@ block main
         .col-12.d-none.d-lg-block.col-lg-8: h4 Tribunal(is)
     .row.p-2
         //pre: code !{JSON.stringify(aggs, null, 2)}
-        -let available = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(l => l in letters)
+        -let available = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(l => l in letters)
         for l of available
             -let letter = letters[l]
             if letter

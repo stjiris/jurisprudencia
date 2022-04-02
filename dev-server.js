@@ -95,6 +95,15 @@ const aggs = { // All possible aggregations, it should not be directly used, sea
                 _term: "asc"
             }
         }
+    },
+    "Processo": {
+        terms: {
+            field: 'Processo',
+            size: 65536,
+            order: {
+                _term: "asc"
+            }
+        }
     }
 }
 
@@ -141,14 +150,6 @@ let search = (
     track_total_hits: true,
     _source: ["ECLI", "Tribunal", "Processo", "Relator", "Data", "Descritores", "Votação", "Meio Processual", "Secção", "Espécie", "Tipo", "Decisão", "Sumário"],
     ...extras
-}).catch(e => {
-    if( e.message.indexOf("Reason: Failed to parse query") != -1 ){
-        console.log("Safe retrying after:", e.message);
-        return search(queryObject(`${query.query_string.query}`, true), filters, page, saggs, rpp, extras);
-    }
-    else{
-        return Promise.reject(e);
-    }
 });
 
 const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters={pre: [], after: []}
