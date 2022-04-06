@@ -386,6 +386,10 @@ app.get("/datalist", (req, res) => {
     });
 });
 
+app.get("/tiny-editor.js", (req, res) => {
+    res.sendFile(require.resolve("tiny-editor/dist/bundle.js"));
+});
+
 app.use(express.static(path.join(__dirname, "static")));
 
 app.listen(9100)

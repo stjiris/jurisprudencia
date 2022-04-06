@@ -1,6 +1,7 @@
 extends head.pug 
 block head 
     title Document !{ecli}
+    link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous")
 
 block printpageinfo
     h6 !{ecli}
@@ -54,7 +55,8 @@ block main
             | !{source.Aditamento}
         .row.p-2(data-tribunal=source.Tribunal)
             h4.col-12.pb-2.trib-spacer Texto
-            | !{source.Texto}
+            div(data-tiny-editor) !{source.Texto}
+    script(src="/tiny-editor.js")
     style.
         .trib-spacer{
             position: relative;
