@@ -28,14 +28,12 @@ module.exports.updateDocument = (source, query) =>
     })
 
 module.exports.index = (json) =>{
-    let body = {}
     for( let key in mapping.mappings.properties ){
         if( !(key in json) ){
             Promise.reject(`Missing key: ${key}`)
         }
-        body[key] = json[key]
     }
-    return client.index({index: mapping.index, document: fixKnownErrors(body)});
+    return client.index({index: mapping.index, document: fixKnownErrors(json)});
 }
 
 module.exports.exists = (json) => 

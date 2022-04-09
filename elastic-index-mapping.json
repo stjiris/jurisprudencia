@@ -1,6 +1,8 @@
 {
-    "index": "jurisprudencia.0.0",
+    "index": "jurisprudencia.1.0",
     "mappings": {
+        "dynamic_date_formats": ["dd/MM/yyyy"],
+        "date_detection": true,
         "properties": {
             "ECLI": {
                 "type": "keyword",

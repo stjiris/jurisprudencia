@@ -1,4 +1,4 @@
-const { JSDOM } = require("jsdom")
+const fetch = require('./util/fetch.js');
 const { Worker } = require("worker_threads")
 const { init } = require("./indexer")
 
@@ -7,10 +7,8 @@ console.log("This process will crawl through all the dgsi databases and insert e
 console.log("Finding relevant courts databases from www.dgsi.pt...")
 
 init().then( async _ => {
-    let dom = await JSDOM.fromURL("http://www.dgsi.pt/");
+    let dom = await fetch.dom("http://www.dgsi.pt/");
     let links = dom.window.document.querySelectorAll("a")
-    let courts = [];
-    f = true
     for( let l of links){
         let m = l.href.match(/http:\/\/www.dgsi.pt\/(?<trib_acron>[^/]*)\.nsf\?OpenDatabase$/) 
         if( m && l.textContent.match("Acórdãos")){

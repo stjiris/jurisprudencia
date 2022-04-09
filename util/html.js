@@ -29,13 +29,6 @@ function strip_empty_html(string){
         html = r;
         r = html.replace(regex, '');
     }
-    // Loop to remove font tags
-    let regex2 = /<\/?font>/g;
-    r = html.replace(regex2, '');
-    while( r != html ){
-        html = r;
-        r = html.replace(regex2, '');
-    }
     return r;
 }
 

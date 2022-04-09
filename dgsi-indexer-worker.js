@@ -1,58 +1,32 @@
-const { JSDOM, ResourceLoader } = require("jsdom");
+const { JSDOM } = require("jsdom");
 const { workerData } = require("worker_threads");
-const ecli = require('./ecli');
+const ECLI = require('./util/ecli');
 const indexer = require('./indexer');
-const { strip_empty_html } = require('./util')
-
-let sleep = (time) => new Promise(resolve => {
-    setTimeout(resolve, time);
-})
-
-let getPage = async (url) => {
-    let page = null;
-    while(page == null){
-        page = await JSDOM.fromURL(url).catch(e => {
-            log(`getPage(${url}): ${JSON.stringify(e)}`);
-        return null })
-        if( page == null ){
-            await sleep(Math.random()*1000)
-        }
-    }
-
-    return page;
-}
+const url2table = require('./url-to-table');
+const { strip_empty_html } = require('./util/html');
+const fetch = require('./util/fetch');
 
 let count = 0;
 
 const { Tribunal, TribunalCode, link } = workerData;
 const log = (msg) => console.log(`[WORKER ${TribunalCode}] ${msg}`)
 log(`${link} - ${Tribunal}`);
-let builder = new ecli.ECLI_Builder().setCountry("PT").setJurisdiction(TribunalCode).setYear("0000");
+let builder = new ECLI().setCountry("PT").setJurisdiction(TribunalCode).setYear("0000");
 const Origem = `dgsi-indexer-${TribunalCode}`;
 
+const IGNORE_KEYS = ["", "1", "Texto Integral", "Decisão Texto Integral", "Decisão", "Nº Convencional", "Privacidade", "Nº do Documento"]
+
 forEachCourtDecisionLink(async link => {
-    let page = await getPage(link+'&ExpandSection=1');
-    let tables = Array.from(page.window.document.querySelectorAll("table")).filter( o => o.parentElement.closest("table") == null );
-    let table = tables
-        .flatMap( table => 
-            Array.from(table.querySelectorAll("tr")).filter( row => row.closest("table") == table ) )
-        .filter( tr => tr.cells.length > 1 )
-        .reduce(
-            (acc, tr) => {
-                let key = tr.cells[0].textContent.replace(":","").trim()
-                let value = tr.cells[1];  
-                acc[key] = value;
-                return acc;
-            }, {})
+    let table = await url2table(link+'&ExpandSection=1');
     
     let processo = table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, "");
     if( await indexer.exists({"Tribunal": Tribunal,"Processo": processo, "Origem": Origem}) ){
         return;
     }
     try{
-        let Data = getData(table);
-        let datePT = USADateToPT(Data);
-        let year = USADateToYear(Data);
+        let Data = getData(table).replace(/-/g, '/');
+        let datePT = Data;
+        let year = Data.match(/(\d{4})$/)[1];
 
         let body = {
             "ECLI": builder.setYear(year).setNumber(processo).build(),
@@ -67,13 +41,26 @@ forEachCourtDecisionLink(async link => {
             "Original URL": link,
             "Votação": getFirst(table, ["Votação"], link),
             "Meio Processual": getFirst(table, ["Meio Processual"], link),
-            "Secção": getFirst(table, ["Tribunal", "Nº Convencional", "Secção"], link), // STA tem tribunal (secção) e Nº convecional 
+            "Secção": getFirst(table, ["Tribunal", "Secção", "Nº Convencional"], link), // STA tem tribunal (secção) e Nº convecional 
             "Espécie": getFirst(table, ["Espécie"], link),
             "Decisão": getDecisao(table),
             "Aditamento": getFirst(table, ["Aditamento"], link),
             "Jurisprudência": "unknown",
             "Origem": Origem
         }
+        // Add extra keys
+        for( let key in table ){
+            if( IGNORE_KEYS.indexOf(key) > -1 ){
+                continue;
+            }
+            else if( key.startsWith("Data") ){
+                body[key] = table[key].textContent.trim().replace(/-/g, '/');
+            }
+            else if( !(key in body) && !key.match(/Acórdãos \w+/) ){
+                body[key] = table[key].textContent.trim();
+            }
+        }
+
         await indexer.index(body);
         count++;
 
@@ -84,17 +71,6 @@ forEachCourtDecisionLink(async link => {
     }
 })
 
-// JSDOM doenst allow to Accept-Language: en-GB making the dgsi.pt dates come in MM/dd/yyyy format
-function USADateToPT(date){
-    let m = date.match(/(?<month>\d+)\/(?<day>\d+)\/(?<year>\d+)/)
-    return `${m.groups.day}/${m.groups.month}/${m.groups.year}`
-}
-
-function USADateToYear(date){
-    let m = date.match(/(?<month>\d+)\/(?<day>\d+)\/(?<year>\d+)/)
-    return m.groups.year
-}
-
 function getDescritores(table){
     if( table.Descritores ){
         // TODO: handle , and ; in descritores (e.g. "Ação Civil; Ação Civil e Administrativa") however dont split some cases (e.g. "Art 321º, do código civil")
@@ -103,28 +79,32 @@ function getDescritores(table){
     return []
 }
 
+function strip_empty_html_and_remove_font_tag(html){
+    return strip_empty_html(html).replace(/<\/?font>/g, '')
+}
+
 function getTexto(table){
     if( "Decisão Texto Integral" in table ){
-        return strip_empty_html(table["Decisão Texto Integral"].innerHTML)
+        return strip_empty_html_and_remove_font_tag(table["Decisão Texto Integral"].innerHTML)
     }
     if( "Texto Integral" in table ){
-        return strip_empty_html(table["Texto Integral"].innerHTML)
+        return strip_empty_html_and_remove_font_tag(table["Texto Integral"].innerHTML)
     }
-    return "N.A.";
+    return null;
 }
 
 function getSumario(table){
     if( "Sumário" in table ){
-        return strip_empty_html(table["Sumário"].innerHTML)
+        return strip_empty_html_and_remove_font_tag(table["Sumário"].innerHTML)
     }
-    return "N.A.";
+    return null;
 }
 
 function getDecisao(table){
     if( "Decisão" in table ){
-        return strip_empty_html(table["Decisão"].innerHTML)
+        return strip_empty_html_and_remove_font_tag(table["Decisão"].innerHTML)
     }
-    return "N.A.";
+    return null;
 }
 
 function getData(table){
@@ -137,7 +117,7 @@ function getData(table){
     if( "Data da Reclamação" in table ){
         return table["Data da Reclamação"].textContent.trim();
     }
-    throw new Error("No date found")
+    return null;
 }
 
 function getFirst(table, keys, link){
@@ -146,7 +126,7 @@ function getFirst(table, keys, link){
             return table[key].textContent.trim();
         }
     }
-    return "N.A.";
+    return null;
 }
 
 async function forEachCourtDecisionLink( fn ){
@@ -154,7 +134,7 @@ async function forEachCourtDecisionLink( fn ){
     let start = 1;
     let currurl = link;
     while( true ){
-        let page = await getPage(currurl);
+        let page = await fetch.dom(currurl);
         let anchorList = Array.from(page.window.document.querySelectorAll("a"))
         let next = anchorList.find( l => l.textContent == "Seguinte" ).href
         let courtList = anchorList.map(a => a.href).filter(u => u.match(/http:\/\/www\.dgsi\.pt\/(?<trib_acor>.*)\.nsf\/(?<hashsjt>.*)\/(?<hashid>.*)\?OpenDocument/))

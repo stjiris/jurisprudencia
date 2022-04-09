@@ -1,13 +1,12 @@
 const { JSDOM } = require("jsdom")
-const { Worker } = require("worker_threads")
 const { init, exists, index } = require("./indexer")
-const ecli = require("./ecli")
-const { strip_empty_html } = require("./util")
+const ECLI = require("./util/ecli")
+const { strip_empty_html } = require("./util/html")
 
 const Origem = "tcon-indexer"
 const Tribunal = "Tribunal Constitucional"
 const TribunalCode = "TCO"
-const builder = new ecli.ECLI_Builder().setCountry("PT").setJurisdiction(TribunalCode);
+const builder = new ECLI().setCountry("PT").setJurisdiction(TribunalCode);
 
 
 console.log("This process will crawl through all the Tribunal Constitucional acordãos and insert each process in the current elastic search instance.")

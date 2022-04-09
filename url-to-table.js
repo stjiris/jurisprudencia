@@ -1,42 +1,6 @@
-let {JSDOM} = require("jsdom");
-let https = require('https');
-let http = require('http');
-const { URL } = require("url");
+let fetch = require("./util/fetch");
 
-let sleep = (time) => new Promise(resolve => setTimeout(resolve, time))
-let getHtml = (url) => new Promise((resolve, reject) => {
-    let urlObj = new URL(url);
-    let resFunction = (res) => {
-        let data = "";
-        res.setEncoding('utf8');
-        res.on('data', (d) => data += d);
-        res.on('end', () => {
-            resolve(data);
-        });
-    }
-    let headers = {
-        'Accept': 'text/html,application/xhtml+xml,application/xml',
-        'Accept-Language': 'pt-PT,pt;q=0.9',
-        'Accept-Charset': 'utf-8'
-    }
-    if( urlObj.protocol == "https:" ){
-        https.get(url, {headers}, resFunction).on('error', reject);
-    } else {
-        http.get(url, {headers}, resFunction).on('error', reject);
-    }
-});
-
-let getPage = (url) => new Promise(async resolve => {
-    let html = await getHtml(url).catch( e => null )
-    let seconds = 5;
-    while(html == null){
-        console.log(`getPage(${url}): Retrying in ${seconds}s`);
-        await sleep(seconds*1000);
-        seconds *= 2;
-        html  = await getHtml(url).catch(e => null);
-    }
-    resolve(new JSDOM(html, { url }));
-});
+let getHTMLPage = (url) => fetch.dom(url);
 
 let parsers = []
 let addParser = (regex, lambda) => {
@@ -49,7 +13,7 @@ addParser(/http:\/\/www\.dgsi\.pt\/(?<tribcod>.*)\.nsf\/(?<hashtrib>.*)\/(?<hash
         .filter( tr => tr.cells.length > 1 )
         .reduce((acc, tr) => {
                 let key = tr.cells[0].textContent.replace(":","").trim()
-                let value = tr.cells[1];  
+                let value = tr.cells[1];
                 acc[key] = value;
                 return acc;
         }, {});
@@ -65,8 +29,8 @@ addParser(/jurisprudencia.csm.org.pt\/ecli\/ECLI:PT:(?<tribcod>[^:]*):(?<year>\d
     }
     table["Sumário"] = page.window.document.querySelector("#summary");
     table["Sumário"].querySelector('.main-title').remove();
-    table["Texto"] = page.window.document.querySelector("#integral-text");
-    table["Texto"].querySelector('.main-title').remove();
+    table["Decisão Texto Integral"] = page.window.document.querySelector("#integral-text");
+    table["Decisão Texto Integral"].querySelector('.main-title').remove();
     return table;
 })
 
@@ -74,7 +38,7 @@ module.exports = async function(url){
     for(let {regex, lambda} of parsers){
         let match = url.match(regex);
         if(match){
-            let page = await getPage(url);
+            let page = await getHTMLPage(url);
             let table = lambda(page, url, match, {});
             return table;
         }

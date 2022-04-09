@@ -10,14 +10,17 @@ block headerinput
     h4(style="color: var(--color-white);") !{ecli}
 
 block form
+    -let using = []
     if source
         .d-block
             h4.d-inline #{source.Processo}
         mixin metadata(key, show)
-            .d-flex.align-items-center.my-1(data-tribunal=source.Tribunal)
-                if show
-                    b #{key}:&nbsp;
-                h5: a(href=`../?${key}=${source[key]}`) !{source[key]}
+            -using.push(key)
+            if source[key]
+                .d-flex.align-items-center.my-1(data-tribunal=source.Tribunal)
+                    if show
+                        b #{key}:&nbsp;
+                    h5: a(href=`../?${key}=${source[key]}`) !{source[key]}
         +metadata("Tribunal")
         +metadata("Relator")
         +metadata("Data")
@@ -30,7 +33,7 @@ block form
             h6: b Descritores:
             .d-flex.flex-column
                 for d in source.Descritores
-                    a(href=`../?q=Descritores:"${d}"`) !{d}
+                    a(href=`../?Descritores="${d}"`) !{d}
         .d-flex.align-items-center.my-2(data-tribunal=source.Tribunal)
             h6: a(href=source["Original URL"]).d-flex.align-items-center Original
 
@@ -44,6 +47,24 @@ block main
             ol
                 li O recurso não foi encontrado ou ainda não foi publicado neste arquivo
     else
+        .row.p-2(data-tribunal=source.Tribunal)
+            -using.push("Decisão")
+            -using.push("Sumário")
+            -using.push("Aditamento")
+            -using.push("Texto")
+            -using.push("ECLI")
+            -using.push("Processo")
+            -using.push("Descritores")
+            -using.push("Origem")
+            -using.push("Original URL")
+            -using.push("Tipo")
+            -using.push("Data do Acordão")
+            h4.col-12.pb-2.trib-spacer Outros Campos 
+            for key of Object.keys(source)
+                if using.indexOf(key) == -1
+                    h5
+                        b !{key}: 
+                        | !{source[key]}
         .row.p-2(data-tribunal=source.Tribunal)
             h4.col-12.pb-2.trib-spacer Decisão
             | !{source.Decisão}

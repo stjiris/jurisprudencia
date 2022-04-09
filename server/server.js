@@ -129,7 +129,7 @@ let search = (
     rpp=RESULTS_PER_PAGE, // results per page
     extras={}  // extra fields to aply to the search if needed
 ) => client.search({
-    index: 'jurisprudencia.0.0',
+    index: 'jurisprudencia.1.0',
     query: {
         bool: {
             must: query,
@@ -339,7 +339,7 @@ app.get("/list", (req, res) => {
 app.get("/:ecli(ECLI:*)", (req, res) => {
     let ecli = req.params.ecli;
     client.search({
-        index: 'jurisprudencia.0.0',
+        index: 'jurisprudencia.1.0',
         body: {
             query: {
                 term: {
