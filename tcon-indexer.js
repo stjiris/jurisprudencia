@@ -10,7 +10,7 @@ const builder = new ECLI().setCountry("PT").setJurisdiction(TribunalCode);
 
 
 console.log("This process will crawl through all the Tribunal Constitucional acordãos and insert each process in the current elastic search instance.")
-console.log("Finding relevant courts databases from www.dgsi.pt...")
+console.log("Finding relevant courts databases from https://www.tribunalconstitucional.pt/tc/acordaos/...")
 
 init().then( async _ => {
     let dom = await JSDOM.fromURL("https://www.tribunalconstitucional.pt/tc/acordaos/");
