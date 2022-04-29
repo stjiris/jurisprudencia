@@ -8,7 +8,8 @@ const fixes = {
     "http://www.dgsi.pt/jtre.nsf/134973db04f39bf2802579bf005f080b/32227fea7dac58e4802581d900341950?OpenDocument": {Data: "26/10/2017", "Data do Acórdão": "26/10/2017"},
     "http://www.dgsi.pt/jtca.nsf/170589492546a7fb802575c3004c6d7d/f4e14249caaf440580257685005a67ad?OpenDocument": {Data: "03/12/2009", "Data do Acórdão": "03/12/2009"},
     "http://www.dgsi.pt/jtca.nsf/170589492546a7fb802575c3004c6d7d/c46ce01b55ca0f7480257760005a89fe?OpenDocument": {Data: "08/07/2010", "Data do Acórdão": "08/07/2010"},
-    "http://www.dgsi.pt/jtrp.nsf/56a6e7121657f91e80257cda00381fdf/ea09f737fc55389b80257290003ba162?OpenDocument": {Relator: "PEDRO M MENEZES"}
+    "http://www.dgsi.pt/jtrp.nsf/56a6e7121657f91e80257cda00381fdf/ea09f737fc55389b80257290003ba162?OpenDocument": {Relator: "PEDRO M MENEZES"},
+    "https://www.tribunalconstitucional.pt/tc/acordaos/20220123.html": {Data: "03/02/2022"}
 }
 
 module.exports = (jsonBody) => {
