@@ -4,6 +4,8 @@ const client = new Client({ node: 'http://localhost:9200' });
 const mapping = require('./elastic-index-mapping.json');
 const fixKnownErrors = require('./fix-known-errors');
 
+module.exports.mapping = mapping;
+
 module.exports.init = async (removeOld=false) => {
     if( removeOld ) await client.indices.delete({index: mapping.index})
     let ex = await client.indices.exists({index: mapping.index})
@@ -27,14 +29,7 @@ module.exports.updateDocument = (source, query) =>
         conflicts: "proceed"
     })
 
-module.exports.index = (json) =>{
-    for( let key in mapping.mappings.properties ){
-        if( !(key in json) ){
-            Promise.reject(`Missing key: ${key}`)
-        }
-    }
-    return client.index({index: mapping.index, document: fixKnownErrors(json)});
-}
+module.exports.index = (json) => client.index({index: mapping.index, document: fixKnownErrors(json)});
 
 module.exports.exists = (json) => 
     client.count({

@@ -64,6 +64,23 @@ block main
                     summary.mx-1: b.mouse-click Sumário:
                     div.col-12 !{doc._source["Sumário"]}
                 .break
+    script.
+        // Close all summary elements
+        function closeAllSummaries() {
+            var allSummaries = document.getElementsByTagName('summary');
+            for (var i = 0; i < allSummaries.length; i++) {
+                allSummaries[i].parentNode.removeAttribute('open');
+            }
+        }
+        // Open all summary elements
+        function openAllSummaries() {
+            var allSummaries = document.getElementsByTagName('summary');
+            for (var i = 0; i < allSummaries.length; i++) {
+                allSummaries[i].parentNode.setAttribute('open', true);
+            }
+        }
+        addEventListener('beforeprint', openAllSummaries);
+        addEventListener('afterprint', closeAllSummaries);
     style.
         @media print{
             article[data-tribunal] {

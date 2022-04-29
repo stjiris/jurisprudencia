@@ -21,14 +21,11 @@ block form
                     if show
                         b #{key}:&nbsp;
                     h5: a(href=`../?${key}=${source[key]}`) !{source[key]}
-        +metadata("Tribunal")
-        +metadata("Relator")
-        +metadata("Data")
-        +metadata("Votação", true)
-        +metadata("Meio Processual", true)
-        +metadata("Espécie", true)
-        +metadata("Secção", true)
-        +metadata("Jurisprudência", true)
+        for key in Object.keys(source)
+            if key == "ECLI" || key == "Processo" || key == "Original URL" || key == "Descritores"
+                continue
+            else if key in aggs
+                +metadata(key, true)
         .d-flex.flex-column.align-items-right.justify-content-between(data-tribunal=source.Tribunal)
             h6: b Descritores:
             .d-flex.flex-column
@@ -47,37 +44,11 @@ block main
             ol
                 li O recurso não foi encontrado ou ainda não foi publicado neste arquivo
     else
-        .row.p-2(data-tribunal=source.Tribunal)
-            -using.push("Decisão")
-            -using.push("Sumário")
-            -using.push("Aditamento")
-            -using.push("Texto")
-            -using.push("ECLI")
-            -using.push("Processo")
-            -using.push("Descritores")
-            -using.push("Origem")
-            -using.push("Original URL")
-            -using.push("Tipo")
-            -using.push("Data do Acordão")
-            h4.col-12.pb-2.trib-spacer Outros Campos 
-            for key of Object.keys(source)
-                if using.indexOf(key) == -1
-                    h5
-                        b !{key}: 
-                        | !{source[key]}
-        .row.p-2(data-tribunal=source.Tribunal)
-            h4.col-12.pb-2.trib-spacer Decisão
-            | !{source.Decisão}
-        .row.p-2(data-tribunal=source.Tribunal)
-            h4.col-12.pb-2.trib-spacer Sumário 
-            | !{source.Sumário}
-        .row.p-2(data-tribunal=source.Tribunal)
-            h4.col-12.pb-2.trib-spacer Aditamento
-            | !{source.Aditamento}
-        .row.p-2(data-tribunal=source.Tribunal)
-            h4.col-12.pb-2.trib-spacer Texto
-            div(data-tiny-editor) !{source.Texto}
-    script(src="/tiny-editor.js")
+        for key of Object.keys(source)
+            if !(key in aggs)
+                .row.p-2(data-tribunal=source.Tribunal)
+                    h4.col-12.pb-2.trib-spacer !{key}
+                    | !{source[key]}
     style.
         .trib-spacer{
             position: relative;

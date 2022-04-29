@@ -8,6 +8,7 @@ const sleep = (time) => new Promise(resolve => setTimeout(resolve, time))
 const fetch = module.exports = (url, options={}) => new Promise((resolve, reject) => {
     let urlObj = new URL(url);
     let resFunction = (res) => {
+        res.setEncoding('utf-8');
         let data = "";
         res.on('data', (d) => data += d);
         res.on('end', () => {

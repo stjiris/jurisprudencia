@@ -14,37 +14,23 @@ log(`${link} - ${Tribunal}`);
 let builder = new ECLI().setCountry("PT").setJurisdiction(TribunalCode).setYear("0000");
 const Origem = `dgsi-indexer-${TribunalCode}`;
 
-const IGNORE_KEYS = ["", "1", "Texto Integral", "Decisão Texto Integral", "Decisão", "Nº Convencional", "Privacidade", "Nº do Documento"]
+const IGNORE_KEYS = ["", "1"]
 
 forEachCourtDecisionLink(async link => {
     let table = await url2table(link+'&ExpandSection=1');
     
-    let processo = table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, "");
-    if( await indexer.exists({"Tribunal": Tribunal,"Processo": processo, "Origem": Origem}) ){
-        return;
-    }
     try{
-        let Data = getData(table).replace(/-/g, '/');
-        let datePT = Data;
-        let year = Data.match(/(\d{4})$/)[1];
+        let processo = table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, "");
+        if( await indexer.exists({"Tribunal": Tribunal,"Processo": processo, "Origem": Origem}) ){
+            return;
+        }
+        let year = 0;
 
         let body = {
-            "ECLI": builder.setYear(year).setNumber(processo).build(),
             "Tribunal": Tribunal,
-            "Processo": processo,
-            "Relator": table.Relator.textContent.trim(),
-            "Data": datePT,
-            "Descritores": getDescritores(table),
-            "Sumário": getSumario(table),
-            "Texto": getTexto(table),
+            "Código Tribunal": TribunalCode,
             "Tipo": "Acórdão",
             "Original URL": link,
-            "Votação": getFirst(table, ["Votação"], link),
-            "Meio Processual": getFirst(table, ["Meio Processual"], link),
-            "Secção": getFirst(table, ["Tribunal", "Secção", "Nº Convencional"], link), // STA tem tribunal (secção) e Nº convecional 
-            "Espécie": getFirst(table, ["Espécie"], link),
-            "Decisão": getDecisao(table),
-            "Aditamento": getFirst(table, ["Aditamento"], link),
             "Jurisprudência": "unknown",
             "Origem": Origem
         }
@@ -53,13 +39,25 @@ forEachCourtDecisionLink(async link => {
             if( IGNORE_KEYS.indexOf(key) > -1 ){
                 continue;
             }
+            else if( key == "Descritores" ){
+                body["Descritores"] = getDescritores(table)
+            }
             else if( key.startsWith("Data") ){
                 body[key] = table[key].textContent.trim().replace(/-/g, '/');
+                if( !year ){
+                    year = parseInt(body[key].split('/')[2]);
+                }
             }
             else if( !(key in body) && !key.match(/Acórdãos \w+/) ){
-                body[key] = table[key].textContent.trim();
+                if( key in indexer.mapping.mappings.properties ){
+                    body[key] = table[key].textContent.trim();
+                }
+                else{
+                    body[key] = strip_empty_html_and_remove_font_tag(table[key].innerHTML);
+                }
             }
         }
+        body["ECLI"] = builder.setNumber(processo).setYear(year).build();
 
         await indexer.index(body);
         count++;

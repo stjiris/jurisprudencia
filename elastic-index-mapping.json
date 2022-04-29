@@ -2,6 +2,26 @@
     "index": "jurisprudencia.1.0",
     "mappings": {
         "dynamic_date_formats": ["dd/MM/yyyy"],
+        "dynamic_templates": [
+            {
+                "arbitrary_date_fields": {
+                    "match_mapping_type": "date",
+                    "mapping": {
+                        "type": "date",
+                        "format": "dd/MM/yyyy",
+                        "copy_to": "Data"
+                    }
+                }
+            },
+            {
+                "arbitrary_text_fields": {
+                    "match_mapping_type": "string",
+                    "mapping": {
+                      "type": "text"
+                    }
+                }
+            }
+        ],
         "date_detection": true,
         "properties": {
             "ECLI": {
@@ -11,6 +31,9 @@
             "Tribunal": {
                 "type": "keyword"
             },
+            "Código Tribunal": {
+                "type": "keyword"
+            },
             "Processo": {
                 "type": "keyword",
                 "normalizer": "term_normalizer"
@@ -18,10 +41,6 @@
             "Relator": {
                 "type": "keyword",
                 "normalizer": "term_normalizer"
-            },
-            "Data": {
-                "type": "date",
-                "format": "dd/MM/yyyy"
             },
             "Descritores": {
                 "type": "text",
@@ -44,18 +63,6 @@
             "Secção": {
                 "type": "keyword",
                 "normalizer": "term_normalizer"
-            },
-            "Decisão": {
-                "type": "text"
-            },
-            "Sumário": {
-                "type": "text"
-            },
-            "Texto": {
-                "type": "text"
-            },
-            "Aditamento": {
-                "type": "text"
             },
             "Espécie": {
                 "type": "keyword",

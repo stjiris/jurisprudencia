@@ -7,29 +7,8 @@ const path = require('path');
 app.set('view engine', 'pug');
 app.set('views', './views');
 
-const aggs = { // All possible aggregations, it should not be directly used, search() uses a subset by default
-    Tribunal: {
-        terms: {
-            field: 'Tribunal',
-            size: 20,
-            order: {
-                _term: "asc"
-            },
-            min_doc_count: 0
-        }
-    },
-    Relator: {
-        terms: {
-            field: 'Relator',
-            size: 65536
-        }
-    },
-    Descritores: {
-        terms: {
-            field: 'Descritores.keyword',
-            size: 65536
-        }
-    },
+const {mappings: {properties}} = require('../elastic-index-mapping.json');
+const aggs = {
     MinAno: {
         min: {
             field: 'Data',
@@ -41,67 +20,15 @@ const aggs = { // All possible aggregations, it should not be directly used, sea
             field: 'Data',
             format: 'yyyy'
         }
-    },
-    "Votação": {
+    }
+};
+for( p in properties ){
+    aggs[p] = {
         terms: {
-            field: 'Votação',
+            field: p,
             size: 65536,
             order: {
-                _term: "asc"
-            }
-        }
-    },
-    "Meio Processual": {
-        terms: {
-            field: 'Meio Processual',
-            size: 65536,
-            order: {
-                _term: "asc"
-            }
-        }
-    },
-    "Secção": {
-        terms: {
-            field: 'Secção',
-            size: 65536,
-            order: {
-                _term: "asc"
-            }
-        }
-    },
-    "Espécie": {
-        terms: {
-            field: 'Espécie',
-            size: 65536,
-            order: {
-                _term: "asc"
-            }
-        }
-    },
-    "Tipo": {
-        terms: {
-            field: 'Tipo',
-            size: 65536,
-            order: {
-                _term: "asc"
-            }
-        }
-    },
-    "Jurisprudência": {
-        terms: {
-            field: 'Jurisprudência',
-            size: 65536,
-            order: {
-                _term: "asc"
-            }
-        }
-    },
-    "Processo": {
-        terms: {
-            field: 'Processo',
-            size: 65536,
-            order: {
-                _term: "asc"
+                _term: "asc",
             }
         }
     }
@@ -144,9 +71,9 @@ let search = (
     aggs: saggs,
     size: rpp,
     from: page*rpp,
-    sort: [
+    /*sort: [
         { Data: "desc" }
-    ],
+    ],*/
     track_total_hits: true,
     _source: ["ECLI", "Tribunal", "Processo", "Relator", "Data", "Descritores", "Votação", "Meio Processual", "Secção", "Espécie", "Tipo", "Decisão", "Sumário"],
     ...extras
@@ -316,7 +243,7 @@ function listAggregation(term){
 function groupByLetter(aggregations){
     const letters = {};
     for( let agg of aggregations ){
-        let letter = agg.key.replace(/[^a-zA-Z]/g, "#")[0] || "N.A.";
+        let letter = (agg.key.replace(/[^a-zA-Z]/g, "#")[0] || "N.A.").toUpperCase();
         if( !letters[letter] ) letters[letter] = [];
         let tribunais = agg.Tribunal.buckets.map( o => o.key );
         letters[letter].push({value: agg.key, Tribunais: tribunais});
@@ -351,7 +278,7 @@ app.get("/:ecli(ECLI:*)", (req, res) => {
         if( body.hits.total.value == 0 ){
             res.render("document", {ecli});
         } else {
-            res.render("document", {ecli, source: body.hits.hits[0]._source});
+            res.render("document", {ecli, source: body.hits.hits[0]._source, aggs});
         }
     }).catch(err => {
         console.log(req.originalUrl, err);
@@ -368,7 +295,7 @@ app.get("/datalist", (req, res) => {
         return;
     }
     let finalAgg = {
-        significant_terms: {
+        terms: {
             field: agg.terms.field,
             size: agg.terms.size
         }
@@ -376,6 +303,7 @@ app.get("/datalist", (req, res) => {
     const sfilters = {pre: [], after: []};
     populateFilters(sfilters, req.query, [], []);
     search(queryObject(req.query.q), sfilters, 0, { [aggKey]: finalAgg}, 0).then(async body => {
+        console.log(body)
         if( body.aggregations[aggKey].buckets.length < 10 ){
             body = await search(queryObject(req.query.q), sfilters, 0, { [aggKey]: agg }, 0);
         }
@@ -386,10 +314,8 @@ app.get("/datalist", (req, res) => {
     });
 });
 
-app.get("/tiny-editor.js", (req, res) => {
-    res.sendFile(require.resolve("tiny-editor/dist/bundle.js"));
-});
-
+app.use('/tinymce', express.static(path.join(require.resolve('tinymce'),'..')));
 app.use(express.static(path.join(__dirname, "static")));
+
 
 app.listen(9100)
