@@ -29,7 +29,7 @@ block form
         .d-flex.flex-column.align-items-right.justify-content-between(data-tribunal=source.Tribunal)
             h6: b Descritores:
             .d-flex.flex-column
-                for d in source.Descritores
+                for d in (source.Descritores||[])
                     a(href=`../?Descritores="${d}"`) !{d}
         .d-flex.align-items-center.my-2(data-tribunal=source.Tribunal)
             h6: a(href=source["Original URL"]).d-flex.align-items-center Original

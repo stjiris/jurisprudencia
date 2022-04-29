@@ -48,10 +48,11 @@ block main
                     div.mx-1
                         b Meio Processual:&nbsp;
                         span #{doc._source["Meio Processual"]}
-                .col-12.my-1
-                    div.mx-1
-                        b Descritores:&nbsp;
-                        span #{doc._source.Descritores.join(", ")}
+                if Array.isArray(doc._source.Descritores)
+                    .col-12.my-1
+                        div.mx-1
+                            b Descritores:&nbsp;
+                            span #{doc._source.Descritores.join(' / ')}
                 .col-12.my-1
                     div.mx-1
                         b Votação:&nbsp;

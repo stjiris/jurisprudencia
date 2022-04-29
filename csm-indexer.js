@@ -52,6 +52,9 @@ init().then( async _ => forEachCSMRecord(async record => {
                     year = parseInt(body[key].split('/')[2]);
                 }
             }
+            else if( key == "Descritores" ){
+                body[key] = table[key].textContent.trim().split(" ");
+            }
             else if( !(key in body) && !key.match(/Acórdãos \w+/) ){
                 if( key in mapping.mappings.properties ){
                     body[key] = table[key].textContent.trim();
