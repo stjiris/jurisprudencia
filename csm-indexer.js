@@ -1,15 +1,31 @@
 const getUrl = (off=0, pp=100) => `https://jurisprudencia.csm.org.pt/items/loadItems?sorts%5BdataAcordao%5D=1&perPage=${pp}&offset=${off}`
 const ECLI = require('./util/ecli');
-const { init, index, exists } = require('./indexer');
+const { init, index, exists, mapping } = require('./indexer');
 const fetch = require('./util/fetch');
 const url2Table = require('./url-to-table');
 const { strip_empty_html } = require('./util/html');
 
-const IGNORE_KEYS = ["", "1", "Texto Integral", "Decisão Texto Integral", "Decisão", "Nº Convencional", "Privacidade", "Nº do Documento"]
+const name2code = {
+    "Supremo Tribunal de Justiça": "STJ",
+    "Tribunal da Relação de Coimbra": "TRC",
+    "Tribunal da Relação de Évora": "TRE",
+    "Tribunal da Relação de Guimarães": "TRG",
+    "Tribunal da Relação de Lisboa": "TRL",
+    "Tribunal da Relação do Porto": "TRP",
+    "Tribunal da Propriedade Intelectual": "TPI",
+    "Tribunal da Concorrência, Regulação e Supervisão": "TCR",
+    "Supremo Tribunal Administrativo": "STA",
+    "Tribunal Central Administrativo Sul": "TCA",
+    "Tribunal Central Administrativo Norte": "TCN",
+    "Tribunal de Conflitos": "CON",
+    "Acórdãos do Tribunal Constitucional": "TCO"
+}
 
 init().then( async _ => forEachCSMRecord(async record => {
     let Tribunal = record.tribunal;
-    let ecli = ECLI.fromString(record.ecli);
+    let Code = name2code[Tribunal];
+
+    let ecli = ECLI.fromString(record.ecli).setJurisdiction(Code);
     let link = `https://jurisprudencia.csm.org.pt/ecli/${record.ecli}/`;
     let table = await url2Table(`https://jurisprudencia.csm.org.pt/ecli/${record.ecli}/`);
     
@@ -18,41 +34,37 @@ init().then( async _ => forEachCSMRecord(async record => {
         return;
     }
     try{
-        if( ecli.setNumber(processo).build() != record.ecli ){
-            console.log(`${record.ecli} - ${processo} - ${ecli.build()}`);
-        }
+        year = 0;
         let body = {
-            "ECLI": ecli.build(),
             "Tribunal": Tribunal,
-            "Processo": processo,
-            "Relator": table.Relator.textContent.trim(),
-            "Data": getData(table),
-            "Descritores": getDescritores(table),
-            "Sumário": getSumario(table),
-            "Texto": getTexto(table),
-            "Tipo": "Acórdão",
+            "Código Tribunal": Code,
+            "Tipo": "Acordão",
             "Original URL": link,
-            "Votação": getFirst(table, ["Votação"], link),
-            "Meio Processual": getFirst(table, ["Meio Processual"], link),
-            "Secção": getFirst(table, ["Tribunal", "Secção", "Nº Convencional"], link), // STA tem tribunal (secção) e Nº convecional 
-            "Espécie": getFirst(table, ["Espécie"], link),
-            "Decisão": getDecisao(table),
-            "Aditamento": getFirst(table, ["Aditamento"], link),
             "Jurisprudência": "unknown",
             "Origem": "csm-indexer"
-        }
-
+        };
+        
         // Add extra keys
         for( let key in table ){
-            if( IGNORE_KEYS.indexOf(key) > -1 ){
-                continue;
-            }
-            else if( key.startsWith("Data") ){
+            if( key.startsWith("Data") ){
                 body[key] = table[key].textContent.trim().replace(/-/g, '/');
+                if( !year ){
+                    year = parseInt(body[key].split('/')[2]);
+                }
             }
             else if( !(key in body) && !key.match(/Acórdãos \w+/) ){
-                body[key] = table[key].textContent.trim();
+                if( key in mapping.mappings.properties ){
+                    body[key] = table[key].textContent.trim();
+                }
+                else{
+                    body[key] = strip_empty_html_and_remove_font_tag(table[key].innerHTML);
+                }
             }
+        }
+
+        body["ECLI"] = ecli.setYear(year).setJurisdiction(Code).setNumber(body["Processo"]).toString();
+        if( body["ECLI"] != record.ecli ){
+            body["_UNMATCHING_ECLI"] = record.ecli;
         }
 
         await index(body);
@@ -60,7 +72,7 @@ init().then( async _ => forEachCSMRecord(async record => {
     catch(e){
         console.log(e);
     }
-})).catch(e => console.log(e));
+}));
 
 
 async function forEachCSMRecord(fn){
