@@ -70,7 +70,7 @@ init().then( async _ => forEachCSMRecord(async record => {
         await index(body);
     }
     catch(e){
-        console.log(e);
+        console.log(link, e);
     }
 }));
 
