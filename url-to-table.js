@@ -38,9 +38,19 @@ module.exports = async function(url){
     for(let {regex, lambda} of parsers){
         let match = url.match(regex);
         if(match){
-            let page = await getHTMLPage(url);
-            let table = lambda(page, url, match, {});
-            return table;
+            let table = null;
+            let interval = 1;
+            while( table == null ){
+                try{
+                    let page = await getHTMLPage(url);
+                    table = lambda(page, url, match, {});
+                }
+                catch(e){
+                    console.log(`urt2table(${url}) in ${interval}s: ${e.message}`);
+                    await fetch.sleep(interval*1000)
+                    interval *= 2;
+                }
+            }
         }
     }
 }

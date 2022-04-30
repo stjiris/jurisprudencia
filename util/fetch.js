@@ -60,5 +60,5 @@ const DOM_DEFAULT_OPTIONS = {
 
 module.exports.json = (url, options={}) => fetchRetryJSON(url, options);
 module.exports.dom = (url, options=DOM_DEFAULT_OPTIONS) => fetchRetry(url, options).then(dom => new JSDOM(dom, { url: url }));
-
+module.exports.sleep = sleep;
 
