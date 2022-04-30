@@ -59,17 +59,6 @@ module.exports.exists = (json) =>
         }
     }).then( ({count}) => count > 0)
 
-module.exports.dry_run = function dry_run(json){
-    let body = {}
-    for( let key in mapping.mappings.properties ){
-        if( !json[key] ){
-            throw new Error(`Missing field ${key}`)
-        }
-        body[key] = json[key]
-    }
-    return body
-}
-
 /*
     1# Update: set Origem from the original URL
     source:

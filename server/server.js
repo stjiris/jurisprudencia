@@ -11,13 +11,13 @@ const {mappings: {properties}} = require('../elastic-index-mapping.json');
 const aggs = {
     MinAno: {
         min: {
-            field: 'Data',
+            field: 'PrimeiraData',
             format: 'yyyy'
         }
     },
     MaxAno: {
         max: {
-            field: 'Data',
+            field: 'PrimeiraData',
             format: 'yyyy'
         }
     }
@@ -68,14 +68,22 @@ let search = (
             filter: filters.after
         }
     },
+    runtime_mappings:{
+        "PrimeiraData": {
+            type: "date",
+            format: "dd/MM/yyyy",
+            script: "emit(doc['Data'].value.toInstant().toEpochMilli())"
+        }   
+    },
     aggs: saggs,
     size: rpp,
     from: page*rpp,
-    /*sort: [
+    sort: [
         { Data: "desc" }
-    ],*/
+    ],
     track_total_hits: true,
-    _source: ["ECLI", "Tribunal", "Processo", "Relator", "Data", "Descritores", "Votação", "Meio Processual", "Secção", "Espécie", "Tipo", "Decisão", "Sumário"],
+    _source: ["ECLI", "Tribunal", "Processo", "Relator", "Descritores", "Votação", "Meio Processual", "Secção", "Espécie", "Tipo", "Decisão", "Sumário"],
+    fields: ["Data", "PrimeiraData"],
     ...extras
 });
 
@@ -195,7 +203,7 @@ const statsAggs = {
         aggs: {
             Anos: {
                 date_histogram: {
-                    field: 'Data',
+                    field: 'PrimeiraData',
                     interval: 'year',
                     format: 'yyyy'
                 }
