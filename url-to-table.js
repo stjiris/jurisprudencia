@@ -51,6 +51,7 @@ module.exports = async function(url){
                     interval *= 2;
                 }
             }
+            return table;
         }
     }
 }
