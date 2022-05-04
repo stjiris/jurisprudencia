@@ -72,7 +72,14 @@ let search = (
         "PrimeiraData": {
             type: "date",
             format: "dd/MM/yyyy",
-            script: "emit(doc['Data'].value.toInstant().toEpochMilli())"
+            script: `
+                def minDataMillis = doc['Data'][0].getMillis();
+                for( data in doc['Data'] ){
+                    if( data.getMillis() < minDataMillis ){
+                        minDataMillis = data.getMillis();
+                    }
+                }
+                emit(minDataMillis);`
         }   
     },
     aggs: saggs,
@@ -86,6 +93,14 @@ let search = (
     fields: ["Data", "PrimeiraData"],
     ...extras
 });
+
+const padZero = (num, size=4) => {
+    let s = num.toString();
+    while( s.length < size ){
+        s = "0" + s;
+    }
+    return s;
+}
 
 const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters={pre: [], after: []}
     const filtersUsed = {}
@@ -135,8 +150,8 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
         }
         filters[when].push({
             range: {
-                Data: {
-                    gte: body.MinAno,
+                PrimeiraData: {
+                    gte: padZero(body.MinAno),
                     format: "yyyy"
                 }
             }
@@ -150,8 +165,8 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
         }
         filters[when].push({
             range: {
-                Data: {
-                    lt: parseInt(body.MaxAno)+1 || new Date().getFullYear(),
+                PrimeiraData: {
+                    lt: padZero(parseInt(body.MaxAno)+1 || new Date().getFullYear()),
                     format: "yyyy"
                 }
             }
@@ -203,7 +218,7 @@ const statsAggs = {
         aggs: {
             Anos: {
                 date_histogram: {
-                    field: 'PrimeiraData',
+                    field: "Data",
                     interval: 'year',
                     format: 'yyyy'
                 }
@@ -273,20 +288,25 @@ app.get("/list", (req, res) => {
 
 app.get("/:ecli(ECLI:*)", (req, res) => {
     let ecli = req.params.ecli;
-    client.search({
-        index: 'jurisprudencia.1.0',
-        body: {
-            query: {
-                term: {
-                    ECLI: ecli
-                }
-            }
-        }
-    }).then((body) => {
+    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: ['Data', 'PrimeiraData']}).then((body) => {
         if( body.hits.total.value == 0 ){
             res.render("document", {ecli});
-        } else {
-            res.render("document", {ecli, source: body.hits.hits[0]._source, aggs});
+        }
+        else if( body.hits.total.value == 1 ) {
+            res.render("document", {ecli, source: body.hits.hits[0]._source, fields: body.hits.hits[0].fields, aggs});
+        }
+        else{
+            let docnum = req.query.docnum;
+            if( !docnum ){
+                let html = ''
+                for( let i = 0; i < body.hits.hits.length; i++ ){
+                    html += `<li><a href=/${ecli}?docnum=${i}>Abrir documento ${i}</a></li>`
+                }
+                res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
+            }
+            else{
+                res.render("document", {ecli, source: body.hits.hits[docnum]._source, fields: body.hits.hits[docnum].fields, aggs});
+            }
         }
     }).catch(err => {
         console.log(req.originalUrl, err);

@@ -5,7 +5,7 @@ const fixes = require('./fix-known-errors');
 
 for( let fix of fixes.fixes ){
     client.search({
-        index: 'jurisprudencia.0.0',
+        index: 'jurisprudencia.1.0',
         query: {
             term: {
                 "Original URL": fix
@@ -15,7 +15,7 @@ for( let fix of fixes.fixes ){
     }).then( async res => {
         let fix = fixes(res.hits.hits[0]._source)
         let indexResult = await client.index({
-            index: 'jurisprudencia.0.0',
+            index: 'jurisprudencia.1.0',
             body: fix,
             id: res.hits.hits[0]._id           
         })

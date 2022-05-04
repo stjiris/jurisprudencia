@@ -44,6 +44,10 @@ block main
             ol
                 li O recurso não foi encontrado ou ainda não foi publicado neste arquivo
     else
+        for f of Object.keys(fields)
+            .row.p-2(data-tribunal=source.Tribunal)
+                h4.col-12.pb-2.trib-spacer #!{f}
+                | !{fields[f].join("<br>")}
         for key of Object.keys(source)
             if !(key in aggs)
                 .row.p-2(data-tribunal=source.Tribunal)

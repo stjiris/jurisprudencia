@@ -56,7 +56,7 @@ block main
                     datasets: buckets.map(trib => ({
                         label: trib.key,
                         borderWidth: 0,
-                        data: trib.Anos.buckets.map(ano => ({x: ano.key_as_string, y: ano.doc_count})).sort((a, b) => a.x - b.x),
+                        data: trib.Anos.buckets.map(ano => ({x: parseInt(ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
                         backgroundColor: tribColor(trib.key)
                     }))
                 },
