@@ -48,6 +48,6 @@
 [data-tribunal="Tribunal da Relação de Guimarães"], [data-tribunal="TRG"]{
     --tribunal-color: var(--tribunal-TRG);
 }
-[data-tribunal="Tribunal dos Conflitos"], [data-tribunal="CON"]{
+[data-tribunal="Tribunal dos Conflitos"], [data-tribunal="CON"], [data-tribunal="Tribunal de Conflitos"]{
     --tribunal-color: var(--tribunal-CON);
 }

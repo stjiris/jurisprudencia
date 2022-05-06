@@ -34,6 +34,9 @@ for( p in properties ){
     }
 }
 
+aggs["Descritores"].terms.field = "Descritores.keyword";
+aggs["Tribunal"].terms.min_doc_count = 0;
+
 const RESULTS_PER_PAGE = 50;
 
 let queryObject = (string) => {
@@ -47,6 +50,12 @@ let queryObject = (string) => {
         }
     };
 }
+
+const tmp = app.render.bind(app);
+app.render = (name, obj, next) => {
+    tmp(name, { properties, ...obj }, next);
+}
+
 
 let search = (
     query, // query string, ideally given by queryObject()
@@ -86,10 +95,10 @@ let search = (
     size: rpp,
     from: page*rpp,
     sort: [
-        { Data: "desc" }
+        { "PrimeiraData": "asc" }
     ],
     track_total_hits: true,
-    _source: ["ECLI", "Tribunal", "Processo", "Relator", "Descritores", "Votação", "Meio Processual", "Secção", "Espécie", "Tipo", "Decisão", "Sumário"],
+    _source: [...Object.keys(properties), "Sumário"],
     fields: ["Data", "PrimeiraData"],
     ...extras
 });
@@ -134,8 +143,8 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
                 });
             }
             else{
-                filters[when].push({
-                    terms: {
+                    filters[when].push({
+                        terms: {
                         [aggObj[aggField].field]: filtersUsed[aggName]
                     }
                 });
@@ -181,7 +190,7 @@ app.get("/", (req, res) => {
     let page = parseInt(req.query.page) || 0;
     search(queryObject(req.query.q), sfilters, page).then(results => {
         res.render("search", {
-            q: req.query.q, querystring: new URLSearchParams(req.query).toString(),            
+            q: req.query.q, querystring: new URLSearchParams(req.originalUrl).toString(),            
             body: results,
             hits: results.hits.hits,
             aggs: results.aggregations,
@@ -193,7 +202,7 @@ app.get("/", (req, res) => {
     }).catch(e => {
         console.log(e);
         res.render("search", {
-            q: req.query.q, querystring: new URLSearchParams(req.query).toString(),
+            q: req.query.q, querystring: new URLSearchParams(req.originalUrl).toString(),
             body: {},
             hits: [],
             aggs: {},
@@ -218,7 +227,7 @@ const statsAggs = {
         aggs: {
             Anos: {
                 date_histogram: {
-                    field: "Data",
+                    field: "PrimeiraData",
                     interval: 'year',
                     format: 'yyyy'
                 }
@@ -230,10 +239,10 @@ app.get("/stats", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
     search(queryObject(req.query.q), sfilters, 0, statsAggs, 0).then(body => {
-        res.render("stats", {q: req.query.q, querystring: new URLSearchParams(req.query).toString(), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
+        res.render("stats", {q: req.query.q, querystring: new URLSearchParams(req.originalUrl).toString(), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
     }).catch(err => {
         console.log(req.originalUrl, err)
-        res.render("stats", {q: req.query.q, querystring: new URLSearchParams(req.query).toString(), error: err, aggs: {}, filters: {}, page: 0, pages: 0});
+        res.render("stats", {q: req.query.q, querystring: new URLSearchParams(req.originalUrl).toString(), error: err, aggs: {}, filters: {}, page: 0, pages: 0});
     });
 });
 
@@ -279,10 +288,10 @@ app.get("/list", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
     search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then(body => {
-        res.render("list", {q: req.query.q, querystring: new URLSearchParams(req.query).toString(), aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: Object.keys(filters).length > 0});
+        res.render("list", {q: req.query.q, querystring: new URLSearchParams(req.originalUrl).toString(), aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: Object.keys(filters).length > 0});
     }).catch(err => {
         console.log(req.originalUrl, err)
-        res.render("list", {q: req.query.q, querystring: new URLSearchParams(req.query).toString(), error: err, aggs: {}, letters: {}, filters: {}, term: term});
+        res.render("list", {q: req.query.q, querystring: new URLSearchParams(req.originalUrl).toString(), error: err, aggs: {}, letters: {}, filters: {}, term: term});
     });
 });
 
@@ -330,8 +339,8 @@ app.get("/datalist", (req, res) => {
     }
     const sfilters = {pre: [], after: []};
     populateFilters(sfilters, req.query, [], []);
-    search(queryObject(req.query.q), sfilters, 0, { [aggKey]: finalAgg}, 0).then(async body => {
-        console.log(body)
+    console.log(JSON.stringify(sfilters));
+    search(queryObject(req.query.q), sfilters, 0, { [aggKey]: finalAgg}, 10).then(async body => {
         if( body.aggregations[aggKey].buckets.length < 10 ){
             body = await search(queryObject(req.query.q), sfilters, 0, { [aggKey]: agg }, 0);
         }

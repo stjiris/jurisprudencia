@@ -34,37 +34,42 @@ block main
                     div.mx-1
                         b Tribunal:&nbsp;
                         span #{doc._source.Tribunal}&nbsp;
-                        span (#{doc._source.Secção})
+                        if doc._source.Secção
+                            span (#{doc._source.Secção})
                     div.mx-1
                         b Relator:&nbsp;
                         span #{doc._source.Relator}
                     div.mx-1
                         b Data:&nbsp;
-                        span #{doc.fields.Data}
+                        span #{doc.fields.PrimeiraData}
                 .col-12.d-flex.flex-wrap.my-1
-                    div.mx-1
-                        b Espécie:&nbsp;
-                        span #{doc._source["Espécie"]}
-                    div.mx-1
-                        b Meio Processual:&nbsp;
-                        span #{doc._source["Meio Processual"]}
+                    if doc._source.Espécie
+                        div.mx-1
+                            b Espécie:&nbsp;
+                            span #{doc._source.Espécie}
+                    if doc._source["Meio Processual"]
+                        div.mx-1
+                            b Meio Processual:&nbsp;
+                            span #{doc._source["Meio Processual"]}
                 if Array.isArray(doc._source.Descritores)
                     .col-12.my-1
                         div.mx-1
                             b Descritores:&nbsp;
                             span #{doc._source.Descritores.join(' / ')}
-                .col-12.my-1
-                    div.mx-1
-                        b Votação:&nbsp;
-                        span #{doc._source.Votação}
-                .col-12.my-1
-                    div.mx-1.d-flex
-                        b Decisão:&nbsp;
-                        div !{doc._source.Decisão}
-                details.col-12.my-1
-                    summary.mx-1: b.mouse-click Sumário:
-                    div.col-12 !{doc._source["Sumário"]}
-                .break
+                if doc._source.Votação
+                    .col-12.my-1
+                        div.mx-1
+                            b Votação:&nbsp;
+                            span #{doc._source.Votação}
+                if doc._source.Decisão
+                    .col-12.my-1
+                        div.mx-1.d-flex
+                            b Decisão:&nbsp;
+                            div !{doc._source.Decisão}
+                if doc._source.Sumário
+                    details.col-12.my-1
+                        summary.mx-1: b.mouse-click Sumário:
+                        div.col-12 !{doc._source["Sumário"]}
     script.
         // Close all summary elements
         function closeAllSummaries() {
@@ -92,19 +97,6 @@ block main
 
             article[data-tribunal]::after{
                 top:100% !important;
-            }
-
-            article .col-12{
-                break-before: avoid !important;
-                page-break-before: avoid !important;
-                break-inside: avoid !important;
-                page-break-inside: avoid !important;
-                break-after: avoid !important;
-                page-break-after: avoid !important;
-            }
-
-            article .break{
-                page-break-after: always !important;
             }
         }
 
