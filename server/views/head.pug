@@ -66,9 +66,21 @@ html(lang="en")
                                                     label.form-check-label(for=bucket.key.replace(/\s/g, "")).d-flex.justify-content-between.align-items-center.w-100
                                                         span.d-block !{bucket.key} 
                                                         span.d-block (!{bucket.doc_count})
+                                        .d-flex.flex-column.my-2
+                                            h5 Data
+                                            .input-group
+                                                .input-group-prepend.w-25
+                                                    label(for="data_inicio").input-group-text.w-100 De
+                                                input.form-control(type="number", name="MinAno", min="1900", max=new Date().getFullYear(), value=filters["MinAno"], step="1")#data_inicio
+                                            .input-group
+                                                .input-group-prepend.w-25
+                                                    label(for="data_fim").input-group-text.w-100 Até
+                                                input.form-control(type="number", name="MaxAno", min="1900", max=new Date().getFullYear(), value=filters["MaxAno"], step="1")#data_fim
                                         mixin filterlist(key)
                                             .d-flex.flex-column.my-2
-                                                h5 !{key}
+                                                h5 
+                                                    | !{key}
+                                                    small: button.btn.color-link(type="submit", formaction="/list", name="term", value=key) (Lista)
                                                 +await(`/datalist?id=datalist-${key}&agg=${key}&${querystring}`)
                                                 input.form-control(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`Filtrar ${key}...`)
                                                 -let cache = []
@@ -82,18 +94,8 @@ html(lang="en")
                                                                     span.d-block !{f}
                                                                     i.d-blocl.bi-trash
                                         for p of Object.keys(properties)
-                                            if p != "Tribunal"
+                                            if ["Tribunal", "ECLI", "Código Tribunal", "Processo", "Tipo", "Jurisprudência", "Original URL"].indexOf(p) == -1
                                                 +filterlist(p)
-                                        .d-flex.flex-column.my-2
-                                            h5 Data
-                                            .input-group
-                                                .input-group-prepend.w-25
-                                                    label(for="data_inicio").input-group-text.w-100 De
-                                                input.form-control(type="number", name="MinAno", min="1900", max=new Date().getFullYear(), value=filters["MinAno"], step="1")#data_inicio
-                                            .input-group
-                                                .input-group-prepend.w-25
-                                                    label(for="data_fim").input-group-text.w-100 Até
-                                                input.form-control(type="number", name="MaxAno", min="1900", max=new Date().getFullYear(), value=filters["MaxAno"], step="1")#data_fim
                                         .d-flex.flex-row.my-2.justify-content-between.align-items-center
                                             button.btn.btn-primary(type="submit") Aplicar
                                             a.btn.btn-danger(href=`?q=${q || ""}`) Limpar
@@ -110,23 +112,7 @@ html(lang="en")
                                                     button.btn(type="submit", name="page", value=page+1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-right
                                                 li.page-item
                                                     button.btn(type="submit", name="page", value=pages-1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-double-right
-                                        small (A pesquisa está limitada a !{550000/50} páginas)     
-                                    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-                                        button.btn.w-100(type="submit", formaction="/list", name="term", value="Relator"): u Ver relatores da pesquisa
-                                    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-                                        button.btn.w-100(type="submit", formaction="/list", name="term", value="Descritores"): u Ver descritores da pesquisa 
-                                    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-                                        button.btn.w-100(type="submit", formaction="/list", name="term", value="Votação"): u Ver votação da pesquisa
-                                    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-                                        button.btn.w-100(type="submit", formaction="/list", name="term", value="Meio Processual"): u Ver Meio Processual da pesquisa
-                                    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-                                        button.btn.w-100(type="submit", formaction="/list", name="term", value="Secção"): u Ver Secção da pesquisa
-                                    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-                                        button.btn.w-100(type="submit", formaction="/list", name="term", value="Espécie"): u Ver Espécie da pesquisa
-                                    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-                                        button.btn.w-100(type="submit", formaction="/list", name="term", value="Tipo"): u Ver Tipo da pesquisa
-                                    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-                                        button.btn.w-100(type="submit", formaction="/list", name="term", value="Jurisprudência"): u Ver Jurisprudência da pesquisa
+                                        small (A pesquisa está limitada a !{550000/50} páginas)
                     .col-12.col-md-9
                         block main
         footer.d-print-none.mt-2

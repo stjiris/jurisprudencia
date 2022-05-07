@@ -36,6 +36,7 @@ for( p in properties ){
 
 aggs["Descritores"].terms.field = "Descritores.keyword";
 aggs["Tribunal"].terms.min_doc_count = 0;
+aggs["Código Tribunal"].terms.min_doc_count = 0;
 
 const RESULTS_PER_PAGE = 50;
 
