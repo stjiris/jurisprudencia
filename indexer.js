@@ -1,4 +1,4 @@
-const { Client } = require('@elastic/elasticsearch')
+const { Client } = require('@elastic/elasticsearch');
 const client = new Client({ node: 'http://localhost:9200' });
 
 const mapping = require('./elastic-index-mapping.json');
@@ -13,6 +13,21 @@ module.exports.init = async (removeOld=false) => {
         await client.indices.create(mapping) 
     }
 }
+
+module.exports.scroll = async function*(obj){
+    let response = await client.search({ ...obj, scroll: '5m' })
+    while( response.hits.hits.length > 0 ) {
+        const hits = response.hits.hits;
+        for( let i = 0; i < hits.length; i++ ) {
+            yield hits[i];
+        }
+        response = await client.scroll({
+            scroll_id: response._scroll_id,
+            scroll: '5m'
+        });
+    }
+}
+
 
 module.exports.updateProperties = () => client.indices.putMapping({index: mapping.index, properties: mapping.mappings.properties})
 
