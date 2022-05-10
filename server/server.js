@@ -7,7 +7,7 @@ const path = require('path');
 app.set('view engine', 'pug');
 app.set('views', './views');
 
-const {mappings: {properties}} = require('../elastic-index-mapping.json');
+const {mappings: {properties}, index: INDEXNAME} = require('../elastic-index-mapping.json');
 const aggs = {
     MinAno: {
         min: {
@@ -66,7 +66,7 @@ let search = (
     rpp=RESULTS_PER_PAGE, // results per page
     extras={}  // extra fields to aply to the search if needed
 ) => client.search({
-    index: 'jurisprudencia.1.0',
+    index: INDEXNAME,
     query: {
         bool: {
             must: query,
@@ -146,7 +146,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
         }
         filters[when].push({
             range: {
-                MinAno: {
+                Data: {
                     gte: padZero(body.MinAno),
                     format: "yyyy"
                 }
@@ -161,11 +161,35 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
         }
         filters[when].push({
             range: {
-                MaxAno: {
+                Data: {
                     lt: padZero(parseInt(body.MaxAno)+1 || new Date().getFullYear()),
                     format: "yyyy"
                 }
             }
+        });
+    }
+    if( body.notHasField ){
+        filtersUsed.notHasField = (Array.isArray(body.notHasField) ? body.notHasField : [body.notHasField]).filter(o => o.length> 0);
+        filtersUsed.notHasField.forEach(field => {
+            filters.pre.push({
+                bool: {
+                    must_not: {
+                        exists: {
+                            field: field
+                        }
+                    }
+                }
+            });
+        });
+    }
+    if( body.hasField ){
+        filtersUsed.hasField = (Array.isArray(body.hasField) ? body.hasField : [body.hasField]).filter(o => o.length> 0);
+        filtersUsed.hasField.forEach(field => {
+            filters.pre.push({
+                exists: {
+                    field: field
+                }
+            });
         });
     }
     return filtersUsed;
@@ -314,6 +338,12 @@ app.get("/datalist", (req, res) => {
     let aggKey = req.query.agg;
     let agg = aggs[aggKey];
     let id = req.query.id || "";
+    if( aggKey == "Campos" ){
+        client.indices.getMapping({index: INDEXNAME}).then(body => {
+            res.render("datalist", {aggs: Object.keys(body[INDEXNAME].mappings.properties).map(o => ({key: o})), id: id});
+        });
+        return;
+    }
     if( !agg ) {
         res.render("datalist", {aggs: [], error: "Aggregation not found", id: req.query.id});
         return;

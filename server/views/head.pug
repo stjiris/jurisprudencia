@@ -45,6 +45,7 @@ html(lang="en")
                             form(method="get").col-12
                                 block form
                                     input(type="search", name="q", value=q, hidden)
+                                    button.btn.color-link(type="submit", hidden)
                                     details(open=!!open)
                                         summary.d-block
                                             h4.d-inline
@@ -76,6 +77,17 @@ html(lang="en")
                                                 .input-group-prepend.w-25
                                                     label(for="data_fim").input-group-text.w-100 Até
                                                 input.form-control(type="number", name="MaxAno", min="1900", max=new Date().getFullYear(), value=filters["MaxAno"], step="1")#data_fim
+                                        mixin usedFilters(key)
+                                            -let cache = []
+                                            if key in filters
+                                                for f in filters[key]
+                                                    if cache.indexOf(f) == -1
+                                                        -cache.push(f)
+                                                        .form-check.form-check-inline(style="--tribunal-color: #0f0")
+                                                            input.form-check-input(type="checkbox", name=key, value=f, checked, id=`checkbox-${f.replace(/\s/g, "")}`, hidden)
+                                                            label.form-check-label(for=`checkbox-${f.replace(/\s/g, "")}`).d-flex.justify-content-between.align-items-center.w-100
+                                                                span.d-block !{f}
+                                                                i.d-blocl.bi-trash
                                         mixin filterlist(key)
                                             .d-flex.flex-column.my-2
                                                 h5 
@@ -83,19 +95,17 @@ html(lang="en")
                                                     small: button.btn.color-link(type="submit", formaction="/list", name="term", value=key) (Lista)
                                                 +await(`/datalist?id=datalist-${key}&agg=${key}&${querystring}`)
                                                 input.form-control(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`Filtrar ${key}...`)
-                                                -let cache = []
-                                                if key in filters
-                                                    for f in filters[key]
-                                                        if cache.indexOf(f) == -1
-                                                            -cache.push(f)
-                                                            .form-check.form-check-inline(style="--tribunal-color: #0f0")
-                                                                input.form-check-input(type="checkbox", name=key, value=f, checked, id=`checkbox-${f.replace(/\s/g, "")}`, hidden)
-                                                                label.form-check-label(for=`checkbox-${f.replace(/\s/g, "")}`).d-flex.justify-content-between.align-items-center.w-100
-                                                                    span.d-block !{f}
-                                                                    i.d-blocl.bi-trash
+                                                +usedFilters(key)
                                         for p of Object.keys(properties)
                                             if ["Tribunal", "ECLI", "Código Tribunal", "Processo", "Tipo", "Jurisprudência", "Original URL"].indexOf(p) == -1
                                                 +filterlist(p)
+                                        .d-flex.flex-column.my-2
+                                            h5 Campos 
+                                                +await(`/datalist?id=datalist-Campos&agg=Campos&${querystring}`)
+                                                input.form-control(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de conter o campo...`)
+                                                +usedFilters("hasField")
+                                                input.form-control(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode conter o campo...`)
+                                                +usedFilters("notHasField")
                                         .d-flex.flex-row.my-2.justify-content-between.align-items-center
                                             button.btn.btn-primary(type="submit") Aplicar
                                             a.btn.btn-danger(href=`?q=${q || ""}`) Limpar

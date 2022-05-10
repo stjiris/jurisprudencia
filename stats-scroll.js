@@ -28,10 +28,11 @@ app.get("/", async (req, res) => {
     client.count({ index: INDEX, query: UNMATCH_QUERY }).then(count => res.write(`event: UnmatchingECLICountEvent\ndata: ${count.count}\n\n`));
     client.count({ index: INDEX, query: { term: {Origem: "csm-indexer"} } }).then(count => res.write(`event: CSMCountEvent\ndata: ${count.count}\n\n`));
 
-    for await (const {_source} of scroll({
+    for await (const {_source, fields} of scroll({
         index: INDEX,
         size: 1,
-        query: UNMATCH_QUERY
+        query: UNMATCH_QUERY,
+        fields: ["Data"]
     })) {
         let original = ECLI.fromString(_source._UNMATCHING_ECLI)
         let generated = ECLI.fromString(_source.ECLI)
@@ -44,9 +45,10 @@ app.get("/", async (req, res) => {
         }        
 
         _source["ECLIDistance"] = distance;
+        _source["Data"] = fields["Data"];
         res.write(`event: UnmatchingECLIEvent\n`);
         res.write(`data: ${JSON.stringify(_source)}\n\n`);
-        await sleep(500)
+        await sleep(150)
     }
 })
 

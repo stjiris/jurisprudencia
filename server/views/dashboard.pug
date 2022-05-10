@@ -2,15 +2,16 @@ extends head
 
 
 block main
-    p <span id=wrong-count></span>/<span id=total-count></span> ECLIS CSM mal gerados/ECLIS CSM total
+    h2 Lista dos ECLI mal gerados pelo CSM
+    p Dos <span id=total-count></span> indexados pelo CSM <span id=wrong-count></span> estão incorretos.
+    p São <span id=ok-count></span> corretos.
     table.table#errors
         thead#thead-errors
             tr
-                th País 
-                th Tribunal
-                th Ano 
-                th Processo (ECLI)
-                th Processo (Origem)
+                th ECLI GERADO 
+                th ECLI ORIGINAL
+                th Processo
+                th Datas
         tbody#tbody-errors
 
     script.
@@ -21,24 +22,33 @@ block main
         })
         evs.addEventListener("UnmatchingECLICountEvent", function(e){
             document.getElementById("wrong-count").innerHTML = e.data;
+            document.getElementById("ok-count").innerHTML = parseInt(document.getElementById("total-count").innerHTML) - parseInt(e.data);
         })
         evs.addEventListener("CSMCountEvent", function(e){
             document.getElementById("total-count").innerHTML = e.data;
+            document.getElementById("ok-count").innerHTML = parseInt(e.data) - parseInt(document.getElementById("wrong-count").innerHTML);
         })
 
         function createUnmatchingECLIElement(source){
             // create tbody row
             let tbody = document.getElementById("tbody-errors");
             let tr = document.createElement("tr");
+            let generated = tr.appendChild(document.createElement("td"));
+            let original = tr.appendChild(document.createElement("td"));
+            tr.appendChild(document.createElement("td")).innerHTML = `${source["Processo"]}`;
+            tr.appendChild(document.createElement("td")).innerHTML = `${source["Data"].join(", ")}`;
+            generated.innerHTML = "ECLI"
+            original.innerHTML = "ECLI"
             for( let key in source["ECLIDistance"] ){
-                if( source["ECLIDistance"][key].distance == 0 ){
-                    tr.appendChild(document.createElement("td")).innerHTML = `<p>${source["ECLIDistance"][key].original}</p>`;
+                if( source["ECLIDistance"][key]["distance"] == 0 ){
+                    generated.innerHTML+= `:${source["ECLIDistance"][key]["generated"]}`;
+                    original.innerHTML+= `:${source["ECLIDistance"][key]["original"]}`;
                 }
                 else{
-                    tr.appendChild(document.createElement("td")).innerHTML = `<p>${source["ECLIDistance"][key].generated}</p><p><del>${source["ECLIDistance"][key].original}</del></p>`;
+                    generated.innerHTML+= `:<b>${source["ECLIDistance"][key]["generated"]}</b>`;
+                    original.innerHTML+= `:<del>${source["ECLIDistance"][key]["original"]}</del>`;
                 }
             }
-            tr.appendChild(document.createElement("td")).innerHTML = `<p>${source["Processo"]}</p>`;
             tbody.appendChild(tr);
         }
 
