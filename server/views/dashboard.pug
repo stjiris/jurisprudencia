@@ -1,0 +1,46 @@
+extends head
+
+
+block main
+    p <span id=wrong-count></span>/<span id=total-count></span> ECLIS CSM mal gerados/ECLIS CSM total
+    table.table#errors
+        thead#thead-errors
+            tr
+                th País 
+                th Tribunal
+                th Ano 
+                th Processo (ECLI)
+                th Processo (Origem)
+        tbody#tbody-errors
+
+    script.
+        let main = document.getElementById("main");
+        let evs = new EventSource("/stats-sse");
+        evs.addEventListener("UnmatchingECLIEvent", function(e){
+            createUnmatchingECLIElement(JSON.parse(e.data));
+        })
+        evs.addEventListener("UnmatchingECLICountEvent", function(e){
+            document.getElementById("wrong-count").innerHTML = e.data;
+        })
+        evs.addEventListener("CSMCountEvent", function(e){
+            document.getElementById("total-count").innerHTML = e.data;
+        })
+
+        function createUnmatchingECLIElement(source){
+            // create tbody row
+            let tbody = document.getElementById("tbody-errors");
+            let tr = document.createElement("tr");
+            for( let key in source["ECLIDistance"] ){
+                if( source["ECLIDistance"][key].distance == 0 ){
+                    tr.appendChild(document.createElement("td")).innerHTML = `<p>${source["ECLIDistance"][key].original}</p>`;
+                }
+                else{
+                    tr.appendChild(document.createElement("td")).innerHTML = `<p>${source["ECLIDistance"][key].generated}</p><p><del>${source["ECLIDistance"][key].original}</del></p>`;
+                }
+            }
+            tr.appendChild(document.createElement("td")).innerHTML = `<p>${source["Processo"]}</p>`;
+            tbody.appendChild(tr);
+        }
+
+
+

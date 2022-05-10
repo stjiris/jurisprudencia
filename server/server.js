@@ -11,13 +11,13 @@ const {mappings: {properties}} = require('../elastic-index-mapping.json');
 const aggs = {
     MinAno: {
         min: {
-            field: 'PrimeiraData',
+            field: 'Data',
             format: 'yyyy'
         }
     },
     MaxAno: {
         max: {
-            field: 'PrimeiraData',
+            field: 'Data',
             format: 'yyyy'
         }
     }
@@ -78,29 +78,15 @@ let search = (
             filter: filters.after
         }
     },
-    runtime_mappings:{
-        "PrimeiraData": {
-            type: "date",
-            format: "dd/MM/yyyy",
-            script: `
-                def minDataMillis = doc['Data'][0].getMillis();
-                for( data in doc['Data'] ){
-                    if( data.getMillis() < minDataMillis ){
-                        minDataMillis = data.getMillis();
-                    }
-                }
-                emit(minDataMillis);`
-        }   
-    },
     aggs: saggs,
     size: rpp,
     from: page*rpp,
     sort: [
-        { "PrimeiraData": "asc" }
+        { "Data": { order: "asc", mode: "min" }  }
     ],
     track_total_hits: true,
     _source: [...Object.keys(properties), "Sumário"],
-    fields: ["Data", "PrimeiraData"],
+    fields: ["Data"],
     ...extras
 });
 
@@ -160,7 +146,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
         }
         filters[when].push({
             range: {
-                PrimeiraData: {
+                MinAno: {
                     gte: padZero(body.MinAno),
                     format: "yyyy"
                 }
@@ -175,7 +161,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
         }
         filters[when].push({
             range: {
-                PrimeiraData: {
+                MaxAno: {
                     lt: padZero(parseInt(body.MaxAno)+1 || new Date().getFullYear()),
                     format: "yyyy"
                 }
@@ -228,7 +214,7 @@ const statsAggs = {
         aggs: {
             Anos: {
                 date_histogram: {
-                    field: "PrimeiraData",
+                    field: "Data",
                     interval: 'year',
                     format: 'yyyy'
                 }
@@ -298,7 +284,7 @@ app.get("/list", (req, res) => {
 
 app.get("/:ecli(ECLI:*)", (req, res) => {
     let ecli = req.params.ecli;
-    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: ['Data', 'PrimeiraData']}).then((body) => {
+    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: ['Data']}).then((body) => {
         if( body.hits.total.value == 0 ){
             res.render("document", {ecli});
         }
@@ -352,8 +338,19 @@ app.get("/datalist", (req, res) => {
     });
 });
 
-app.use('/tinymce', express.static(path.join(require.resolve('tinymce'),'..')));
-app.use(express.static(path.join(__dirname, "static")));
+app.use('/dashboard', (req, res) => {
+    const sfilters = {pre: [], after: []};
+    const filters = populateFilters(sfilters, req.query, []);
+    search(queryObject(req.query.q), sfilters, 0).then(body => {
+        res.render("dashboard", {q: req.query.q, querystring: new URLSearchParams(req.originalUrl).toString(), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
+    }).catch(err => {
+        console.log(req.originalUrl, err)
+        res.render("dashboard", {q: req.query.q, querystring: new URLSearchParams(req.originalUrl).toString(), error: err, aggs: {}, filters: {}, page: 0, pages: 0});
+    });
+});
 
+app.use('/tinymce', express.static(path.join(require.resolve('tinymce'),'..')));
+app.use('/stats-sse', require('../stats-scroll'))
+app.use(express.static(path.join(__dirname, "static")));
 
 app.listen(9100)
