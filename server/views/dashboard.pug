@@ -1,9 +1,6 @@
 extends head
 
-block form
-    // Dont show filters on dashboard
-
-block main
+block allmain
     h2 Lista dos ECLI mal gerados pelo CSM
     p Dos <span id=total-count></span> indexados pelo CSM <span id=wrong-count></span> estão incorretos.
     p São <span id=ok-count></span> corretos <a href="/?Origem=csm-indexer&notHasField=_UNMATCHING_ECLI">ver acórdãos</a>.

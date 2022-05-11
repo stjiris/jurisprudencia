@@ -6,7 +6,7 @@ html(lang="en")
         meta(charset="UTF-8")
         meta(http-equiv="X-UA-Compatible", content="IE=edge")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
-        link(rel="stylesheet",href="./style.css")
+        link(rel="stylesheet",href="/style.css")
         link(rel="icon",href="/stj-logo.png")
         block head
     body
@@ -39,91 +39,92 @@ html(lang="en")
                     code !{JSON.stringify(error, null , 2)}
 
             else
-                .row
-                    .col-12.col-md-3.d-print-none.infofilters
-                        .row.p-2
-                            form(method="get").col-12
-                                block form
-                                    input(type="search", name="q", value=q, hidden)
-                                    button.btn.color-link(type="submit", hidden)
-                                    details(open=!!open)
-                                        summary.d-block
-                                            h4.d-inline
-                                                i.bi-funnel 
-                                                | Filtrar 
-                                                small: i.bi-minimizemaximize
-                                        .d-flex.flex-column.my-2
-                                            -let tribunais = []
-                                            .form-check.form-check-inline
-                                                input.form-check-input(type="checkbox", id="tribunais-all")
-                                                label.form-check-label(for="tribunais-all"): h5 Tribunal
-                                            -let key = "Tribunal"
-                                            for bucket in aggs[key].buckets
-                                                -let checked = !filters[key] || filters[key].indexOf(bucket.key) > -1
-                                                if checked
-                                                    -tribunais.push(bucket.key)
-                                                .form-check.form-check-inline(data-tribunal=bucket.key)
-                                                    input.form-check-input.tribunal-checkbox(type="checkbox", name=key, value=bucket.key, checked=checked, id=bucket.key.replace(/\s/g, ""), hidden)
-                                                    label.form-check-label(for=bucket.key.replace(/\s/g, "")).d-flex.justify-content-between.align-items-center.w-100
-                                                        span.d-block !{bucket.key} 
-                                                        span.d-block (!{bucket.doc_count})
-                                        .d-flex.flex-column.my-2
-                                            h5 Data
-                                            .input-group
-                                                .input-group-prepend.w-25
-                                                    label(for="data_inicio").input-group-text.w-100 De
-                                                input.form-control(type="number", name="MinAno", min="1900", max=new Date().getFullYear(), value=filters["MinAno"], step="1")#data_inicio
-                                            .input-group
-                                                .input-group-prepend.w-25
-                                                    label(for="data_fim").input-group-text.w-100 Até
-                                                input.form-control(type="number", name="MaxAno", min="1900", max=new Date().getFullYear(), value=filters["MaxAno"], step="1")#data_fim
-                                        mixin usedFilters(key)
-                                            -let cache = []
-                                            if key in filters
-                                                for f in filters[key]
-                                                    if cache.indexOf(f) == -1
-                                                        -cache.push(f)
-                                                        .form-check.form-check-inline(style="--tribunal-color: #0f0")
-                                                            input.form-check-input(type="checkbox", name=key, value=f, checked, id=`checkbox-${f.replace(/\s/g, "")}`, hidden)
-                                                            label.form-check-label(for=`checkbox-${f.replace(/\s/g, "")}`).d-flex.justify-content-between.align-items-center.w-100
-                                                                span.d-block !{f}
-                                                                i.d-blocl.bi-trash
-                                        mixin filterlist(key)
+                block allmain
+                    .row
+                        .col-12.col-md-3.d-print-none.infofilters
+                            .row.p-2
+                                form(method="get").col-12
+                                    block form
+                                        input(type="search", name="q", value=q, hidden)
+                                        button.btn.color-link(type="submit", hidden)
+                                        details(open=!!open)
+                                            summary.d-block
+                                                h4.d-inline
+                                                    i.bi-funnel 
+                                                    | Filtrar 
+                                                    small: i.bi-minimizemaximize
                                             .d-flex.flex-column.my-2
-                                                h5 
-                                                    | !{key}
-                                                    small: button.btn.color-link(type="submit", formaction="/list", name="term", value=key) (Lista)
-                                                +await(`/datalist?id=datalist-${key}&agg=${key}&${querystring}`)
-                                                input.form-control(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`Filtrar ${key}...`)
-                                                +usedFilters(key)
-                                        for p of Object.keys(properties)
-                                            if ["Tribunal", "ECLI", "Código Tribunal", "Processo", "Tipo", "Jurisprudência", "Original URL"].indexOf(p) == -1
-                                                +filterlist(p)
-                                        .d-flex.flex-column.my-2
-                                            h5 Campos 
-                                                +await(`/datalist?id=datalist-Campos&agg=Campos&${querystring}`)
-                                                input.form-control(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de conter o campo...`)
-                                                +usedFilters("hasField")
-                                                input.form-control(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode conter o campo...`)
-                                                +usedFilters("notHasField")
-                                        .d-flex.flex-row.my-2.justify-content-between.align-items-center
-                                            button.btn.btn-primary(type="submit") Aplicar
-                                            a.btn.btn-danger(href=`?q=${q || ""}`) Limpar
-                                    if Number.isInteger(page) && Number.isInteger(pages)
-                                        nav.my-2.sticky-top
-                                            ul.pagination.justify-content-between
-                                                li.page-item
-                                                    button.btn(type="submit", name="page", value=0, disabled=page<=0).page-link: i.bi.bi-chevron-double-left
-                                                li.page-item
-                                                    button.btn(type="submit", name="page", value=page-1, disabled=page<=0).page-link: i.bi.bi-chevron-left
-                                                li.page-item.w-50
-                                                    button.btn(type="submit", name="page", value=page, disabled).page-link.w-100 !{page+1}/!{pages}
-                                                li.page-item
-                                                    button.btn(type="submit", name="page", value=page+1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-right
-                                                li.page-item
-                                                    button.btn(type="submit", name="page", value=pages-1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-double-right
-                                        small (A pesquisa está limitada a !{550000/50} páginas)
-                    .col-12.col-md-9#main: block main
+                                                -let tribunais = []
+                                                .form-check.form-check-inline
+                                                    input.form-check-input(type="checkbox", id="tribunais-all")
+                                                    label.form-check-label(for="tribunais-all"): h5 Tribunal
+                                                -let key = "Tribunal"
+                                                for bucket in aggs[key].buckets
+                                                    -let checked = !filters[key] || filters[key].indexOf(bucket.key) > -1
+                                                    if checked
+                                                        -tribunais.push(bucket.key)
+                                                    .form-check.form-check-inline(data-tribunal=bucket.key)
+                                                        input.form-check-input.tribunal-checkbox(type="checkbox", name=key, value=bucket.key, checked=checked, id=bucket.key.replace(/\s/g, ""), hidden)
+                                                        label.form-check-label(for=bucket.key.replace(/\s/g, "")).d-flex.justify-content-between.align-items-center.w-100
+                                                            span.d-block !{bucket.key} 
+                                                            span.d-block (!{bucket.doc_count})
+                                            .d-flex.flex-column.my-2
+                                                h5 Data
+                                                .input-group
+                                                    .input-group-prepend.w-25
+                                                        label(for="data_inicio").input-group-text.w-100 De
+                                                    input.form-control(type="number", name="MinAno", min="1900", max=new Date().getFullYear(), value=filters["MinAno"], step="1")#data_inicio
+                                                .input-group
+                                                    .input-group-prepend.w-25
+                                                        label(for="data_fim").input-group-text.w-100 Até
+                                                    input.form-control(type="number", name="MaxAno", min="1900", max=new Date().getFullYear(), value=filters["MaxAno"], step="1")#data_fim
+                                            mixin usedFilters(key)
+                                                -let cache = []
+                                                if key in filters
+                                                    for f in filters[key]
+                                                        if cache.indexOf(f) == -1
+                                                            -cache.push(f)
+                                                            .form-check.form-check-inline(style="--tribunal-color: #0f0")
+                                                                input.form-check-input(type="checkbox", name=key, value=f, checked, id=`checkbox-${f.replace(/\s/g, "")}`, hidden)
+                                                                label.form-check-label(for=`checkbox-${f.replace(/\s/g, "")}`).d-flex.justify-content-between.align-items-center.w-100
+                                                                    span.d-block !{f}
+                                                                    i.d-blocl.bi-trash
+                                            mixin filterlist(key)
+                                                .d-flex.flex-column.my-2
+                                                    h5 
+                                                        | !{key}
+                                                        small: button.btn.color-link(type="submit", formaction="/list", name="term", value=key) (Lista)
+                                                    +await(`/datalist?id=datalist-${key}&agg=${key}&${querystring}`)
+                                                    input.form-control(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`Filtrar ${key}...`)
+                                                    +usedFilters(key)
+                                            for p of Object.keys(properties)
+                                                if ["Tribunal", "ECLI", "Código Tribunal", "Processo", "Tipo", "Jurisprudência", "Original URL"].indexOf(p) == -1
+                                                    +filterlist(p)
+                                            .d-flex.flex-column.my-2
+                                                h5 Campos 
+                                                    +await(`/datalist?id=datalist-Campos&agg=Campos&${querystring}`)
+                                                    input.form-control(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de conter o campo...`)
+                                                    +usedFilters("hasField")
+                                                    input.form-control(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode conter o campo...`)
+                                                    +usedFilters("notHasField")
+                                            .d-flex.flex-row.my-2.justify-content-between.align-items-center
+                                                button.btn.btn-primary(type="submit") Aplicar
+                                                a.btn.btn-danger(href=`?q=${q || ""}`) Limpar
+                                        if Number.isInteger(page) && Number.isInteger(pages)
+                                            nav.my-2.sticky-top
+                                                ul.pagination.justify-content-between
+                                                    li.page-item
+                                                        button.btn(type="submit", name="page", value=0, disabled=page<=0).page-link: i.bi.bi-chevron-double-left
+                                                    li.page-item
+                                                        button.btn(type="submit", name="page", value=page-1, disabled=page<=0).page-link: i.bi.bi-chevron-left
+                                                    li.page-item.w-50
+                                                        button.btn(type="submit", name="page", value=page, disabled).page-link.w-100 !{page+1}/!{pages}
+                                                    li.page-item
+                                                        button.btn(type="submit", name="page", value=page+1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-right
+                                                    li.page-item
+                                                        button.btn(type="submit", name="page", value=pages-1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-double-right
+                                            small (A pesquisa está limitada a !{550000/50} páginas)
+                        .col-12.col-md-9#main: block main
         footer.d-print-none.mt-2
             .container.row.align-items-center.m-auto.p-4
                 a(href="#top").col-12.col-lg-6.align-items-center.d-flex.flex-wrap.py-2

@@ -1,0 +1,18 @@
+extends head
+
+block allmain
+    -console.log( keys )
+    table.table.table-sm
+        thead
+            tr
+                for key of header
+                    th.text-center !{key}
+        tbody
+            for anovalues of values
+                tr.text-center
+                    for value of anovalues
+                        if value == 0
+                            td: span.text-muted !{value}
+                        else
+                            td: span.fw-bold !{value}
+                

@@ -384,6 +384,8 @@ app.use('/dashboard', (req, res) => {
     });
 });
 
+app.use('/table', require('./table-ano-origem'));
+
 app.use('/tinymce', express.static(path.join(require.resolve('tinymce'),'..')));
 app.use('/stats-sse', require('./dashboard'))
 app.use(express.static(path.join(__dirname, "static")));
