@@ -344,6 +344,12 @@ app.get("/datalist", (req, res) => {
         });
         return;
     }
+    if( aggKey == "Datafield" ){
+        client.indices.getMapping({index: INDEXNAME}).then(body => {
+            res.render("datalist", {aggs: Object.entries(body[INDEXNAME].mappings.properties).filter(o => o[1].fielddata || o[1].type == "keyword").map(o => ({key: o[0]})), id: id});
+        });
+        return;
+    }
     if( !agg ) {
         res.render("datalist", {aggs: [], error: "Aggregation not found", id: req.query.id});
         return;
