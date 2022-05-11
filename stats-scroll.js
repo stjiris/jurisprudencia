@@ -24,6 +24,7 @@ app.get("/", async (req, res) => {
         'Connection': 'keep-alive'
     });
     res.flushHeaders();
+    let minDist = req.query.minDist || 3;
 
     client.count({ index: INDEX, query: UNMATCH_QUERY }).then(count => res.write(`event: UnmatchingECLICountEvent\ndata: ${count.count}\n\n`));
     client.count({ index: INDEX, query: { term: {Origem: "csm-indexer"} } }).then(count => res.write(`event: CSMCountEvent\ndata: ${count.count}\n\n`));
@@ -37,19 +38,24 @@ app.get("/", async (req, res) => {
         let original = ECLI.fromString(_source._UNMATCHING_ECLI)
         let generated = ECLI.fromString(_source.ECLI)
         let distance = {}
+        let t=0;
         for( let key in original ) {
             distance[key] = {}
             distance[key].original = original[key]
             distance[key].generated = generated[key]
             distance[key].distance = levenshtein(original[key], generated[key])
+            t+=distance[key].distance
         }        
 
         _source["ECLIDistance"] = distance;
         _source["Data"] = fields["Data"];
-        res.write(`event: UnmatchingECLIEvent\n`);
-        res.write(`data: ${JSON.stringify(_source)}\n\n`);
-        await sleep(150)
+        if( t > minDist ) {
+            res.write(`event: UnmatchingECLIEvent\n`);
+            res.write(`data: ${JSON.stringify(_source)}\n\n`);
+        }
     }
+
+    res.write(`event: EndEvent\ndata:\n\n`);
 })
 
 

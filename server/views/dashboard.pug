@@ -1,10 +1,13 @@
 extends head
 
+block form
+    // Dont show filters on dashboard
 
 block main
     h2 Lista dos ECLI mal gerados pelo CSM
     p Dos <span id=total-count></span> indexados pelo CSM <span id=wrong-count></span> estão incorretos.
-    p São <span id=ok-count></span> corretos.
+    p São <span id=ok-count></span> corretos <a href="/?Origem=csm-indexer&notHasField=_UNMATCHING_ECLI">ver acórdãos</a>.
+    p A mostrar ECLIs com mais de 3 erros. (Os restantes ECLIs com 3 erros têm um sufixo aparentemente aleatório gerado pelo CSM)
     table.table#errors
         thead#thead-errors
             tr
@@ -14,9 +17,13 @@ block main
                 th Datas
         tbody#tbody-errors
 
+        tbody#tbody-end
+            tr
+                th A procurar acórdãos...
+
     script.
         let main = document.getElementById("main");
-        let evs = new EventSource("/stats-sse");
+        let evs = new EventSource("/stats-sse?distance=3");
         evs.addEventListener("UnmatchingECLIEvent", function(e){
             createUnmatchingECLIElement(JSON.parse(e.data));
         })
@@ -27,6 +34,10 @@ block main
         evs.addEventListener("CSMCountEvent", function(e){
             document.getElementById("total-count").innerHTML = e.data;
             document.getElementById("ok-count").innerHTML = parseInt(e.data) - parseInt(document.getElementById("wrong-count").innerHTML);
+        })
+
+        evs.addEventListener("EndEvent", function(e){
+            document.getElementById("tbody-end").remove();
         })
 
         function createUnmatchingECLIElement(source){

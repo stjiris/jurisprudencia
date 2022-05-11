@@ -356,7 +356,6 @@ app.get("/datalist", (req, res) => {
     }
     const sfilters = {pre: [], after: []};
     populateFilters(sfilters, req.query, [], []);
-    console.log(JSON.stringify(sfilters));
     search(queryObject(req.query.q), sfilters, 0, { [aggKey]: finalAgg}, 10).then(async body => {
         if( body.aggregations[aggKey].buckets.length < 10 ){
             body = await search(queryObject(req.query.q), sfilters, 0, { [aggKey]: agg }, 0);
