@@ -3,9 +3,9 @@ const client = new Client({
     node: "http://localhost:9200"
 });
 const {Router} = require("express")
-const {scroll} = require("./indexer");
+const {scroll} = require("../indexer");
 const INDEX = 'jurisprudencia.1.0';
-const ECLI = require("./util/ecli");
+const ECLI = require("../util/ecli");
 
 const app = Router();
 module.exports = app;
@@ -15,7 +15,6 @@ const UNMATCH_QUERY = {
         field: "_UNMATCHING_ECLI"
     }
 }
-const sleep = (time) => new Promise(resolve => setTimeout(resolve, time))
 
 app.get("/", async (req, res) => {
     res.set({
