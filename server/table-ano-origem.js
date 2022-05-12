@@ -50,6 +50,12 @@ app.get("/", (req, res) => {
             header: ["Ano",...keys,"Total","TotalWrongECLI"],
             values: values
         });
+    }).catch(err => {
+        res.render("table-ano-origem", {
+            header: ["ECLI","Origem","Total","TotalWrongECLI"],
+            values: [],
+            error: err
+        });
     });
 });
 
@@ -60,7 +66,8 @@ app.get("/duplicates", (req, res) => {
             ECLI: {
                 terms: {
                     field: "ECLI",
-                    min_doc_count: 2
+                    min_doc_count: 2,
+                    size: 65536/20
                 },
                 aggs: {
                     Origem: {
@@ -68,17 +75,6 @@ app.get("/duplicates", (req, res) => {
                             field: "Origem",
                             size: 20,
                             min_doc_count: 0
-                        }
-                    },
-                    WrongECLI: {
-                        filter: {
-                            bool: {
-                                must: {
-                                    exists: {
-                                        field: "_UNMATCHING_ECLI"
-                                    }
-                                }
-                            }
                         }
                     }
                 }
@@ -89,15 +85,20 @@ app.get("/duplicates", (req, res) => {
         let keys = body.aggregations.ECLI.buckets[0].Origem.buckets.map(bucket => bucket.key);
         let values = ECLI.map(ECLI => {
             let Total = body.aggregations.ECLI.buckets.find(bucket => bucket.key === ECLI).doc_count;
-            let WrongECLI = body.aggregations.ECLI.buckets.find(bucket => bucket.key === ECLI).WrongECLI.doc_count;
             let values = keys.map(key => body.aggregations.ECLI.buckets.find(bucket => bucket.key === ECLI).Origem.buckets.find(bucket => bucket.key === key)?.doc_count || 0);
-            return [ECLI,...values,Total,WrongECLI];
+            return [ECLI,...values,Total];
         });
         res.render("table-ano-origem", {
-            header: ["ECLI",...keys,"Total","TotalWrongECLI"],
+            header: ["ECLI",...keys,"Total"],
             values: values
         });
-    })
+    }).catch(err => {
+        res.render("table-ano-origem", {
+            header: ["ECLI","Origem","Total"],
+            values: [],
+            error: err
+        });
+    });
 
 
 })
