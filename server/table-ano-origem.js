@@ -98,4 +98,4 @@ app.get("/duplicates", (req, res) => {
     });
 });
 
-app.use(express.static(path.join(__dirname, "static")));
+app.use(static(path.join(__dirname, "static")));
