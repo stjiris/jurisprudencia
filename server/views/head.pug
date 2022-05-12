@@ -94,7 +94,7 @@ html(lang="en")
                                                     h5 
                                                         | !{key}
                                                         small: button.btn.color-link(type="submit", formaction="/list", name="term", value=key) (Lista)
-                                                    +await(`/datalist?id=datalist-${key}&agg=${key}&${querystring}`)
+                                                    +await(`./datalist?id=datalist-${key}&agg=${key}&${querystring}`)
                                                     input.form-control(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`Filtrar ${key}...`)
                                                     +usedFilters(key)
                                             for p of Object.keys(properties)
@@ -102,7 +102,7 @@ html(lang="en")
                                                     +filterlist(p)
                                             .d-flex.flex-column.my-2
                                                 h5 Campos 
-                                                    +await(`/datalist?id=datalist-Campos&agg=Campos&${querystring}`)
+                                                    +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)
                                                     input.form-control(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de conter o campo...`)
                                                     +usedFilters("hasField")
                                                     input.form-control(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode conter o campo...`)

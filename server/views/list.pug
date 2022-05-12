@@ -12,7 +12,7 @@ block printpageinfo
 prepend form
     .d-flex.flex-column.my-2
         h5 Campo do agrupamento 
-            +await(`/datalist?id=datalist-Datafield&agg=Datafield&${querystring}`)
+            +await(`./datalist?id=datalist-Datafield&agg=Datafield&${querystring}`)
             input.form-control(type="text", name="term", autocomplete="off", list=`datalist-Datafield`, placeholder=`Campo da lista`, value=term)
             
 append form
