@@ -72,29 +72,24 @@ app.get("/duplicates", (req, res) => {
                 aggs: {
                     Origem: {
                         terms: {
-                            field: "Origem",
-                            size: 20,
-                            min_doc_count: 0
+                            field: "Origem"
                         }
                     }
                 }
             }
         }
     }).then(body => {
-        let ECLI = body.aggregations.ECLI.buckets.map(bucket => bucket.key);
-        let keys = body.aggregations.ECLI.buckets[0].Origem.buckets.map(bucket => bucket.key);
+        let ECLI = body.aggregations.ECLI.buckets;
         let values = ECLI.map(ECLI => {
-            let Total = body.aggregations.ECLI.buckets.find(bucket => bucket.key === ECLI).doc_count;
-            let values = keys.map(key => body.aggregations.ECLI.buckets.find(bucket => bucket.key === ECLI).Origem.buckets.find(bucket => bucket.key === key)?.doc_count || 0);
-            return [ECLI,...values,Total];
+            return [ECLI.key, ECLI.Origem.buckets.map(bucket => bucket.key).join(", ")];
         });
         res.render("table-ano-origem", {
-            header: ["ECLI",...keys,"Total"],
+            header: ["ECLI", "Origem"],
             values: values
         });
     }).catch(err => {
         res.render("table-ano-origem", {
-            header: ["ECLI","Origem","Total"],
+            header: ["ECLI","Origem"],
             values: [],
             error: err
         });
