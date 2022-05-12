@@ -1,4 +1,4 @@
-const {Router} = require("express");
+const {Router, static} = require("express");
 const indexer = require("../indexer");
 
 const app = Router();
@@ -96,6 +96,6 @@ app.get("/duplicates", (req, res) => {
             error: err
         });
     });
+});
 
-
-})
+app.use(express.static(path.join(__dirname, "static")));
