@@ -21,6 +21,22 @@ const name2code = {
     "Acórdãos do Tribunal Constitucional": "TCO"
 }
 
+const name2name = {
+    "Supremo Tribunal de Justiça": "Supremo Tribunal de Justiça",
+    "Tribunal da Relação de Coimbra": "Tribunal da Relação de Coimbra",
+    "Tribunal da Relação de Évora": "Tribunal da Relação de Évora",
+    "Tribunal da Relação de Guimarães": "Tribunal da Relação de Guimarães",
+    "Tribunal da Relação de Lisboa": "Tribunal da Relação de Lisboa",
+    "Tribunal da Relação do Porto": "Tribunal da Relação do Porto",
+    "Tribunal da Propriedade Intelectual": "Tribunal da Propriedade Intelectual",
+    "Tribunal da Concorrência, Regulação e Supervisão": "Tribunal da Concorrência, Regulação e Supervisão",
+    "Supremo Tribunal Administrativo": "Supremo Tribunal Administrativo",
+    "Tribunal Central Administrativo Sul": "Tribunal Central Administrativo Sul",
+    "Tribunal Central Administrativo Norte": "Tribunal Central Administrativo Norte",
+    "Tribunal de Conflitos": "Tribunal dos Conflitos",
+    "Acórdãos do Tribunal Constitucional": "Tribunal Constitucional"
+}
+
 init().then( async _ => forEachCSMRecord(async record => {
     let Tribunal = record.tribunal;
     let Code = name2code[Tribunal];

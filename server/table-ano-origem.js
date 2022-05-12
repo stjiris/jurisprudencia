@@ -46,12 +46,12 @@ app.get("/", (req, res) => {
             let values = keys.map(key => body.aggregations.Histogram.buckets.find(bucket => bucket.key_as_string === Ano).Origem.buckets.find(bucket => bucket.key === key)?.doc_count || 0);
             return [Ano,...values,Total,WrongECLI];
         });
-        res.render("table-ano-origem", {
+        res.render("info-table", {
             header: ["Ano",...keys,"Total","TotalWrongECLI"],
             values: values
         });
     }).catch(err => {
-        res.render("table-ano-origem", {
+        res.render("info-table", {
             header: ["ECLI","Origem","Total","TotalWrongECLI"],
             values: [],
             error: err
@@ -67,12 +67,14 @@ app.get("/duplicates", (req, res) => {
                 terms: {
                     field: "ECLI",
                     min_doc_count: 2,
-                    size: 65536/20
+                    size: 65536/4,
+                    collect_mode: "breadth_first"
                 },
                 aggs: {
                     Origem: {
                         terms: {
-                            field: "Origem"
+                            field: "Origem",
+                            size: 4
                         }
                     }
                 }
@@ -81,15 +83,15 @@ app.get("/duplicates", (req, res) => {
     }).then(body => {
         let ECLI = body.aggregations.ECLI.buckets;
         let values = ECLI.map(ECLI => {
-            return [ECLI.key, ECLI.Origem.buckets.map(bucket => bucket.key).join(", ")];
+            return [`<a href="/${ECLI.key}">${ECLI.key}</a>`, ECLI.Origem.buckets.map(bucket => bucket.key).join(", "), ECLI.doc_count];
         });
-        res.render("table-ano-origem", {
-            header: ["ECLI", "Origem"],
+        res.render("info-table", {
+            header: ["ECLI", "Origem", "Contagem (Incorreto)"],
             values: values
         });
     }).catch(err => {
-        res.render("table-ano-origem", {
-            header: ["ECLI","Origem"],
+        res.render("info-table", {
+            header: ["ECLI","Origem", "Contagem (Incorreto)"],
             values: [],
             error: err
         });

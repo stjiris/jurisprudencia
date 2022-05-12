@@ -1,15 +1,23 @@
 extends head
 
+block head
+    link(rel="stylesheet", href="../style.css")
+
 block allmain
-    -console.log( keys )
+    if error
+        .alert.alert-danger(role="alert")
+            h5.alert-heading
+                strong 
+                    i.bi.bi-exclamation-circle
+                    | !{JSON.stringify(error, null, 2)}
     table.table.table-sm
         thead
             tr
                 for key of header
-                    th.text-center !{key}
+                    th !{key}
         tbody
             for anovalues of values
-                tr.text-center
+                tr
                     for value of anovalues
                         if value == 0
                             td: span.text-muted !{value}

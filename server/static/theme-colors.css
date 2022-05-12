@@ -30,7 +30,7 @@
 [data-tribunal="Tribunal da Relação de Lisboa"], [data-tribunal="TRL"]{
     --tribunal-color: var(--tribunal-TRL);
 }
-[data-tribunal="Tribunal Constitucional"], [data-tribunal="TCO"]{
+[data-tribunal="Tribunal Constitucional"], [data-tribunal="TCO"], [data-tribunal="Acórdãos do Tribunal Constitucional"] {
     --tribunal-color: var(--tribunal-TCO);
 }
 [data-tribunal="Tribunal Central Administrativo Sul"], [data-tribunal="TCA"]{
