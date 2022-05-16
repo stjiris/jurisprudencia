@@ -17,9 +17,9 @@ prepend form
             
 append form
     .d-flex.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`/?q=${q || ""}`): u Ver resultados da pesquisa
+        button.btn.w-100(type="submit", formaction=`./?q=${q || ""}`): u Ver resultados da pesquisa
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`/stats?q=${q || ""}`): u Ver estatísticas da pesquisa
+        button.btn.w-100(type="submit", formaction=`./stats?q=${q || ""}`): u Ver estatísticas da pesquisa
 
 block main
     if aggs[term].sum_other_doc_count > 0
@@ -50,7 +50,7 @@ block main
                                     span.p-1.m-1 !{a}
                     for obj in letter
                         .row.col-12.my-2.pb-2.align-items-center.term
-                            .col-4: a(href=`/?${term}=${obj.value}`) !{obj.value}
+                            .col-4: a(href=`./?${term}=${obj.value}`) !{obj.value}
                             .col-8.d-flex.flex-column
                                 for tribunal in obj.Tribunais
                                     span(data-tribunal=tribunal) !{tribunal}
