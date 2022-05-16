@@ -20,7 +20,7 @@ block allmain
 
     script.
         let main = document.getElementById("main");
-        let evs = new EventSource("/stats-sse?distance=3");
+        let evs = new EventSource("./stats-sse?distance=3");
         evs.addEventListener("UnmatchingECLIEvent", function(e){
             createUnmatchingECLIElement(JSON.parse(e.data));
         })
