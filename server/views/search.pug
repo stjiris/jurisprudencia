@@ -29,7 +29,7 @@ block main
         for doc in hits
             article.row(data-tribunal=doc._source.Tribunal)
                 .col-12.pt-2
-                    a(href=`/${doc._source.ECLI}`, target="_blank", style="color: var(--tribunal-color);").text-decoration-none !{doc._source.ECLI}
+                    a(href=`./${doc._source.ECLI}`, target="_blank", style="color: var(--tribunal-color);").text-decoration-none !{doc._source.ECLI}
                 .col-12.d-flex.flex-wrap.my-1
                     div.mx-1
                         b Tribunal:&nbsp;
