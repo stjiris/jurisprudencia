@@ -93,7 +93,7 @@ html(lang="en")
                                                 .d-flex.flex-column.my-2
                                                     h5 
                                                         | !{key}
-                                                        small: button.btn.color-link(type="submit", formaction="/list", name="term", value=key) (Lista)
+                                                        small: button.btn.color-link(type="submit", formaction="./list", name="term", value=key) (Lista)
                                                     +await(`./datalist?id=datalist-${key}&agg=${key}&${querystring}`)
                                                     input.form-control(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`Filtrar ${key}...`)
                                                     +usedFilters(key)
