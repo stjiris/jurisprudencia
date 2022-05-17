@@ -11,7 +11,7 @@ block printpageinfo
 
 append form
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`/stats?q=${q || ""}`): u Ver estatísticas da pesquisa
+        button.btn.w-100(type="submit", formaction=`./stats?q=${q || ""}`): u Ver estatísticas da pesquisa
 
 block main
     if hits.length == 0
