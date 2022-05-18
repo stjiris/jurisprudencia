@@ -1,6 +1,5 @@
-const {Router, static} = require("express");
+const {Router} = require("express");
 const indexer = require("../indexer");
-const path = require("path");
 
 const app = Router();
 module.exports = app;
