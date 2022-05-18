@@ -83,7 +83,7 @@ defineTable("ecli-errado", () => indexer._client.search({
     track_total_hits: true,
     _source: ["ECLI", "_UNMATCHING_ECLI"]
 }).then((res) => {
-    const header = ["ECLI", "ECLI_ERRADO", res.hits.total.value];
+    const header = ["ECLI", "ECLI_ERRADO"];
     const values = res.hits.hits.map((hit) => [hit._source.ECLI, hit._source._UNMATCHING_ECLI]);
     return {header, values};
 }));
