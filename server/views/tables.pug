@@ -17,24 +17,35 @@ block header
             .col-12.col-lg-6.d-none.d-print-block
                 block printpageinfo
                     p Tabelas
+        nav.w-100.d-print-none
+            ul.container.d-flex.nav.align-items-center.justify-content-evenly.flex-wrap
+                li.nav-item.py-1.px-2.mx-1
+                    a.nav-link(href="../"): h5.m-0 Pesquisa
+                li.nav-item.py-1.px-2.mx-1
+                    a.nav-link(href="../stats"): h5.m-0 Estatística
+                li.nav-item.py-1.px-2.mx-1
+                    a.nav-link(href="../list"): h5.m-0 Listas
+                li.nav-item.py-1.px-2.mx-1
+                    a.nav-link(href="./", class="active"): h5.m-0 Tabelas
 
 block allmain
     if warning
         .alert.alert-warning(role="alert")
-            h5.alert-heading
+            h6.alert-heading
                 strong 
                     i.bi.bi-exclamation-circle
                     | !{warning}
-    a(href="./") Voltar
-    p A mostrar !{values.length} linhas.
     table.table.table-sm
         thead
             tr
+                th: span.text-muted !{values.length}
                 for key of header
                     th !{key}
         tbody
+            -let i = 1;
             for anovalues of values
                 tr
+                    th: span.text-muted !{i++}
                     for value of anovalues
                         if value == 0
                             td: span.text-muted !{value}
