@@ -14,7 +14,7 @@ block allmain
             button(type="submit") Correr
         div.col-12.col-sm-6
             h4 Output
-            textarea.w-100#out(cols="30", rows="10") 
+            div#out
     script.
         document.getElementById("anonim-form").addEventListener("submit", (evt) => {
             evt.preventDefault();
@@ -27,7 +27,7 @@ block allmain
                 method: "POST",
                 body: formData
             }).then(response => response.text()).then(text => {
-                document.getElementById("out").value = text;
+                document.getElementById("out").innerHTML = text;
                 button.disabled = false;
             });
         })
