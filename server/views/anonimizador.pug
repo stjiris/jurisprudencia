@@ -22,7 +22,7 @@ block allmain
             button.disabled = true;
             let formData = new FormData();
 
-            formData.append("file", document.getElementById("in").value, "inpur.txt");
+            formData.append("file", new Blob(document.getElementById("in").value), "input.txt");
             fetch("https://pe.inesc-id.pt/python/", {
                 method: "POST",
                 body: formData
