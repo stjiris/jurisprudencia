@@ -1,0 +1,32 @@
+extends head.pug 
+
+block printpageinfo
+    h6 Anonimizador
+
+block headerinput
+    h4(style="color: var(--color-white);") Anonimizador
+
+block allmain
+    form#anonim-form(action="https://pe.inesc-id.pt/cgi-bin/index.py", method="post").row
+        div.col-12.col-sm-6
+            h4 Input
+            textarea.w-100#in(cols="30", rows="10")
+            button(type="submit") Correr
+        div.col-12.col-sm-6
+            h4 Output
+            textarea.w-100#out(cols="30", rows="10") 
+    script.
+        document.getElementById("anonim-form").addEventListener("submit", (evt) => {
+            evt.preventDefault();
+            let button = document.getElementById("anonim-form").querySelector("button");
+            button.disabled = true;
+            fetch("https://pe.inesc-id.pt/cgi-bin/index.py", {
+                method: "POST",
+                body: document.getElementById("in").value
+            }).then(response => response.text()).then(text => {
+                document.getElementById("out").value = text;
+                button.disabled = false;
+            });
+        })
+        
+
