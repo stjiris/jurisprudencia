@@ -20,7 +20,7 @@ block allmain
             evt.preventDefault();
             let button = document.getElementById("anonim-form").querySelector("button");
             button.disabled = true;
-            fetch("https://pe.inesc-id.pt/cgi-bin/index.py", {
+            fetch("https://pe.inesc-id.pt/python/", {
                 method: "POST",
                 body: document.getElementById("in").value
             }).then(response => response.text()).then(text => {
