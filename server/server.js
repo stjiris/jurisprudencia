@@ -320,7 +320,7 @@ app.get("/:ecli(ECLI:*)", (req, res) => {
             if( !docnum ){
                 let html = ''
                 for( let i = 0; i < body.hits.hits.length; i++ ){
-                    html += `<li><a href=/${ecli}?docnum=${i}>Abrir documento ${i}</a></li>`
+                    html += `<li><a href=?docnum=${i}>Abrir documento ${i}</a></li>`
                 }
                 res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
             }
