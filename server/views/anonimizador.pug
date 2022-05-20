@@ -10,7 +10,7 @@ block allmain
     form#anonim-form(action="https://pe.inesc-id.pt/python/", method="post").row
         div.col-12.col-sm-6
             h4 Input
-            textarea.w-100#in(cols="30", rows="10")
+            input(type="file", name="file")
             button(type="submit") Correr
         div.col-12.col-sm-6
             h4 Output
@@ -20,9 +20,7 @@ block allmain
             evt.preventDefault();
             let button = document.getElementById("anonim-form").querySelector("button");
             button.disabled = true;
-            let formData = new FormData();
-
-            formData.append("file", new Blob([document.getElementById("in").value]), "input.txt");
+            let formData = new FormData(document.getElementById("anonim-form"));
             fetch("https://pe.inesc-id.pt/python/", {
                 method: "POST",
                 body: formData
