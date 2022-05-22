@@ -44,10 +44,10 @@ block allmain
             // create tbody row
             let tbody = document.getElementById("tbody-errors");
             let tr = document.createElement("tr");
-            let generated = tr.appendChild(document.createElement("td"));
-            let original = tr.appendChild(document.createElement("td"));
             tr.appendChild(document.createElement("td")).innerHTML = count++;
             document.getElementById("count").innerHTML = count;
+            let generated = tr.appendChild(document.createElement("td"));
+            let original = tr.appendChild(document.createElement("td"));
             tr.appendChild(document.createElement("td")).innerHTML = `${source["Processo"]}`;
             tr.appendChild(document.createElement("td")).innerHTML = `${source["Data"].join(", ")}`;
             generated.innerHTML = "ECLI"
