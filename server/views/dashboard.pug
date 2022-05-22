@@ -45,7 +45,7 @@ block allmain
             let tbody = document.getElementById("tbody-errors");
             let tr = document.createElement("tr");
             tr.appendChild(document.createElement("td")).innerHTML = count++;
-            document.getElementById("count").innerHTML = count;
+            document.getElementById("count").innerHTML = count-1;
             let generated = tr.appendChild(document.createElement("td"));
             let original = tr.appendChild(document.createElement("td"));
             tr.appendChild(document.createElement("td")).innerHTML = `${source["Processo"]}`;
