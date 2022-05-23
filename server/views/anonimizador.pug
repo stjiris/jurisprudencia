@@ -7,12 +7,16 @@ block headerinput
     h4(style="color: var(--color-white);") Anonimizador
 
 block allmain
-    form#anonim-form(action="https://pe.inesc-id.pt/python/", method="post").row
-        div.col-12.col-sm-6
+    .row
+        .col-12
             h4 Input
+        form#anonim-form(action="https://pe.inesc-id.pt/python/", method="post").col-12.col-sm-6
             input(type="file", name="file")
-            button(type="submit") Correr
-        div.col-12.col-sm-6
+            button(type="submit") Correr a partir de ficheiro
+        form#anonim-form-text(action="https://pe.inesc-id.pt/python/", method="post").col-12.col-sm-6
+            textarea(name="file").w-100
+            button(type="submit") Correr este texto
+        .col-12
             h4 Output
             div#out
     style.
@@ -35,6 +39,19 @@ block allmain
                 document.getElementById("out").innerHTML = text;
                 button.disabled = false;
             });
-        })
-        
+        });
+        document.getElementById("anonim-form-text").addEventListener("submit", (evt) => {
+            evt.preventDefault();
+            let button = document.getElementById("anonim-form-text").querySelector("button");
+            button.disabled = true;
+            let formData = new FormData();
+            formData.append("file", document.getElementById("anonim-form-text").querySelector("textarea").value, "text.txt");
+            fetch("https://pe.inesc-id.pt/python/", {
+                method: "POST",
+                body: formData
+            }).then(response => response.text()).then(text => {
+                document.getElementById("out").innerHTML = text;
+                button.disabled = false;
+            });
+        });
 
