@@ -45,7 +45,7 @@ block allmain
             let button = document.getElementById("anonim-form-text").querySelector("button");
             button.disabled = true;
             let formData = new FormData();
-            formData.append("file", document.getElementById("anonim-form-text").querySelector("textarea").value, "text.txt");
+            formData.append("file", new Blob([document.getElementById("anonim-form-text").querySelector("textarea").value]), "text.txt");
             fetch("https://pe.inesc-id.pt/python/", {
                 method: "POST",
                 body: formData
