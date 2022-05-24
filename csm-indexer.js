@@ -37,8 +37,6 @@ const name2name = {
     "Acórdãos do Tribunal Constitucional": "Tribunal Constitucional"
 }
 
-const START_OFFSET = process.env.START_OFFSET || 0;
-
 init().then( async _ => forEachCSMRecord(async record => {
     let Tribunal = record.tribunal;
     let Code = name2code[Tribunal];
@@ -97,7 +95,14 @@ init().then( async _ => forEachCSMRecord(async record => {
 
 
 async function forEachCSMRecord(fn){
-    let offset = START_OFFSET;
+    let offset = 0;
+    if( "START_OFFSET" in process.env ){
+        offset = parseInt(process.env.START_OFFSET);
+        if( Number.isNaN(offset) ){
+            offset = 0;
+            console.log("Invalid START_OFFSET, using 0");
+        }
+    }
     let perPage = 500;
     let url = getUrl(offset, perPage);
     while(true){
