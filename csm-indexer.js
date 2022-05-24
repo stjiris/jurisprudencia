@@ -37,11 +37,13 @@ const name2name = {
     "Acórdãos do Tribunal Constitucional": "Tribunal Constitucional"
 }
 
+const START_OFFSET = process.env.START_OFFSET || 0;
+
 init().then( async _ => forEachCSMRecord(async record => {
     let Tribunal = record.tribunal;
     let Code = name2code[Tribunal];
 
-    let ecli = ECLI.fromString(record.ecli).setJurisdiction(Code);
+    let ecli = ECLI.fromString(record.ecli.replace(/ver\.ac\..*(\.\w{2})/,"$1")).setJurisdiction(Code);
     let link = `https://jurisprudencia.csm.org.pt/ecli/${record.ecli}/`;
     let table = await url2Table(`https://jurisprudencia.csm.org.pt/ecli/${record.ecli}/`);
     
@@ -95,7 +97,7 @@ init().then( async _ => forEachCSMRecord(async record => {
 
 
 async function forEachCSMRecord(fn){
-    let offset = 0;
+    let offset = START_OFFSET;
     let perPage = 500;
     let url = getUrl(offset, perPage);
     while(true){
