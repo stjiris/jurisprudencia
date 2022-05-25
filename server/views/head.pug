@@ -112,20 +112,6 @@ html(lang="en")
                                             .d-flex.flex-row.my-2.justify-content-between.align-items-center
                                                 button.btn.btn-primary(type="submit") Aplicar
                                                 a.btn.btn-danger(href=`?q=${q || ""}`) Limpar
-                                        if Number.isInteger(page) && Number.isInteger(pages)
-                                            nav.my-2.sticky-top
-                                                ul.pagination.justify-content-between
-                                                    li.page-item
-                                                        button.btn(type="submit", name="page", value=0, disabled=page<=0).page-link: i.bi.bi-chevron-double-left
-                                                    li.page-item
-                                                        button.btn(type="submit", name="page", value=page-1, disabled=page<=0).page-link: i.bi.bi-chevron-left
-                                                    li.page-item.w-50
-                                                        button.btn(type="submit", name="page", value=page, disabled).page-link.w-100 !{page+1}/!{pages}
-                                                    li.page-item
-                                                        button.btn(type="submit", name="page", value=page+1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-right
-                                                    li.page-item
-                                                        button.btn(type="submit", name="page", value=pages-1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-double-right
-                                            small (A pesquisa está limitada a !{550000/50} páginas)
                         .col-12.col-md-9#main: block main
         footer.d-print-none.mt-2
             .container.row.align-items-center.m-auto.p-4

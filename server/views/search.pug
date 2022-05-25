@@ -10,14 +10,37 @@ block printpageinfo
 
 
 append form
-    .d-flex.flex-row.my-2.justify-content-center.align-items-center
+    .d-flex.my-2.justify-content-center.align-items-center
         .input-group
             .input-group-prepend.w-25
-                label(for="order").input-group-text.w-100 Ordem:
-            select#order(name="sort").form-control
-                option(value="score", selected=sort=="score") Relevância de pesquisa
-                option(value="des", selected=sort=="des") Data descendente
-                option(value="asc", selected=sort=="asc") Data ascendente
+                label.input-group-text.w-100.h-100 Ordem:
+            .form-control.d-flex.flex-column
+                a(href=`./?sort=score&${querystring}`,class=sort=="score"?"text-muted":"")
+                    i.bi.bi-list-stars
+                    | Relevância
+                a(href=`./?sort=des&${querystring}`,class=sort=="des"?"text-muted":"")
+                    i.bi.bi-calendar
+                    | Data Descendente
+                a(href=`./?sort=asc&${querystring}`,class=sort=="asc"?"text-muted":"")
+                    i.bi.bi-calendar
+                    | Data Ascendente
+                
+            
+                                                
+    nav.my-2
+    nav.my-2
+        ul.pagination.justify-content-between
+            li.page-item
+                button.btn(type="submit", name="page", value=0, disabled=page<=0).page-link: i.bi.bi-chevron-double-left
+            li.page-item
+                button.btn(type="submit", name="page", value=page-1, disabled=page<=0).page-link: i.bi.bi-chevron-left
+            li.page-item.w-50
+                button.btn(type="submit", name="page", value=page, disabled).page-link.w-100 !{page+1}/!{pages}
+            li.page-item
+                button.btn(type="submit", name="page", value=page+1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-right
+            li.page-item
+                button.btn(type="submit", name="page", value=pages-1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-double-right
+    small (A pesquisa está limitada a !{550000/50} páginas)
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
         button.btn.w-100(type="submit", formaction=`./stats?q=${q || ""}`): u Ver estatísticas da pesquisa
 
