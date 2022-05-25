@@ -11,6 +11,14 @@ block printpageinfo
 
 append form
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
+        .input-group
+            .input-group-prepend.w-25
+                label(for="order").input-group-text.w-100 Ordem:
+            select#order(name="sort").form-control
+                option(value="score", selected=sort=="score") Relevância de pesquisa
+                option(value="des", selected=sort=="des") Data descendente
+                option(value="asc", selected=sort=="asc") Data ascendente
+    .d-flex.flex-row.my-2.justify-content-center.align-items-center
         button.btn.w-100(type="submit", formaction=`./stats?q=${q || ""}`): u Ver estatísticas da pesquisa
 
 block main

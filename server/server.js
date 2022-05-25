@@ -57,12 +57,14 @@ app.render = (name, obj, next) => {
     tmp(name, { properties, ...obj }, next);
 }
 
+const DEFAULT_AGGS = {Tribunal: aggs.Tribunal, MinAno: aggs.MinAno, MaxAno: aggs.MaxAno};
+
 
 let search = (
     query, // query string, ideally given by queryObject()
     filters={pre: [], after: []}, // filters to be applied, pre for before the query, after for after the query (affects aggregations)
     page=0, // page number [0, ...]
-    saggs={Tribunal: aggs.Tribunal, MinAno: aggs.MinAno, MaxAno: aggs.MaxAno}, // aggregations to be applied
+    saggs=DEFAULT_AGGS, // aggregations to be applied
     rpp=RESULTS_PER_PAGE, // results per page
     extras={}  // extra fields to aply to the search if needed
 ) => client.search({
@@ -81,9 +83,6 @@ let search = (
     aggs: saggs,
     size: rpp,
     from: page*rpp,
-    sort: [
-        { "Data": { order: "asc", mode: "min" }  }
-    ],
     track_total_hits: true,
     _source: [...Object.keys(properties), "Sumário"],
     fields: ["Data"],
@@ -198,10 +197,29 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
 app.get("/", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filtersUsed = populateFilters(sfilters, req.query);
+    const sort = [];
+    const sortV = req.query.sort || "score";
+    if( sortV == "des" ){
+        sort.push({
+            Data: "desc"
+        });
+    }
+    else if( sortV == "asc" ){
+        sort.push({
+            Data: "asc"
+        });
+    }
+    else if( sortV == "score" ){
+        sort.push({
+            _score: "desc"
+        });
+    }
+
     let page = parseInt(req.query.page) || 0;
-    search(queryObject(req.query.q), sfilters, page).then(results => {
+    search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, RESULTS_PER_PAGE, { sort }).then(results => {
         res.render("search", {
-            q: req.query.q, querystring: new URLSearchParams(req.originalUrl).toString(),            
+            q: req.query.q, querystring: new URLSearchParams(req.originalUrl).toString(),
+            sort: sortV,          
             body: results,
             hits: results.hits.hits,
             aggs: results.aggregations,
@@ -214,6 +232,7 @@ app.get("/", (req, res) => {
         console.log(e);
         res.render("search", {
             q: req.query.q, querystring: new URLSearchParams(req.originalUrl).toString(),
+            sort: sortV,
             body: {},
             hits: [],
             aggs: {},
