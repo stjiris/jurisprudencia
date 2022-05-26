@@ -6,41 +6,17 @@ prepend header
     -currentPage = "search"
 
 block printpageinfo
-    p Resultados da pesquisa por: "!{q || ""}" (Página !{page+1} de !{pages} páginas)
+    ul
+        p Resultados da pesquisa por: "!{q || ""}" (Página !{page+1} de !{pages} páginas)
+        p Filtros aplicados:
+        for filter in Object.keys(filters)
+            li
+                b !{filter}: 
+                | !{filters[filter]}
+
 
 
 append form
-    .d-flex.my-2.justify-content-center.align-items-center
-        .input-group
-            .input-group-prepend.w-25
-                label.input-group-text.w-100.h-100 Ordem:
-            .form-control.d-flex.flex-column
-                a(href=`./?sort=score&${querystring}`,class=sort=="score"?"text-muted":"")
-                    i.bi.bi-list-stars
-                    | Relevância
-                a(href=`./?sort=des&${querystring}`,class=sort=="des"?"text-muted":"")
-                    i.bi.bi-calendar
-                    | Data Descendente
-                a(href=`./?sort=asc&${querystring}`,class=sort=="asc"?"text-muted":"")
-                    i.bi.bi-calendar
-                    | Data Ascendente
-                
-            
-                                                
-    nav.my-2
-    nav.my-2
-        ul.pagination.justify-content-between
-            li.page-item
-                button.btn(type="submit", name="page", value=0, disabled=page<=0).page-link: i.bi.bi-chevron-double-left
-            li.page-item
-                button.btn(type="submit", name="page", value=page-1, disabled=page<=0).page-link: i.bi.bi-chevron-left
-            li.page-item.w-50
-                button.btn(type="submit", name="page", value=page, disabled).page-link.w-100 !{page+1}/!{pages}
-            li.page-item
-                button.btn(type="submit", name="page", value=page+1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-right
-            li.page-item
-                button.btn(type="submit", name="page", value=pages-1, disabled=page>=pages-1).page-link: i.bi.bi-chevron-double-right
-    small (A pesquisa está limitada a !{550000/50} páginas)
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
         button.btn.w-100(type="submit", formaction=`./stats?q=${q || ""}`): u Ver estatísticas da pesquisa
 
@@ -55,8 +31,35 @@ block main
                 li Verifique os filtros utilizados (tribunais, relator, descritores, data)
                 li Verifique o termo pesquisado
     else
-        .row.p-2
-            .col-12.d-none.d-lg-block: h4 !{body.hits.total.value} Resultados:
+        article.row.pt-2.sticky-top.bg-white
+            .col-4.d-none.d-lg-block: h4.mt-2 !{body.hits.total.value} Resultados:
+            .col-12.col-lg-8
+                nav.mt-2
+                    ul.pagination.justify-content-center.text-center
+                        li.page-item.w-100(class=sort=="score"?"active":"")
+                            a.page-link(href=`./?sort=score&page=${page}&${querystring}`)
+                                i.bi.bi-list-stars
+                                span.ps-2 Por Relevância
+                        li.page-item.w-100(class=sort=="des"?"active":"")
+                            a.page-link(href=`./?sort=des&page=${page}&${querystring}`)
+                                i.bi.bi-calendar
+                                span.ps-2 Por Data Descendente
+                        li.page-item.w-100(class=sort=="asc"?"active":"")
+                            a.page-link(href=`./?sort=asc&page=${page}&${querystring}`)
+                                i.bi.bi-calendar
+                                span.ps-2 Por Data Ascendente
+                nav.mt-2
+                    ul.pagination.justify-content-center.text-center
+                        li.page-item.w-25
+                            a.page-link(href=`?page=${0}&sort=${sort}&${querystring}`): i.bi.bi-chevron-double-left
+                        li.page-item.w-25
+                            a.page-link(href=`?page=${page-1}&sort=${sort}&${querystring}`): i.bi.bi-chevron-left
+                        li.page-item.w-100
+                            a.page-link(href=`?page=${page}&sort=${sort}&${querystring}`) Página !{page+1}/!{pages}
+                        li.page-item.w-25
+                            a.page-link(href=`?page=${page+1}&sort=${sort}&${querystring}`): i.bi.bi-chevron-right
+                        li.page-item.w-25
+                            a.page-link(href=`?page=${pages-1}&sort=${sort}&${querystring}`): i.bi.bi-chevron-double-right
         for doc in hits
             article.row(data-tribunal=doc._source.Tribunal)
                 .col-12.pt-2
@@ -129,6 +132,11 @@ block main
             article[data-tribunal]::after{
                 top:100% !important;
             }
+
+            article{
+                break-inside: avoid !important;
+            }
+            nav{ display: none; }
         }
 
         article[data-tribunal] {

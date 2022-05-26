@@ -194,6 +194,15 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
     return filtersUsed;
 }
 
+function queryString(originalUrl, drop=["page", "sort"]){
+    let url = new URL(originalUrl, "a://b");
+    let query = new URLSearchParams(url.searchParams);
+    for( let k of drop ){
+        query.delete(k);
+    }
+    return query.toString();
+}
+
 app.get("/", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filtersUsed = populateFilters(sfilters, req.query);
@@ -216,11 +225,9 @@ app.get("/", (req, res) => {
     }
 
     let page = parseInt(req.query.page) || 0;
-    let querystring = new URLSearchParams(req.originalUrl.split("?")[1])
-    querystring.delete("sort");
     search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, RESULTS_PER_PAGE, { sort }).then(results => {
         res.render("search", {
-            q: req.query.q, querystring: querystring.toString(),
+            q: req.query.q, querystring: queryString(req.originalUrl),
             sort: sortV,          
             body: results,
             hits: results.hits.hits,
@@ -233,7 +240,7 @@ app.get("/", (req, res) => {
     }).catch(e => {
         console.log(e);
         res.render("search", {
-            q: req.query.q, querystring: querystring.toString(),
+            q: req.query.q, querystring: queryString(req.originalUrl),
             sort: sortV,
             body: {},
             hits: [],
@@ -270,13 +277,11 @@ const statsAggs = {
 app.get("/stats", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
-    let querystring = new URLSearchParams(req.originalUrl.split("?")[1])
-    querystring.delete("sort");
     search(queryObject(req.query.q), sfilters, 0, statsAggs, 0).then(body => {
-        res.render("stats", {q: req.query.q, querystring: querystring, aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
+        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
     }).catch(err => {
         console.log(req.originalUrl, err)
-        res.render("stats", {q: req.query.q, querystring: querystring, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
+        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), error: err, aggs: {}, filters: {}, page: 0, pages: 0});
     });
 });
 
@@ -321,13 +326,11 @@ app.get("/list", (req, res) => {
     const term = req.query.term || "Relator";
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
-    let querystring = new URLSearchParams(req.originalUrl.split("?")[1])
-    querystring.delete("sort");
     search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then(body => {
-        res.render("list", {q: req.query.q, querystring: querystring, aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: Object.keys(filters).length > 0});
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: Object.keys(filters).length > 0});
     }).catch(err => {
         console.log(req.originalUrl, err)
-        res.render("list", {q: req.query.q, querystring: querystring, error: err, aggs: {}, letters: {}, filters: {}, term: term});
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), error: err, aggs: {}, letters: {}, filters: {}, term: term});
     });
 });
 
