@@ -39,15 +39,15 @@ block main
                         li.page-item.w-100(class=sort=="score"?"active":"")
                             a.page-link(href=`./?sort=score&page=${page}&${querystring}`)
                                 i.bi.bi-list-stars
-                                span.ps-2 Por Relevância
+                                small.ps-2 Por Relevância
                         li.page-item.w-100(class=sort=="des"?"active":"")
                             a.page-link(href=`./?sort=des&page=${page}&${querystring}`)
                                 i.bi.bi-calendar
-                                span.ps-2 Por Data Descendente
+                                small.ps-2 Por Data Descendente
                         li.page-item.w-100(class=sort=="asc"?"active":"")
                             a.page-link(href=`./?sort=asc&page=${page}&${querystring}`)
                                 i.bi.bi-calendar
-                                span.ps-2 Por Data Ascendente
+                                small.ps-2 Por Data Ascendente
                 nav.mt-2
                     ul.pagination.justify-content-center.text-center
                         li.page-item.w-25
@@ -55,7 +55,8 @@ block main
                         li.page-item.w-25
                             a.page-link(href=`?page=${page-1}&sort=${sort}&${querystring}`): i.bi.bi-chevron-left
                         li.page-item.w-100
-                            a.page-link(href=`?page=${page}&sort=${sort}&${querystring}`) Página !{page+1}/!{pages}
+                            a.page-link
+                                small Página !{page+1}/!{pages}
                         li.page-item.w-25
                             a.page-link(href=`?page=${page+1}&sort=${sort}&${querystring}`): i.bi.bi-chevron-right
                         li.page-item.w-25
