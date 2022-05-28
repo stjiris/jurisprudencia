@@ -21,7 +21,7 @@ append form
         button.btn.w-100(type="submit", formaction=`./stats?q=${q || ""}`): u Ver estatísticas da pesquisa
 
 block main
-    if hits.length == 0
+    if body.hits.total.value == 0
         .alert.alert-info(role="alert")
             h4.alert-heading Sem resultados...
             strong
@@ -31,8 +31,8 @@ block main
                 li Verifique os filtros utilizados (tribunais, relator, descritores, data)
                 li Verifique o termo pesquisado
     else
-        article.row.pt-2.sticky-top.bg-white
-            .col-4.d-none.d-lg-block: h4.mt-2 !{body.hits.total.value} Resultados:
+        article.row.pt-2
+            .col-4.d-none.d-lg-block: h4.mt-2 !{body.hits.total.value} Acórdãos:
             .col-12.col-lg-8
                 nav.mt-2
                     ul.pagination.justify-content-center.text-center
@@ -53,58 +53,47 @@ block main
                         li.page-item.w-25
                             a.page-link(href=`?page=${0}&sort=${sort}&${querystring}`): i.bi.bi-chevron-double-left
                         li.page-item.w-25
-                            a.page-link(href=`?page=${page-1}&sort=${sort}&${querystring}`): i.bi.bi-chevron-left
+                            if page > 0
+                                a.page-link(href=`?page=${page-1}&sort=${sort}&${querystring}`): i.bi.bi-chevron-left
+                            else
+                                a.page-link: i.bi.bi-chevron-left.disabled
                         li.page-item.w-100
                             a.page-link
                                 small Página !{page+1}/!{pages}
                         li.page-item.w-25
-                            a.page-link(href=`?page=${page+1}&sort=${sort}&${querystring}`): i.bi.bi-chevron-right
+                            if page < pages-1
+                                a.page-link(href=`?page=${page+1}&sort=${sort}&${querystring}`): i.bi.bi-chevron-right
+                            else
+                                a.page-link: i.bi.bi-chevron-right.disabled
                         li.page-item.w-25
                             a.page-link(href=`?page=${pages-1}&sort=${sort}&${querystring}`): i.bi.bi-chevron-double-right
-        for doc in hits
-            article.row(data-tribunal=doc._source.Tribunal)
-                .col-12.pt-2
-                    a(href=`./${doc._source.ECLI}`, target="_blank", style="color: var(--tribunal-color);").text-decoration-none !{doc._source.ECLI}
-                .col-12.d-flex.flex-wrap.my-1
-                    div.mx-1
-                        b Tribunal:&nbsp;
-                        span #{doc._source.Tribunal}&nbsp;
-                        if doc._source.Secção
-                            span (#{doc._source.Secção})
-                    div.mx-1
-                        b Relator:&nbsp;
-                        span #{doc._source.Relator}
-                    div.mx-1
-                        b Data(s):&nbsp;
-                        span #{doc.fields.Data}
-                .col-12.d-flex.flex-wrap.my-1
-                    if doc._source.Espécie
-                        div.mx-1
-                            b Espécie:&nbsp;
-                            span #{doc._source.Espécie}
-                    if doc._source["Meio Processual"]
-                        div.mx-1
-                            b Meio Processual:&nbsp;
-                            span #{doc._source["Meio Processual"]}
-                if Array.isArray(doc._source.Descritores)
-                    .col-12.my-1
-                        div.mx-1
-                            b Descritores:&nbsp;
-                            span #{doc._source.Descritores.join(' / ')}
-                if doc._source.Votação
-                    .col-12.my-1
-                        div.mx-1
-                            b Votação:&nbsp;
-                            span #{doc._source.Votação}
-                if doc._source.Decisão
-                    .col-12.my-1
-                        div.mx-1.d-flex
-                            b Decisão:&nbsp;
-                            div !{doc._source.Decisão}
-                if doc._source.Sumário
-                    details.col-12.my-1
-                        summary.mx-1: b.mouse-click Sumário:
-                        div.col-12 !{doc._source["Sumário"]}
+        include acord-article
+        
+        article.row(data-tribunal)#looking
+            h3 A receber acórdãos...
+            script.
+                let fetching = false;
+                let page = !{page};
+                let url = `./acord-only?sort=!{sort}&!{querystring}`;
+                new IntersectionObserver(function(entries, observer) {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && !fetching) {
+                            fetch(url+`&page=${page}`).then(r => r.text()).then(html => {
+                                if (html.length > 0) {
+                                    document.querySelector("#looking").insertAdjacentHTML("beforebegin", html);
+                                    page++;
+                                } else {
+                                    observer.disconnect();
+                                    document.querySelector("#looking").querySelector("h3").textContent = "Não há mais acórdãos...";
+                                }
+                                observer.disconnect();
+                                entry.target.remove();
+                            });
+                        }
+                    })
+                }, {
+                    threshold: 0
+                }).observe(document.querySelector("#looking"));
     script.
         // Close all summary elements
         function closeAllSummaries() {

@@ -203,7 +203,7 @@ function queryString(originalUrl, drop=["page", "sort"]){
     return query.toString();
 }
 
-app.get("/", (req, res) => {
+app.get(["/", "/acord-only"], (req, res) => {
     const sfilters = {pre: [], after: []};
     const filtersUsed = populateFilters(sfilters, req.query);
     const sort = [];
@@ -225,8 +225,9 @@ app.get("/", (req, res) => {
     }
 
     let page = parseInt(req.query.page) || 0;
-    search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, RESULTS_PER_PAGE, { sort }).then(results => {
-        res.render("search", {
+    let rpp = req.path == "/" ? 0 : RESULTS_PER_PAGE;
+    search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, rpp, { sort }).then(results => {
+        res.render(req.path == "/" ? "search" : "acord-article", {
             q: req.query.q, querystring: queryString(req.originalUrl),
             sort: sortV,          
             body: results,
@@ -239,7 +240,7 @@ app.get("/", (req, res) => {
         });
     }).catch(e => {
         console.log(e);
-        res.render("search", {
+        res.render(req.path == "/" ? "search" : "acord-article", {
             q: req.query.q, querystring: queryString(req.originalUrl),
             sort: sortV,
             body: {},

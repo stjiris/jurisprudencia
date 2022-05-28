@@ -59,7 +59,7 @@ html(lang="en")
                                                 -let tribunais = []
                                                 .form-check.form-check-inline
                                                     input.form-check-input(type="checkbox", id="tribunais-all")
-                                                    label.form-check-label(for="tribunais-all"): h5 Tribunal
+                                                    label.form-check-label(for="tribunais-all"): h6 Tribunal
                                                 -let key = "Tribunal"
                                                 for bucket in aggs[key].buckets
                                                     -let checked = !filters[key] || filters[key].indexOf(bucket.key) > -1
@@ -71,7 +71,7 @@ html(lang="en")
                                                             span.d-block !{bucket.key} 
                                                             span.d-block (!{bucket.doc_count})
                                             .d-flex.flex-column.my-2
-                                                h5 Data
+                                                h6 Anos
                                                 .input-group
                                                     .input-group-prepend.w-25
                                                         label(for="data_inicio").input-group-text.w-100 De
@@ -93,7 +93,7 @@ html(lang="en")
                                                                     i.d-blocl.bi-trash
                                             mixin filterlist(key)
                                                 .d-flex.flex-column.my-2
-                                                    h5 
+                                                    span 
                                                         | !{key}
                                                         small: button.btn.color-link(type="submit", formaction="./list", name="term", value=key) (Lista)
                                                     +await(`./datalist?id=datalist-${key}&agg=${key}&${querystring}`)
@@ -103,7 +103,7 @@ html(lang="en")
                                                 if ["Tribunal", "ECLI", "Código Tribunal", "Processo", "Tipo", "Jurisprudência", "Original URL"].indexOf(p) == -1
                                                     +filterlist(p)
                                             .d-flex.flex-column.my-2
-                                                h5 Campos 
+                                                span Campos 
                                                     +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)
                                                     input.form-control(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de conter o campo...`)
                                                     +usedFilters("hasField")

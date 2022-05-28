@@ -44,6 +44,10 @@ header nav a.nav-link:hover h5{
     border-color: var(--color-gold);
 }
 
+form label{
+    font-size: 0.85rem;
+}
+
 input[type=checkbox] ~ label{
     position: relative;
     cursor: pointer;
