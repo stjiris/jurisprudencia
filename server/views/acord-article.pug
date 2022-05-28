@@ -38,6 +38,13 @@ for doc in hits
                 div.mx-1.d-flex
                     b Decisão:&nbsp;
                     div !{doc._source.Decisão}
+        if Object.keys(doc.highlight).length > 0
+            .col-12.my-1
+                div.mx-1
+                    b Destaque(s) da pesquisa:&nbsp;
+                    for key of Object.keys(doc.highlight)
+                        for value of doc.highlight[key]
+                            p.m-0 !{value.replace(/<[^>]+>/g, '')}
         if doc._source.Sumário
             details.col-12.my-1
                 summary.mx-1: b.mouse-click Sumário:

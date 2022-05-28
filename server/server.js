@@ -203,31 +203,35 @@ function queryString(originalUrl, drop=["page", "sort"]){
     return query.toString();
 }
 
-app.get(["/", "/acord-only"], (req, res) => {
-    const sfilters = {pre: [], after: []};
-    const filtersUsed = populateFilters(sfilters, req.query);
-    const sort = [];
-    const sortV = req.query.sort || "score";
+function parseSort(value, array){
+    const sortV = value || "score";
     if( sortV == "des" ){
-        sort.push({
+        array.push({
             Data: "desc"
         });
     }
     else if( sortV == "asc" ){
-        sort.push({
+        array.push({
             Data: "asc"
         });
     }
     else if( sortV == "score" ){
-        sort.push({
+        array.push({
             _score: "desc"
         });
     }
+    return sortV;
+}
 
+// Returns page with filters
+app.get("/", (req, res) => {
+    const sfilters = {pre: [], after: []};
+    const filtersUsed = populateFilters(sfilters, req.query);
+    const sort = [];
+    const sortV = parseSort(req.query.sort, sort);
     let page = parseInt(req.query.page) || 0;
-    let rpp = req.path == "/" ? 0 : RESULTS_PER_PAGE;
-    search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, rpp, { sort }).then(results => {
-        res.render(req.path == "/" ? "search" : "acord-article", {
+    search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, 0, { sort }).then(results => {
+        res.render("search", {
             q: req.query.q, querystring: queryString(req.originalUrl),
             sort: sortV,          
             body: results,
@@ -240,7 +244,7 @@ app.get(["/", "/acord-only"], (req, res) => {
         });
     }).catch(e => {
         console.log(e);
-        res.render(req.path == "/" ? "search" : "acord-article", {
+        res.render("search", {
             q: req.query.q, querystring: queryString(req.originalUrl),
             sort: sortV,
             body: {},
@@ -251,6 +255,30 @@ app.get(["/", "/acord-only"], (req, res) => {
             pages: 0,
             open: true,
             error: e
+        });
+    });
+})
+
+// returns only acordãos
+app.get("/acord-only", (req, res) => {
+    const sfilters = {pre: [], after: []};
+    populateFilters(sfilters, req.query);
+    const sort = [];
+    parseSort(req.query.sort, sort);
+    let page = parseInt(req.query.page) || 0;
+    let highlight = {
+        fields: {
+            "*": { type: "unified" }
+        }
+    };
+    search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight }).then(results => {
+        res.render("acord-article", {
+            hits: results.hits.hits,
+        });
+    }).catch(e => {
+        console.log(e);
+        res.render("acord-article", {
+            hits: []
         });
     });
 });
