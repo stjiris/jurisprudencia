@@ -1,3 +1,4 @@
+const express = require("express");
 const {Router} = require("express");
 const indexer = require("../indexer");
 
@@ -13,7 +14,14 @@ const agg = (obj) => indexer._client.search({
 const tables = [];
 function defineTable(name, cb){
     tables.push(name);
-    app.get(`/${name}`, (req, res) => cb(req).then( (obj) => res.render("tables", {...obj}) ).catch(e => res.render("tables", {header: [], values: [], error: e})||console.log(e)));
+    app.get(`/${name}`, (req, res) => cb(req).then( (obj) => res.render("tables", {...obj, name}) ).catch(e => res.render("tables", {name, header: [], values: [], error: e})||console.log(e)));
+    app.get(`/${name}.csv`, (req, res) => cb(req).then( (obj) => {
+        let quote = (v) => typeof v === 'string' && parseFloat(v) != v ? `"${v}"` : v;
+        res.setHeader('Content-Type', 'text/plain');
+        res.write(obj.header.map(quote).join(";") + "\n");
+        obj.values.forEach( (row) => res.write(row.map(quote).join(";") + "\n") );
+        res.end();
+    }).catch(e => res.render("tables", {header: [], values: [], error: e})||console.log(e)));
 }
 
 defineTable("ano-origem", ()=>agg({
