@@ -5,7 +5,7 @@ for doc in hits
         .col-12.d-flex.flex-wrap.my-1
             div.mx-1
                 b Tribunal:&nbsp;
-                span #{doc._source.Tribunal}&nbsp;
+                span(style="color: var(--tribunal-color);") #{doc._source.Tribunal}&nbsp;
                 if doc._source.Secção
                     span (#{doc._source.Secção})
             div.mx-1
@@ -41,10 +41,15 @@ for doc in hits
         if doc.highlight && Object.keys(doc.highlight).length > 0
             .col-12.my-1
                 div.mx-1
-                    b Destaque(s) da pesquisa:&nbsp;
-                    for key of Object.keys(doc.highlight)
-                        for value of doc.highlight[key]
-                            p.m-1 !{value.replace(/<[^>]+>/g, '')}
+                    -let n = Object.entries(doc.highlight).reduce((acc, [key, value]) => acc + value.length, 0)
+                    if n > 1
+                        b Destaques da pesquisa:&nbsp;
+                    else
+                        b Destaque da pesquisa:&nbsp;
+                    ul.m-0
+                        for key of Object.keys(doc.highlight)
+                            for value of doc.highlight[key]
+                                li !{value.replace(/<[^>]+>/g, '')}
         if doc._source.Sumário
             details.col-12.my-1
                 summary.mx-1: b.mouse-click Sumário:

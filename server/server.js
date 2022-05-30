@@ -268,7 +268,7 @@ app.get("/acord-only", (req, res) => {
     let page = parseInt(req.query.page) || 0;
     let highlight = {
         fields: {
-            "*": { type: "unified" }
+            "*,-Descritores": { type: "unified" }
         }
     };
     search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight }).then(results => {
