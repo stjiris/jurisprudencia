@@ -355,11 +355,13 @@ app.get("/list", (req, res) => {
     const term = req.query.term || "Relator";
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
-    search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then(body => {
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: Object.keys(filters).length > 0});
-    }).catch(err => {
+
+    const fields = client.indices.getMapping({index: INDEXNAME}).then(body => Object.entries(body[INDEXNAME].mappings.properties).filter(o => o[1].fielddata || o[1].type == "keyword").map(o => ({key: o[0]})));
+    search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then(async body => {
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: Object.keys(filters).length > 0, fields: await fields});
+    }).catch(async err => {
         console.log(req.originalUrl, err)
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), error: err, aggs: {}, letters: {}, filters: {}, term: term});
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), error: err, aggs: {}, letters: {}, filters: {}, term: term, fields: await fields});
     });
 });
 

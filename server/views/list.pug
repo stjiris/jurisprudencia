@@ -11,9 +11,10 @@ block printpageinfo
 
 prepend form
     .d-flex.flex-column.my-2
-        h5 Campo do agrupamento 
-            +await(`./datalist?id=datalist-Datafield&agg=Datafield&${querystring}`)
-            input.form-control(type="text", name="term", autocomplete="off", list=`datalist-Datafield`, placeholder=`Campo da lista`, value=term)
+        h5 Campo do agrupamento
+            select.form-select(name="term",onchange="this.form.submit()")
+                for op of fields 
+                    option(selected=op.key==term) !{op.key}
             
 append form
     .d-flex.my-2.justify-content-center.align-items-center
