@@ -38,7 +38,7 @@ for doc in hits
                 div.mx-1.d-flex
                     b Decisão:&nbsp;
                     div !{doc._source.Decisão}
-        if Object.keys(doc.highlight).length > 0
+        if doc.highlight && Object.keys(doc.highlight).length > 0
             .col-12.my-1
                 div.mx-1
                     b Destaque(s) da pesquisa:&nbsp;
