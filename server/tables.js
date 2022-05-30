@@ -17,7 +17,7 @@ function defineTable(name, cb){
     app.get(`/${name}`, (req, res) => cb(req).then( (obj) => res.render("tables", {...obj, name}) ).catch(e => res.render("tables", {name, header: [], values: [], error: e})||console.log(e)));
     app.get(`/${name}.csv`, (req, res) => cb(req).then( (obj) => {
         let quote = (v) => typeof v === 'string' && parseFloat(v) != v ? `"${v}"` : v;
-        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         res.write(obj.header.map(quote).join(";") + "\n");
         obj.values.forEach( (row) => res.write(row.map(quote).join(";") + "\n") );
         res.end();
@@ -134,5 +134,41 @@ defineTable("ecli-repetido", (req)=>agg({
             <li><a href="?p=${PARTITIONS-1}">Última partição</a></li>
         </ul>`};
 }))
+
+defineTable("entidades-ORG", ()=>indexer._client.search({
+    index: "entities.1.0",
+    size: 0,
+    aggs: {
+        Ents: {
+          terms: {
+            field: "entities.ORG.keyword",
+            size: 59999
+          }
+        }
+    },
+    track_total_hits: true
+}).then((res) => {
+    const header = ["ORG", "DOCS"];
+    const values = res.aggregations.Ents.buckets.map(b => [b.key, b.doc_count]);
+    return {header, values};
+}));
+
+defineTable("entidades-PER", ()=>indexer._client.search({
+    index: "entities.1.0",
+    size: 0,
+    aggs: {
+        Ents: {
+          terms: {
+            field: "entities.PER.keyword",
+            size: 59999
+          }
+        }
+    },
+    track_total_hits: true
+}).then((res) => {
+    const header = ["PER", "DOCS"];
+    const values = res.aggregations.Ents.buckets.map(b => [b.key, b.doc_count]);
+    return {header, values};
+}));
 
 app.get("/", (req, res) => res.render("tables", {header: ["Tabelas"], values: tables.map((t) => [`<a href="./${t}">${t}</a>`])}));
