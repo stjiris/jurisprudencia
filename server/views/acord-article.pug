@@ -39,7 +39,7 @@ for doc in hits
                     b Decisão:&nbsp;
                     div !{doc._source.Decisão}
         if doc.highlight && Object.keys(doc.highlight).length > 0
-            .col-12.my-1
+            .col-12.my-1.d-print-none
                 div.mx-1
                     -let n = Object.entries(doc.highlight).reduce((acc, [key, value]) => acc + value.length, 0)
                     if n > 1
