@@ -11,75 +11,142 @@ block printpageinfo
 
 append form
     .d-flex.my-2.justify-content-center.align-items-center
-        button#onclickgraph.btn.w-100(type="submit", formaction=`./?q=${q || ""}`): u Ver resultados da pesquisa
+        button#onclickgraph.btn.w-100(type="submit", formaction=`./stats?q=${q || ""}`): u Ver resultados da pesquisa
 
 block main
     .row.p-2
         .col-12: h4 Acordãos por tribunal e ano
-    .p-relative(style="height: 70vh; width: 100%")
-        canvas#graph
-        script.
-            function strRange(min, max) {
-                let r = []
-                for (let i = min; i <= max; i++) {
-                    r.push(`${i}`)
+        .p-relative(style="height: 70vh; width: 100%")
+            canvas#graph
+    .row.p-2
+        .col-12: h4 Acordãos por Origem e ano
+        .p-relative(style="height: 70vh; width: 100%")
+            canvas#graph2
+    script.
+        function strRange(min, max) {
+            let r = []
+            for (let i = min; i <= max; i++) {
+                r.push(`${i}`)
+            }
+            return r
+        }
+        let maxYear = !{parseInt(aggs.MaxAno.value_as_string)}
+        let minYear = !{parseInt(aggs.MinAno.value_as_string)}
+        let buckets = !{JSON.stringify(aggs.Anos.buckets.filter(o => tribunais.indexOf(o.key) > -1 ))}
+        let labels = strRange(minYear,maxYear);
+        function tribColor(trib){
+            return getComputedStyle(document.querySelector(`[data-tribunal="${trib}"]`)).getPropertyValue("--tribunal-color") || "#000"
+        }
+        function chartClick(event, elems){
+            if( elems.length <= 0 ){
+                return
+            };
+            let bucket = buckets[elems[0].datasetIndex];
+            let trib = bucket.key;
+            let year = bucket.Anos.buckets[elems[0].index].key_as_string;
+            // Option 1: Redirect to the page with the results
+            //window.location.href = `/?q=!{q} Tribunal:"${trib}" Data:[01/01/${year} TO 31/12/${year}]`
+            // Option 2: POST form for the results
+            document.querySelectorAll("input[name=Tribunal]").forEach(o => o.checked = false)
+            document.querySelector(`input[name=Tribunal][value="${trib}"]`).checked = true
+            document.querySelector("input[name=MinAno]").value = year
+            document.querySelector("input[name=MaxAno]").value = year
+            document.querySelector("#onclickgraph").dispatchEvent(event.native)
+        } 
+        function chartClick1(event, elems){
+            if( elems.length <= 0 ){
+                return
+            };
+            let [origem ,bucket] = Object.entries(bucketsOri)[elems[0].datasetIndex];
+            let year = bucket.Anos.buckets[elems[0].index].key_as_string;
+            // Option 1: Redirect to the page with the results
+            //window.location.href = `/?q=!{q} Tribunal:"${trib}" Data:[01/01/${year} TO 31/12/${year}]`
+            // Option 2: POST form for the results
+            if(origem == "dgsi-indexer-*"){
+                let input = document.querySelector("input[name=Origem]");
+                for( let o of ["dgsi-indexer-STJ", "dgsi-indexer-STA", "dgsi-indexer-TCO", "dgsi-indexer-CON", "dgsi-indexer-TRL","dgsi-indexer-TRE","dgsi-indexer-TRP"]){
+                    input.insertAdjacentHTML("beforebegin", `<input type="checkbox" name="Origem" value="${o}" checked>`)
                 }
-                return r
             }
-            let maxYear = !{parseInt(aggs.MaxAno.value_as_string)}
-            let minYear = !{parseInt(aggs.MinAno.value_as_string)}
-            let buckets = !{JSON.stringify(aggs.Anos.buckets.filter(o => tribunais.indexOf(o.key) > -1 ))}
-            let labels = strRange(minYear,maxYear);
-            function tribColor(trib){
-                return getComputedStyle(document.querySelector(`[data-tribunal="${trib}"]`)).getPropertyValue("--tribunal-color") || "#000"
+            else{
+                document.querySelector(`input[name=Origem]`).value = origem
             }
-            function chartClick(event, elems){
-                if( elems.length <= 0 ){
-                    return
-                };
-                let bucket = buckets[elems[0].datasetIndex];
-                let trib = bucket.key;
-                let year = bucket.Anos.buckets[elems[0].index].key_as_string;
-                // Option 1: Redirect to the page with the results
-                //window.location.href = `/?q=!{q} Tribunal:"${trib}" Data:[01/01/${year} TO 31/12/${year}]`
-                // Option 2: POST form for the results
-                document.querySelectorAll("input[name=Tribunal]").forEach(o => o.checked = false)
-                document.querySelector(`input[name=Tribunal][value="${trib}"]`).checked = true
-                document.querySelector("input[name=MinAno]").value = year
-                document.querySelector("input[name=MaxAno]").value = year
-                document.querySelector("#onclickgraph").dispatchEvent(event.native)
-            }
-            new Chart(document.getElementById("graph"), {
-                type: "bar",
-                data: {
-                    labels: labels,
-                    datasets: buckets.map(trib => ({
-                        label: trib.key,
-                        borderWidth: 0,
-                        data: trib.Anos.buckets.map(ano => ({x: parseInt(ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
-                        backgroundColor: tribColor(trib.key)
-                    }))
+            
+            document.querySelector("input[name=MinAno]").value = year
+            document.querySelector("input[name=MaxAno]").value = year
+            document.querySelector("#onclickgraph").dispatchEvent(event.native)
+        }
+        new Chart(document.getElementById("graph"), {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: buckets.map(trib => ({
+                    label: trib.key,
+                    borderWidth: 0,
+                    data: trib.Anos.buckets.map(ano => ({x: parseInt(ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
+                    backgroundColor: tribColor(trib.key)
+                }))
+            },
+            options: {
+                    plugins: {
+                    legend: {
+                        display: true,
+                        position: "bottom",
+                        align: "start"
+                    }
                 },
-                options: {
-                        plugins: {
-                        legend: {
-                            display: true,
-                            position: "bottom",
-                            align: "start"
-                        }
+                scales: {
+                    x: {
+                        stacked: true
                     },
-                    scales: {
-                        x: {
-                            stacked: true
-                        },
-                        y: {
-                            stacked: true
-                        }
+                    y: {
+                        stacked: true
+                    }
+                },
+                maintainAspectRatio: false,
+                onClick: chartClick
+            }
+        });
+        let bucketsOri = !{JSON.stringify(aggs.Origens.buckets)}
+
+        let origemColor = (ori) => {
+            if( ori == "csm-indexer" ) return tribColor("Supremo Tribunal Administrativo")
+            if( ori == "dgsi-indexer-*" ) return tribColor("Supremo Tribunal de Justiça")
+            if( ori == "tcon-indexer" ) return tribColor("Tribunal Constitucional")            
+        }
+
+
+        new Chart(document.getElementById("graph2"), {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: Object.entries(bucketsOri).map(([name, origem]) => ({
+                    label: name,
+                    borderWidth: 0,
+                    data: origem.Anos.buckets.map(ano => ({x: parseInt(ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
+                    backgroundColor: origemColor(name)
+                }))
+            },
+            options: {
+                    plugins: {
+                    legend: {
+                        display: true,
+                        position: "bottom",
+                        align: "start"
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true
                     },
-                    maintainAspectRatio: false,
-                    onClick: chartClick
-                }
-            });
+                    y: {
+                        stacked: true
+                    }
+                },
+                maintainAspectRatio: false,
+                onClick: chartClick1
+            }
+        });
     style.
         .graph-column{
             position: relative;

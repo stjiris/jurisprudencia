@@ -131,19 +131,29 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
             else{
                     filters[when].push({
                         terms: {
-                        [aggObj[aggField].field]: filtersUsed[aggName]
-                    }
-                });
+                            [aggObj[aggField].field]: filtersUsed[aggName]
+                        }
+                    });
             }
         }
     }
-    if( body.MinAno ){
+    if( body.MinAno && body.MaxAno ){
         filtersUsed.MinAno = body.MinAno;
-        let when = "pre";
-        if( afters.indexOf("MinAno") != -1 ){
-            when = "after";
-        }
-        filters[when].push({
+        filtersUsed.MaxAno = body.MaxAno;
+        console.log(body.MinAno, body.MaxAno);
+        filters.pre.push({
+            range: {
+                Data: {
+                    gte: padZero(body.MinAno),
+                    lt: padZero(parseInt(body.MaxAno)+1 || new Date().getFullYear()),
+                    format: "yyyy"
+                }
+            }
+        });
+    }
+    else if( body.MinAno ){
+        filtersUsed.MinAno = body.MinAno;
+        filters.pre.push({
             range: {
                 Data: {
                     gte: padZero(body.MinAno),
@@ -152,13 +162,9 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
             }
         });
     }
-    if( body.MaxAno ){
+    else if( body.MaxAno ){
         filtersUsed.MaxAno = body.MaxAno;
-        let when = "pre";
-        if( afters.indexOf("MaxAno") != -1 ){
-            when = "after";
-        }
-        filters[when].push({
+        filters.pre.push({
             range: {
                 Data: {
                     lt: padZero(parseInt(body.MaxAno)+1 || new Date().getFullYear()),
@@ -290,7 +296,33 @@ const statsAggs = {
     Anos: {
         terms: {
             field: 'Tribunal',
-            size: 20,
+            size: 20
+        },
+        aggs: {
+            Anos: {
+                date_histogram: {
+                    field: "Data",
+                    interval: 'year',
+                    format: 'yyyy'
+                }
+            }
+        }
+    },
+    Origens: {
+        filters: {
+            filters: {
+                "csm-indexer": {
+                    term: {
+                        "Origem": "csm-indexer"
+                    }
+                },
+                "tcon-indexer": {
+                    term: {
+                        "Origem": "tcon-indexer"
+                    }
+                }
+            },
+            "other_bucket_key": "dgsi-indexer-*"
         },
         aggs: {
             Anos: {
