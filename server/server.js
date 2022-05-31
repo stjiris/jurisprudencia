@@ -57,7 +57,7 @@ app.render = (name, obj, next) => {
     tmp(name, { properties, ...obj }, next);
 }
 
-const DEFAULT_AGGS = {Tribunal: aggs.Tribunal, MinAno: aggs.MinAno, MaxAno: aggs.MaxAno};
+const DEFAULT_AGGS = {Tribunal: aggs.Tribunal};
 
 
 let search = (
@@ -140,12 +140,11 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
     if( body.MinAno && body.MaxAno ){
         filtersUsed.MinAno = body.MinAno;
         filtersUsed.MaxAno = body.MaxAno;
-        console.log(body.MinAno, body.MaxAno);
         filters.pre.push({
             range: {
                 Data: {
                     gte: padZero(body.MinAno),
-                    lt: padZero(parseInt(body.MaxAno)+1 || new Date().getFullYear()),
+                    lt: padZero((parseInt(body.MaxAno) || new Date().getFullYear())+1),
                     format: "yyyy"
                 }
             }
@@ -167,7 +166,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
         filters.pre.push({
             range: {
                 Data: {
-                    lt: padZero(parseInt(body.MaxAno)+1 || new Date().getFullYear()),
+                    lt: padZero((parseInt(body.MaxAno) || new Date().getFullYear())+1),
                     format: "yyyy"
                 }
             }
@@ -291,8 +290,18 @@ app.get("/acord-only", (req, res) => {
 
 const statsAggs = {
     Tribunal: aggs.Tribunal,
-    MinAno: aggs.MinAno,
-    MaxAno: aggs.MaxAno,
+    MinAno: {
+        min: {
+            field: "LastDate",
+            format: "yyyy"
+        }
+    },
+    MaxAno: {
+        max: {
+            field: "LastDate",
+            format: "yyyy"
+        }
+    },
     Anos: {
         terms: {
             field: 'Tribunal',
@@ -301,44 +310,53 @@ const statsAggs = {
         aggs: {
             Anos: {
                 date_histogram: {
-                    field: "Data",
+                    field: "LastDate",
                     interval: 'year',
-                    format: 'yyyy'
+                    format: 'yyyy',
+                    min_doc_count: 0
                 }
             }
         }
     },
     Origens: {
-        filters: {
-            filters: {
-                "csm-indexer": {
-                    term: {
-                        "Origem": "csm-indexer"
-                    }
-                },
-                "tcon-indexer": {
-                    term: {
-                        "Origem": "tcon-indexer"
-                    }
-                }
-            },
-            "other_bucket_key": "dgsi-indexer-*"
+        terms: {
+            field: 'Origem',
+            size: 20
         },
         aggs: {
             Anos: {
                 date_histogram: {
-                    field: "Data",
+                    field: "LastDate",
                     interval: 'year',
-                    format: 'yyyy'
+                    format: 'yyyy',
+                    min_doc_count: 0
                 }
             }
+        }
+    }
+}
+
+let runtimeMapping = {
+    runtime_mappings: {
+        LastDate: {
+            type: "date",
+            format: "yyyy",
+            script: `
+                def lastDate = doc['Data'][0];
+                for( item in doc['Data'] ){
+                    if( item.getMillis() > lastDate.getMillis() ){
+                        lastDate = item;
+                    }
+                }
+                emit(lastDate.getMillis());
+            `
         }
     }
 }
 app.get("/stats", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
-    search(queryObject(req.query.q), sfilters, 0, statsAggs, 0).then(body => {
+    search(queryObject(req.query.q), sfilters, 0, statsAggs, 0, runtimeMapping ).then(body => {
         res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
     }).catch(err => {
         console.log(req.originalUrl, err)

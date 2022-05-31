@@ -11,7 +11,7 @@ block printpageinfo
 
 append form
     .d-flex.my-2.justify-content-center.align-items-center
-        button#onclickgraph.btn.w-100(type="submit", formaction=`./stats?q=${q || ""}`): u Ver resultados da pesquisa
+        button#onclickgraph.btn.w-100(type="submit", formaction=`./?q=${q || ""}`): u Ver resultados da pesquisa
 
 block main
     .row.p-2
@@ -57,20 +57,13 @@ block main
             if( elems.length <= 0 ){
                 return
             };
-            let [origem ,bucket] = Object.entries(bucketsOri)[elems[0].datasetIndex];
+            let bucket = bucketsOri[elems[0].datasetIndex];
             let year = bucket.Anos.buckets[elems[0].index].key_as_string;
             // Option 1: Redirect to the page with the results
             //window.location.href = `/?q=!{q} Tribunal:"${trib}" Data:[01/01/${year} TO 31/12/${year}]`
             // Option 2: POST form for the results
-            if(origem == "dgsi-indexer-*"){
-                let input = document.querySelector("input[name=Origem]");
-                for( let o of ["dgsi-indexer-STJ", "dgsi-indexer-STA", "dgsi-indexer-TCO", "dgsi-indexer-CON", "dgsi-indexer-TRL","dgsi-indexer-TRE","dgsi-indexer-TRP"]){
-                    input.insertAdjacentHTML("beforebegin", `<input type="checkbox" name="Origem" value="${o}" checked>`)
-                }
-            }
-            else{
-                document.querySelector(`input[name=Origem]`).value = origem
-            }
+            document.querySelector(`input[name=Origem]`).value = bucket.key
+            alert(year)
             
             document.querySelector("input[name=MinAno]").value = year
             document.querySelector("input[name=MaxAno]").value = year
@@ -83,7 +76,7 @@ block main
                 datasets: buckets.map(trib => ({
                     label: trib.key,
                     borderWidth: 0,
-                    data: trib.Anos.buckets.map(ano => ({x: parseInt(ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
+                    data: trib.Anos.buckets.map(ano => ({x: (ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
                     backgroundColor: tribColor(trib.key)
                 }))
             },
@@ -111,7 +104,7 @@ block main
 
         let origemColor = (ori) => {
             if( ori == "csm-indexer" ) return tribColor("Supremo Tribunal Administrativo")
-            if( ori == "dgsi-indexer-*" ) return tribColor("Supremo Tribunal de Justiça")
+            if( ori.match("dgsi-indexer-.*") ) return tribColor("Supremo Tribunal de Justiça")
             if( ori == "tcon-indexer" ) return tribColor("Tribunal Constitucional")            
         }
 
@@ -120,11 +113,11 @@ block main
             type: "bar",
             data: {
                 labels: labels,
-                datasets: Object.entries(bucketsOri).map(([name, origem]) => ({
-                    label: name,
+                datasets: bucketsOri.map((origem) => ({
+                    label: origem.key,
                     borderWidth: 0,
-                    data: origem.Anos.buckets.map(ano => ({x: parseInt(ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
-                    backgroundColor: origemColor(name)
+                    data: origem.Anos.buckets.map(ano => ({x: (ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
+                    backgroundColor: origemColor(origem.key)
                 }))
             },
             options: {
