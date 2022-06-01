@@ -11,22 +11,203 @@ block printpageinfo
 
 append form
     .d-flex.my-2.justify-content-center.align-items-center
-        button#onclickgraph.btn.w-100(type="submit", formaction=`./?q=${q || ""}`): u Ver resultados da pesquisa
+        button.btn.w-100(type="submit", formaction=`./?q=${q || ""}`): u Ver resultados da pesquisa
+        button#onclickgraph(type="submit", formaction=`./stats?q=${q || ""}`, hidden): u Ver resultados da pesquisa
 
 block main
+    pre: code #{JSON.stringify(aggs["Secções"])}
     .row.p-2
-        .col-12: h4 Acordãos por tribunal e ano
+        .col-12: h4 Acórdãos por tribunal e ano
         .p-relative(style="height: 70vh; width: 100%")
-            canvas#graph
+            canvas#trib-ano
     .row.p-2
-        .col-12: h4 Acordãos por Origem e ano
+        .col-12: h4 Acórdãos por Origem e ano
         .p-relative(style="height: 70vh; width: 100%")
-            canvas#graph2
+            canvas#orig-ano
+    .row.p-2
+        .col-12.col-md-6
+            h4 Acórdãos por Origem
+            .p-relative(style="height: 70vh; width: 100%")
+                canvas#orig-round
+        .col-12.col-md-6
+            h4 Secção dos Acórdãos 
+            .p-relative(style="height: 70vh; width: 100%")
+                canvas#seccao
     .row.p-2 
         small 
             | <b>Nota:</b> no caso de filtrar por um ano em particular, o gráfico poderá incluir outros anos.
             | Isto significa que alguma das datas associadas com o acórdão pertencem a esse ano, o acórdão aparece no gráfico com a maior data associada.
-    script.
+        script.
+            fetch("./allStats?!{querystring}").then(r => r.json()).then(aggs => {
+                const maxYear = parseInt(aggs.MaxAno.value_as_string);
+                const minYear = parseInt(aggs.MinAno.value_as_string);
+                const labelsYears = strRange(minYear, maxYear);
+
+                new Chart(document.querySelector('#trib-ano'), {
+                    type: "bar",
+                    data: {
+                        labels: labelsYears,
+                        datasets: aggs.Anos.buckets.map(trib => ({
+                            label: trib.key,
+                            borderWidth: 0,
+                            data: trib.Anos.buckets.map(ano => ({x: (ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
+                            backgroundColor: tribColor(trib.key)
+                        }))
+                    },
+                    options: {
+                            plugins: {
+                            legend: {
+                                display: true,
+                                position: "bottom",
+                                align: "start"
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: true
+                            },
+                            y: {
+                                stacked: true
+                            }
+                        },
+                        maintainAspectRatio: false,
+                        onClick: barClick(aggs.Anos.buckets, "Tribunal")
+                    }
+                })
+                new Chart(document.querySelector('#orig-ano'), {
+                    type: "bar",
+                    data: {
+                        labels: labelsYears,
+                        datasets: aggs.Origens.buckets.map(trib => ({
+                            label: trib.key,
+                            borderWidth: 0,
+                            data: trib.Anos.buckets.map(ano => ({x: (ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
+                            backgroundColor: origemColor(trib.key)
+                        }))
+                    },
+                    options: {
+                            plugins: {
+                            legend: {
+                                display: true,
+                                position: "bottom",
+                                align: "start"
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: true
+                            },
+                            y: {
+                                stacked: true
+                            }
+                        },
+                        maintainAspectRatio: false,
+                        onClick: barAnoClick(aggs.Origens.buckets, "Origem")
+                    }
+                });
+                new Chart(document.getElementById("orig-round"), {
+                    type: "doughnut",
+                    data: {
+                        labels: aggs.Origens.buckets.map(o => o.key),
+                        datasets: [{
+                            label: "Origem",
+                            borderWidth: 0,
+                            data: aggs.Origens.buckets.map(o => o.doc_count),
+                            backgroundColor: aggs.Origens.buckets.map(o => origemColor(o.key))
+                        }]
+                    },
+                    options: {
+                            plugins: {
+                            legend: {
+                                display: true,
+                                position: "bottom",
+                                align: "start"
+                            }
+                        },
+                        maintainAspectRatio: false,
+                        onClick: barClick(aggs.Origens.buckets, "Origem")
+                    }
+                });
+                console.log(aggs["Secções"])
+                new Chart(document.getElementById("seccao"), {
+                    type: "doughnut",
+                    data: {
+                        labels: Object.keys(aggs["Secções"].buckets),
+                        datasets: [{
+                            label: "Secções",
+                            borderWidth: 0,
+                            data: Object.values(aggs["Secções"].buckets).map(o => o.doc_count),
+                            backgroundColor: Object.keys(aggs["Secções"].buckets).map(o => o.match(/com/i) ? origemColor("dgsi-indexer-STJ") : origemColor("csm-indexer"))
+                        }]
+                    },
+                    options: {
+                            plugins: {
+                            legend: {
+                                display: true,
+                                position: "bottom",
+                                align: "start"
+                            }
+                        },
+                        maintainAspectRatio: false,
+                        onClick: barClick(aggs.Origens.buckets, "Origem")
+                    }
+                });
+
+                
+            });
+
+            function barAnoClick(buckets, inputName){
+                return (event, elems) => {
+                    if( elems.length <= 0 ) return;
+
+                    let bucket = buckets[elems[0].datasetIndex];
+                    let value = bucket.key;
+                    let year = bucket.Anos.buckets[elems[0].index].key_as_string;
+
+                    document.querySelectorAll(`input[name=${inputName}]`).forEach(input => input.remove());
+
+                    let btn = document.querySelector("#onclickgraph")
+                    btn.insertAdjacentHTML("afterend", `<input type="hidden" name="${inputName}" value="${value}">`);
+                    document.querySelector("input[name=MinAno]").value = year;
+                    document.querySelector("input[name=MaxAno]").value = year;
+                    btn.dispatchEvent(event.native);                    
+
+                }
+            }
+
+            function barClick(buckets, inputName){
+                return (event, elems) => {
+                    if( elems.length <= 0 ) return;
+
+                    let bucket = buckets[elems[0].index];
+                    let value = bucket.key;
+
+                    document.querySelectorAll(`input[name=${inputName}]`).forEach(input => input.remove());
+
+                    let btn = document.querySelector("#onclickgraph")
+                    btn.insertAdjacentHTML("afterend", `<input type="hidden" name="${inputName}" value="${value}">`);
+                    btn.dispatchEvent(event.native);
+                }
+            }
+
+            function tribColor(trib){
+                return getComputedStyle(document.querySelector(`[data-tribunal="${trib}"]`)).getPropertyValue("--tribunal-color") || "#000"
+            }
+
+            function origemColor(ori){
+                if( ori == "csm-indexer" ) return tribColor("Supremo Tribunal Administrativo")
+                if( ori.match("dgsi-indexer-.*") ) return tribColor("Supremo Tribunal de Justiça")
+                if( ori == "tcon-indexer" ) return tribColor("Tribunal Constitucional")            
+            }
+
+            function strRange(min, max) {
+                let r = []
+                for (let i = min; i <= max; i++) {
+                    r.push(`${i}`)
+                }
+                return r
+            }
+    //-script.
         function strRange(min, max) {
             let r = []
             for (let i = min; i <= max; i++) {
@@ -63,16 +244,23 @@ block main
             };
             let bucket = bucketsOri[elems[0].datasetIndex];
             let year = bucket.Anos.buckets[elems[0].index].key_as_string;
-            // Option 1: Redirect to the page with the results
-            //window.location.href = `/?q=!{q} Tribunal:"${trib}" Data:[01/01/${year} TO 31/12/${year}]`
-            // Option 2: POST form for the results
             document.querySelector(`input[name=Origem]`).value = bucket.key
-            alert(year)
-            
             document.querySelector("input[name=MinAno]").value = year
             document.querySelector("input[name=MaxAno]").value = year
             document.querySelector("#onclickgraph").dispatchEvent(event.native)
         }
+
+        function chartClick2(event, elems){
+            if( elems.length <= 0 ){
+                return
+            };
+            let bucket = bucketsOri[elems[0].datasetIndex];
+            let year = bucket.Anos.buckets[elems[0].index].key_as_string;
+            document.querySelector(`input[name=Origem]`).value = bucket.key
+            
+            document.querySelector("#onclickgraph").dispatchEvent(event.native)
+        }
+
         new Chart(document.getElementById("graph"), {
             type: "bar",
             data: {
@@ -142,6 +330,30 @@ block main
                 },
                 maintainAspectRatio: false,
                 onClick: chartClick1
+            }
+        });
+
+        new Chart(document.getElementById("graph3"), {
+            type: "doughnut",
+            data: {
+                labels: bucketsOri.map(o => o.key),
+                datasets: [{
+                    label: "Origem",
+                    borderWidth: 0,
+                    data: bucketsOri.map(o => o.doc_count),
+                    backgroundColor: bucketsOri.map(o => origemColor(o.key))
+                }]
+            },
+            options: {
+                    plugins: {
+                    legend: {
+                        display: true,
+                        position: "bottom",
+                        align: "start"
+                    }
+                },
+                maintainAspectRatio: false,
+                onClick: chartClick2
             }
         });
     style.

@@ -333,6 +333,26 @@ const statsAggs = {
                 }
             }
         }
+    },
+    "Secções": {
+        filters: {
+            filters: {
+                "Com secção": {
+                    exists: {
+                        field: "Secção"
+                    }
+                },
+                "Sem secção": {
+                    bool: {
+                        must_not: {
+                            exists: {
+                                field: "Secção"
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -353,14 +373,26 @@ let runtimeMapping = {
         }
     }
 }
+
 app.get("/stats", (req, res) => {
+    const sfilters = {pre: [], after: []};
+    const filters = populateFilters(sfilters, req.query);
+    search(queryObject(req.query.q), sfilters, 0, DEFAULT_AGGS, 0, {}).then(body => {
+        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
+    }).catch(e => {
+        console.log(e);
+        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: {}, filters: {}, open: true, error: e});
+    });
+});
+
+app.get("/allStats", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
     search(queryObject(req.query.q), sfilters, 0, statsAggs, 0, runtimeMapping ).then(body => {
-        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
+        res.json(body.aggregations);
     }).catch(err => {
         console.log(req.originalUrl, err)
-        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), error: err, aggs: {}, filters: {}, page: 0, pages: 0});
+        res.json({});
     });
 });
 
@@ -489,6 +521,7 @@ app.use('/csm-errados', (req, res) => {
 app.use('/test-anonimizador', (_, res) => res.render("anonimizador"));
 
 app.use('/table', require('./tables'));
+app.use('/dashboard', require('./dashboard'));
 app.use('/tinymce', express.static(path.join(require.resolve('tinymce'),'..')));
 app.use('/stats-sse', require('./csm-errados'))
 app.use(express.static(path.join(__dirname, "static")));

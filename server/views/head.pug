@@ -38,7 +38,7 @@ html(lang="en")
         main.container#top
             if error 
                 pre.alert.alert-danger
-                    code !{JSON.stringify(error, null , 2)}
+                    code !{JSON.stringify(error.body, null , 2)}
 
             else
                 block allmain

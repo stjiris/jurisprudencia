@@ -1,0 +1,51 @@
+extends head
+
+block head
+    // Fix style and icon links
+    link(rel="stylesheet",href="../style.css")
+    style.
+        header, footer {
+            background-color: var(--color-admin);
+        }
+        header nav{
+            background-color: var(--color-admin);
+        }
+    link(rel="icon",href="../stj-logo.png")
+    script(src="https://cdn.jsdelivr.net/npm/chart.js")
+
+block header
+    header.mb-2
+        form.container.row.align-items-center.m-auto.p-4
+            a(href="../").col-12.col-lg-6.align-items-center.d-flex.flex-wrap.py-2
+                img(src="../stj-logo.png", style="max-height: 70px;")
+                h2.ps-2 Jurisprudência
+            .col-12.col-lg-6.d-print-none
+                block headerinput
+                    h4(style="color: var(--color-white);") Dashboard
+            .col-12.col-lg-6.d-none.d-print-block
+                block printpageinfo
+                    p Dashboard
+        nav.w-100.d-print-none
+            ul.container.d-flex.nav.align-items-center.justify-content-evenly.flex-wrap
+                li.nav-item.py-1.px-2.mx-1
+                    a.nav-link(href="../"): h5.m-0 Pesquisa
+                li.nav-item.py-1.px-2.mx-1
+                    a.nav-link(href="../stats"): h5.m-0 Estatística
+                li.nav-item.py-1.px-2.mx-1
+                    a.nav-link(href="../list"): h5.m-0 Listas
+                li.nav-item.py-1.px-2.mx-1
+                    a.nav-link(href="../table/", class="active"): h5.m-0 Tabelas
+
+block allmain
+    .card
+        .card-body 
+            h5.card-title
+                span(data-count="all") 
+                |  Acórdãos
+    script.
+        let pt = new Intl.NumberFormat('pt-PT');
+        fetch("./").then( r => r.json() ).then( body => {
+            for(let key in body){
+                document.querySelectorAll(`[data-count="${key}"]`).forEach( o => o.innerText = pt.format(body[key]) );
+            }
+        })
