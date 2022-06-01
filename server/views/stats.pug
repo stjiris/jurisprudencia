@@ -149,7 +149,17 @@ block main
                             }
                         },
                         maintainAspectRatio: false,
-                        onClick: barClick(aggs.Origens.buckets, "Origem")
+                        onClick: (event, elems) => {
+                            if( elems.length <= 0 ) return;
+                            let val = Object.keys(aggs["Secções"].buckets)[elems[0].index];
+                            if( val.match(/com/i) ){
+                                document.querySelector("input[name=hasField]" ).value = "Secção";
+                            }
+                            else{
+                                document.querySelector("input[name=notHasField]" ).value = "Secção";
+                            }
+                            document.querySelector("#onclickgraph").dispatchEvent(event.native);
+                        }
                     }
                 });
 
