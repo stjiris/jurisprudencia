@@ -482,24 +482,15 @@ app.get("/datalist", (req, res) => {
     });
 });
 
-app.use('/dashboard', (req, res) => {
-    const sfilters = {pre: [], after: []};
-    const filters = populateFilters(sfilters, req.query, []);
-    let querystring = new URLSearchParams(req.originalUrl.split("?")[1])
-    querystring.delete("sort");
-    search(queryObject(req.query.q), sfilters, 0).then(body => {
-        res.render("dashboard", {q: req.query.q, querystring: querystring, aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
-    }).catch(err => {
-        console.log(req.originalUrl, err)
-        res.render("dashboard", {q: req.query.q, querystring: querystring, error: err, aggs: {}, filters: {}, page: 0, pages: 0});
-    });
+app.use('/csm-errados', (req, res) => {
+    res.render("csm-errados");
 });
 
 app.use('/test-anonimizador', (_, res) => res.render("anonimizador"));
 
 app.use('/table', require('./tables'));
 app.use('/tinymce', express.static(path.join(require.resolve('tinymce'),'..')));
-app.use('/stats-sse', require('./dashboard'))
+app.use('/stats-sse', require('./csm-errados'))
 app.use(express.static(path.join(__dirname, "static")));
 
 app.listen(9100)
