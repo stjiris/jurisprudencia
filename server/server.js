@@ -110,31 +110,15 @@ const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters=
             if( afters.indexOf(aggName) != -1 ){
                 when = "after";
             }
-            if( aggName == "Descritores" ){
-                filtersUsed[aggName].forEach(descritor => {
-                    filters[when].push({
+            filters[when].push({
+                bool: {
+                    should: filtersUsed[aggName].map( o => ({
                         wildcard: {
-                            [aggObj[aggField].field]: { value: `*${descritor}*` }
+                            [aggObj[aggField].field]: { value: `*${o}*` }
                         }
-                    });
-                });
-            }
-            else if( aggName == "Relator" ){
-                filtersUsed[aggName].forEach(relator => {
-                    filters[when].push({
-                        wildcard: {
-                            [aggObj[aggField].field]: { value: `*${relator}*` }
-                        }
-                    });
-                });
-            }
-            else{
-                    filters[when].push({
-                        terms: {
-                            [aggObj[aggField].field]: filtersUsed[aggName]
-                        }
-                    });
-            }
+                    }))
+                }
+            });
         }
     }
     if( body.MinAno && body.MaxAno ){
@@ -492,7 +476,7 @@ app.get("/datalist", (req, res) => {
         }
     }
     const sfilters = {pre: [], after: []};
-    populateFilters(sfilters, req.query, [], []);
+    populateFilters(sfilters, req.query, [aggKey]);
     search(queryObject(req.query.q), sfilters, 0, { [aggKey]: finalAgg}, 10).then(async body => {
         if( body.aggregations[aggKey].buckets.length < 10 ){
             body = await search(queryObject(req.query.q), sfilters, 0, { [aggKey]: agg }, 0);
