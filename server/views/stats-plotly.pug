@@ -15,12 +15,11 @@ append form
         button#onclickgraph(type="submit", formaction=`./stats?q=${q || ""}`, hidden): u Ver resultados da pesquisa
 
 block main
-    pre: code #{JSON.stringify(aggs["Secções"])}
     .row.p-2
-        .col-12.col-md-6#tribs
-        .col-12.col-md-6#origs
         .col-12#years
-        .col-12#seccao
+        .col-12.col-md-4#tribs
+        .col-12.col-md-4#origs
+        .col-12.col-md-4#seccao
         small 
             | <b>Nota:</b> no caso de filtrar por um ano em particular, o gráfico poderá incluir outros anos.
             | Isto significa que alguma das datas associadas com o acórdão pertencem a esse ano, o acórdão aparece no gráfico com a maior data associada.
@@ -131,7 +130,36 @@ block main
                         document.querySelector("#onclickgraph").click(data.event);
                     });
                 });
+
+                Plotly.newPlot("seccao", Object.entries(aggs["Secções"].buckets).map(([name, value]) => ({
+                    x: [name],
+                    y: [value.doc_count],
+                    name: name,
+                    type: "bar"
+                })), {
+                    title: "Acórdãos com Secção",
+                    showlegend: false,
+                    xaxis: {
+                        title: "Número de acórdãos",
+                        
+                    },
+                    yaxis: {
+                        title: "Secção"
+                    }
+                }).then( elem => {
+                    elem.on("plotly_click", function(data){
+                        let sec = data.points[0].label;
+                        if( sec.match(/com/i) ){
+                            document.querySelector(`#onclickgraph`).insertAdjacentHTML("beforebegin", `<input type="hidden" name="hasField" value="Secção">`);                        
+                        }
+                        else{
+                            document.querySelector(`#onclickgraph`).insertAdjacentHTML("beforebegin", `<input type="hidden" name="notHasField" value="Secção">`);                        
+                        }
+                        document.querySelector("#onclickgraph").click(data.event);
+                    });
+                });
             });
+
 
             function barAnoClick(buckets, inputName){
                 return (event, elems) => {
