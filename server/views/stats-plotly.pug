@@ -16,6 +16,7 @@ append form
 
 block main
     .row.p-2
+        .col-12#loading: h4 A carregar estatísticas...
         .col-12#years
         .col-12.col-md-4#tribs
         .col-12.col-md-4#origs
@@ -42,6 +43,7 @@ block main
                 "Tribunal dos Conflitos": "CON"
             }
             fetch("./allStats?!{querystring}").then(r => r.json()).then(aggs => {
+                document.getElementById("loading").remove()
                 const maxYear = parseInt(aggs.MaxAno.value_as_string);
                 const minYear = parseInt(aggs.MinAno.value_as_string);
                 
