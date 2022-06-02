@@ -9,14 +9,12 @@ prepend header
 block printpageinfo
     p Lista de !{term} da pesquisa por: "!{q || ""}"
 
-prepend form
+append form
     .d-flex.flex-column.my-2
         h5 Campo do agrupamento
             select.form-select(name="term",onchange="this.form.submit()")
                 for op of fields 
                     option(selected=op.key==term) !{op.key}
-            
-append form
     .d-flex.my-2.justify-content-center.align-items-center
         button.btn.w-100(type="submit", formaction=`./?q=${q || ""}`): u Ver resultados da pesquisa
     .d-flex.flex-row.my-2.justify-content-center.align-items-center

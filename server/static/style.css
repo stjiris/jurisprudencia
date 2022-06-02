@@ -5,7 +5,7 @@
 @import url('./theme-colors.css');
 
 body {
-    font-family: 'Noto Sans Serif', sans-serif;
+    font: 13px/1.5 'Noto Sans Serif', sans-serif;
 }
 
 h1, h2, h3, h4 {
@@ -21,14 +21,14 @@ header nav{
     color: var(--color-dark);
 }
 
-header nav a.nav-link h5{
+header nav a.nav-link h6{
     color: var(--color-gray);
     transition: 0.2s;
 }
-header nav a.nav-link.active h5, header nav a.nav-link.active:hover h5{
+header nav a.nav-link.active h6, header nav a.nav-link.active:hover h6{
     color: var(--color-dark);
 }
-header nav a.nav-link:hover h5{
+header nav a.nav-link:hover h6{
     color: var(--color-white);
 }
 

@@ -258,7 +258,8 @@ app.get("/acord-only", (req, res) => {
     let highlight = {
         fields: {
             "*": { type: "unified" }
-        }
+        },
+        max_analyzed_offset: 1000000
     };
     search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight }).then(results => {
         res.render("acord-article", {

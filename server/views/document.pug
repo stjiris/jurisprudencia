@@ -20,7 +20,7 @@ block form
                 .d-flex.align-items-center.my-1(data-tribunal=source.Tribunal)
                     if show
                         b #{key}:&nbsp;
-                    h5: a(href=`../?${key}=${source[key]}`) !{source[key]}
+                    h5: a(href=`./?${key}=${source[key]}`) !{source[key]}
         for key in Object.keys(source)
             if key == "ECLI" || key == "Processo" || key == "Original URL" || key == "Descritores"
                 continue
@@ -30,7 +30,7 @@ block form
             h6: b Descritores:
             .d-flex.flex-column
                 for d in (source.Descritores||[])
-                    a(href=`../?Descritores="${d}"`) !{d}
+                    a(href=`./?Descritores="${d}"`) !{d}
         .d-flex.align-items-center.my-2(data-tribunal=source.Tribunal)
             h6: a(href=source["Original URL"]).d-flex.align-items-center Original
 
