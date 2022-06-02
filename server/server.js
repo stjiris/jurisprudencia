@@ -57,7 +57,7 @@ app.render = (name, obj, next) => {
     tmp(name, { properties, ...obj }, next);
 }
 
-const DEFAULT_AGGS = {Tribunal: aggs.Tribunal};
+const DEFAULT_AGGS = {Tribunal: {...aggs.Tribunal, aggs: {Codigo: {terms: {field: 'Código Tribunal', size: 1}}}}};
 
 
 let search = (
@@ -322,16 +322,6 @@ const statsAggs = {
         terms: {
             field: 'Origem',
             size: 20
-        },
-        aggs: {
-            Anos: {
-                date_histogram: {
-                    field: "LastDate",
-                    interval: 'year',
-                    format: 'yyyy',
-                    min_doc_count: 0
-                }
-            }
         }
     },
     "Secções": {
@@ -378,16 +368,16 @@ app.get("/stats", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query);
     search(queryObject(req.query.q), sfilters, 0, DEFAULT_AGGS, 0, {}).then(body => {
-        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
+        res.render("stats-plotly", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
     }).catch(e => {
         console.log(e);
-        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: {}, filters: {}, open: true, error: e});
+        res.render("stats-plotly", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: {}, filters: {}, open: true, error: e});
     });
 });
 
 app.get("/allStats", (req, res) => {
     const sfilters = {pre: [], after: []};
-    const filters = populateFilters(sfilters, req.query, []);
+    populateFilters(sfilters, req.query, []);
     search(queryObject(req.query.q), sfilters, 0, statsAggs, 0, runtimeMapping ).then(body => {
         res.json(body.aggregations);
     }).catch(err => {

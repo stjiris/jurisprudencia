@@ -1,7 +1,7 @@
 extends head 
 block head
-    title Estatísitcas
-    script(src="https://cdn.jsdelivr.net/npm/chart.js")
+    title Estatísticas
+    script(src="https://cdn.plot.ly/plotly-2.12.1.min.js")
 
 prepend header
     -currentPage = "stats"
@@ -17,32 +17,132 @@ append form
 block main
     pre: code #{JSON.stringify(aggs["Secções"])}
     .row.p-2
-        .col-12: h4 Acórdãos por tribunal e ano
+        .col-12.col-md-6#tribs
+        .col-12.col-md-6#origs
+        .col-12#years
         .p-relative(style="height: 70vh; width: 100%")
-            canvas#trib-ano
-    .row.p-2
-        .col-12: h4 Acórdãos por Origem e ano
-        .p-relative(style="height: 70vh; width: 100%")
-            canvas#orig-ano
+            svg#orig-ano
     .row.p-2
         .col-12.col-md-6
             h4 Acórdãos por Origem
             .p-relative(style="height: 70vh; width: 100%")
-                canvas#orig-round
+                svg#orig-round
         .col-12.col-md-6
             h4 Secção dos Acórdãos 
             .p-relative(style="height: 70vh; width: 100%")
-                canvas#seccao
+                svg#seccao
     .row.p-2 
         small 
             | <b>Nota:</b> no caso de filtrar por um ano em particular, o gráfico poderá incluir outros anos.
             | Isto significa que alguma das datas associadas com o acórdão pertencem a esse ano, o acórdão aparece no gráfico com a maior data associada.
         script.
+            const name2code = {
+                "Supremo Tribunal de Justiça": "STJ",
+                "Tribunal da Relação de Coimbra": "TRC",
+                "Tribunal da Relação de Évora": "TRE",
+                "Tribunal da Relação de Guimarães": "TRG",
+                "Tribunal da Relação de Lisboa": "TRL",
+                "Tribunal da Relação do Porto": "TRP",
+                "Tribunal da Propriedade Intelectual": "TPI",
+                "Tribunal da Concorrência, Regulação e Supervisão": "TCR",
+                "Supremo Tribunal Administrativo": "STA",
+                "Tribunal Central Administrativo Sul": "TCA",
+                "Tribunal Central Administrativo Norte": "TCN",
+                "Tribunal de Conflitos": "CON",
+                "Acórdãos do Tribunal Constitucional": "TCO",
+                "Tribunal Constitucional": "TCO",
+                "Tribunal dos Conflitos": "CON"
+            }
             fetch("./allStats?!{querystring}").then(r => r.json()).then(aggs => {
                 const maxYear = parseInt(aggs.MaxAno.value_as_string);
                 const minYear = parseInt(aggs.MinAno.value_as_string);
-                const labelsYears = strRange(minYear, maxYear);
+                
+                Plotly.newPlot("tribs", [{
+                    x: aggs.Anos.buckets.map(b => name2code[b.key]),
+                    y: aggs.Anos.buckets.map(b => b.doc_count),
+                    type: "bar",
+                    marker: {
+                        color: aggs.Anos.buckets.map(b => tribColor(b.key))
+                    }
+                }], {
+                    title: "Acórdãos por Tribunal",
+                    xaxis: {
+                        title: "Número de acórdãos",
+                        
+                    },
+                    yaxis: {
+                        title: "Tribunal",
+                        
+                    }
+                }).then( elem => {
+                    elem.on("plotly_click", function(data){
+                        let tribCod = data.points[0].label;
+                        document.querySelectorAll(`input[name="Tribunal"]`).forEach(i => i.checked = false);
+                        let trib = Object.entries(name2code).find(e => e[1] == tribCod)[0];
+                        document.querySelector("#onclickgraph").insertAdjacentHTML("beforebegin", `<input type="hidden" name="Tribunal" value="${trib}">`);
+                        document.querySelector("#onclickgraph").click(data.event);
+                    });
+                })
 
+                Plotly.newPlot("origs", [{
+                    x: aggs.Origens.buckets.map(b => b.key.replace("-indexer","")),
+                    y: aggs.Origens.buckets.map(b => b.doc_count),
+                    type: "bar",
+                    marker: {
+                        color: aggs.Origens.buckets.map(b => origemColor(b.key))
+                    }
+                }], {
+                    title: "Acórdãos por Origem",
+                    xaxis: {
+                        title: "Número de acórdãos",
+                        
+                    },
+                    yaxis: {
+                        title: "Origem",
+                        
+                    }
+                }).then( elem => {
+                    elem.on("plotly_click", function(data){
+                        let Origem = data.points[0].label.replace("-", "-indexer-");
+                        Origem = Origem.match('-indexer') ? Origem : Origem + "-indexer";
+                        document.querySelectorAll(`input[name="Origem"]`).forEach(i => i.remove());
+                        document.querySelector(`#onclickgraph`).insertAdjacentHTML("beforebegin", `<input type="hidden" name="Origem" value="${Origem}">`);
+                        document.querySelector("#onclickgraph").click(data.event);
+                    });
+                });
+
+                Plotly.newPlot("years", aggs.Anos.buckets.map(b => {
+                    return {
+                        text: b.key,
+                        x: b.Anos.buckets.map(b => parseInt(b.key_as_string)),
+                        y: b.Anos.buckets.map(b => b.doc_count),
+                        type: "bar",
+                        name: name2code[b.key],
+                        text: [],
+                        marker: {
+                            color: tribColor(b.key)
+                        }
+                    }
+                }), {
+                    title: "Acórdãos por Ano",
+                    xaxis: {
+                        title: "Ano",
+                        
+                    },
+                    yaxis: {
+                        title: "Número de acórdãos",
+                        
+                    },
+                    barmode: "stack"
+                }).then( elem => {
+                    elem.on("plotly_click", function(data){
+                        let year = data.points[0].x;
+                        document.querySelector(`input[name="MinAno"]`).value = year;
+                        document.querySelector(`input[name="MaxAno"]`).value = year;
+                        document.querySelector("#onclickgraph").click(data.event);
+                    });
+                })
+                /*
                 new Chart(document.querySelector('#trib-ano'), {
                     type: "bar",
                     data: {
@@ -162,7 +262,7 @@ block main
                         }
                     }
                 });
-
+                */
                 
             });
 
@@ -201,13 +301,18 @@ block main
             }
 
             function tribColor(trib){
-                return getComputedStyle(document.querySelector(`[data-tribunal="${trib}"]`)).getPropertyValue("--tribunal-color") || "#000"
+                let div = document.createElement("div");
+                div.dataset.tribunal=trib;
+                document.body.appendChild(div);
+                let color = getComputedStyle(div).getPropertyValue("--tribunal-color");
+                document.body.removeChild(div);
+                return color;
             }
 
             function origemColor(ori){
-                if( ori == "csm-indexer" ) return tribColor("Supremo Tribunal Administrativo")
-                if( ori.match("dgsi-indexer-.*") ) return tribColor("Supremo Tribunal de Justiça")
-                if( ori == "tcon-indexer" ) return tribColor("Tribunal Constitucional")            
+                if( ori == "csm-indexer" ) return tribColor("STA")
+                if( ori.match("dgsi-indexer-.*") ) return tribColor(ori.match("dgsi-indexer-(.*)")[1])
+                if( ori == "tcon-indexer" ) return tribColor("TCO")
             }
 
             function strRange(min, max) {
