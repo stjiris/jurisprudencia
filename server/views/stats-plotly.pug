@@ -20,18 +20,7 @@ block main
         .col-12.col-md-6#tribs
         .col-12.col-md-6#origs
         .col-12#years
-        .p-relative(style="height: 70vh; width: 100%")
-            svg#orig-ano
-    .row.p-2
-        .col-12.col-md-6
-            h4 Acórdãos por Origem
-            .p-relative(style="height: 70vh; width: 100%")
-                svg#orig-round
-        .col-12.col-md-6
-            h4 Secção dos Acórdãos 
-            .p-relative(style="height: 70vh; width: 100%")
-                svg#seccao
-    .row.p-2 
+        .col-12#seccao
         small 
             | <b>Nota:</b> no caso de filtrar por um ano em particular, o gráfico poderá incluir outros anos.
             | Isto significa que alguma das datas associadas com o acórdão pertencem a esse ano, o acórdão aparece no gráfico com a maior data associada.
@@ -141,129 +130,7 @@ block main
                         document.querySelector(`input[name="MaxAno"]`).value = year;
                         document.querySelector("#onclickgraph").click(data.event);
                     });
-                })
-                /*
-                new Chart(document.querySelector('#trib-ano'), {
-                    type: "bar",
-                    data: {
-                        labels: labelsYears,
-                        datasets: aggs.Anos.buckets.map(trib => ({
-                            label: trib.key,
-                            borderWidth: 0,
-                            data: trib.Anos.buckets.map(ano => ({x: (ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
-                            backgroundColor: tribColor(trib.key)
-                        }))
-                    },
-                    options: {
-                            plugins: {
-                            legend: {
-                                display: true,
-                                position: "bottom",
-                                align: "start"
-                            }
-                        },
-                        scales: {
-                            x: {
-                                stacked: true
-                            },
-                            y: {
-                                stacked: true
-                            }
-                        },
-                        maintainAspectRatio: false,
-                        onClick: barClick(aggs.Anos.buckets, "Tribunal")
-                    }
-                })
-                new Chart(document.querySelector('#orig-ano'), {
-                    type: "bar",
-                    data: {
-                        labels: labelsYears,
-                        datasets: aggs.Origens.buckets.map(trib => ({
-                            label: trib.key,
-                            borderWidth: 0,
-                            data: trib.Anos.buckets.map(ano => ({x: (ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
-                            backgroundColor: origemColor(trib.key)
-                        }))
-                    },
-                    options: {
-                            plugins: {
-                            legend: {
-                                display: true,
-                                position: "bottom",
-                                align: "start"
-                            }
-                        },
-                        scales: {
-                            x: {
-                                stacked: true
-                            },
-                            y: {
-                                stacked: true
-                            }
-                        },
-                        maintainAspectRatio: false,
-                        onClick: barAnoClick(aggs.Origens.buckets, "Origem")
-                    }
                 });
-                new Chart(document.getElementById("orig-round"), {
-                    type: "doughnut",
-                    data: {
-                        labels: aggs.Origens.buckets.map(o => o.key),
-                        datasets: [{
-                            label: "Origem",
-                            borderWidth: 0,
-                            data: aggs.Origens.buckets.map(o => o.doc_count),
-                            backgroundColor: aggs.Origens.buckets.map(o => origemColor(o.key))
-                        }]
-                    },
-                    options: {
-                            plugins: {
-                            legend: {
-                                display: true,
-                                position: "bottom",
-                                align: "start"
-                            }
-                        },
-                        maintainAspectRatio: false,
-                        onClick: barClick(aggs.Origens.buckets, "Origem")
-                    }
-                });
-                console.log(aggs["Secções"])
-                new Chart(document.getElementById("seccao"), {
-                    type: "doughnut",
-                    data: {
-                        labels: Object.keys(aggs["Secções"].buckets),
-                        datasets: [{
-                            label: "Secções",
-                            borderWidth: 0,
-                            data: Object.values(aggs["Secções"].buckets).map(o => o.doc_count),
-                            backgroundColor: Object.keys(aggs["Secções"].buckets).map(o => o.match(/com/i) ? origemColor("dgsi-indexer-STJ") : origemColor("csm-indexer"))
-                        }]
-                    },
-                    options: {
-                            plugins: {
-                            legend: {
-                                display: true,
-                                position: "bottom",
-                                align: "start"
-                            }
-                        },
-                        maintainAspectRatio: false,
-                        onClick: (event, elems) => {
-                            if( elems.length <= 0 ) return;
-                            let val = Object.keys(aggs["Secções"].buckets)[elems[0].index];
-                            if( val.match(/com/i) ){
-                                document.querySelector("input[name=hasField]" ).value = "Secção";
-                            }
-                            else{
-                                document.querySelector("input[name=notHasField]" ).value = "Secção";
-                            }
-                            document.querySelector("#onclickgraph").dispatchEvent(event.native);
-                        }
-                    }
-                });
-                */
-                
             });
 
             function barAnoClick(buckets, inputName){
