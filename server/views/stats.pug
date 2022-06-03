@@ -12,7 +12,8 @@ block printpageinfo
 append form
     .d-flex.my-2.justify-content-center.align-items-center
         button.btn.w-100(type="submit", formaction=`./?q=${q || ""}`): u Ver resultados da pesquisa
-        button#onclickgraph(type="submit", formaction=`./stats?q=${q || ""}`, hidden): u Ver resultados da pesquisa
+        button#onclickgraph(type="submit", formaction=`./stats?q=${q || ""}`, hidden)
+        button.btn.w-100(type="submit", formaction=`./list?q=${q || ""}`): u Ver agrupamentos da pesquisa
 
 block main
     pre: code #{JSON.stringify(aggs["Secções"])}
