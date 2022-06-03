@@ -64,7 +64,7 @@ block main
                         title: "Tribunal",
                         
                     }
-                }).then( elem => {
+                }, {responsive: true}).then( elem => {
                     elem.on("plotly_click", function(data){
                         let tribCod = data.points[0].label;
                         document.querySelectorAll(`input[name="Tribunal"]`).forEach(i => i.checked = false);
@@ -91,7 +91,7 @@ block main
                         title: "Origem",
                         
                     }
-                }).then( elem => {
+                }, {responsive: true}).then( elem => {
                     elem.on("plotly_click", function(data){
                         let Origem = data.points[0].label.replace("-", "-indexer-");
                         Origem = Origem.match('-indexer') ? Origem : Origem + "-indexer";
@@ -124,7 +124,7 @@ block main
                         
                     },
                     barmode: "stack"
-                }).then( elem => {
+                }, {responsive: true}).then( elem => {
                     elem.on("plotly_click", function(data){
                         let year = data.points[0].x;
                         document.querySelector(`input[name="MinAno"]`).value = year;
@@ -148,7 +148,7 @@ block main
                     yaxis: {
                         title: "Secção"
                     }
-                }).then( elem => {
+                }, {responsive: true}).then( elem => {
                     elem.on("plotly_click", function(data){
                         let sec = data.points[0].label;
                         if( sec.match(/com/i) ){
