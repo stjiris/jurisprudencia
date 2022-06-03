@@ -69,7 +69,7 @@ init().then( async _ => forEachCSMRecord(async record => {
                 }
             }
             else if( key == "Descritores" ){
-                body[key] = table[key].textContent.trim().split(" ");
+                body[key] = table[key].textContent.trim().split("\n");
             }
             else if( !(key in body) && !key.match(/Acórdãos \w+/) ){
                 if( key in mapping.mappings.properties ){
