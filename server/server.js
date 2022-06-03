@@ -356,10 +356,10 @@ app.get("/stats", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query);
     search(queryObject(req.query.q), sfilters, 0, DEFAULT_AGGS, 0, {}).then(body => {
-        res.render("stats-plotly", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
+        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
     }).catch(e => {
         console.log(e);
-        res.render("stats-plotly", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: {}, filters: {}, open: true, error: e});
+        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: {}, filters: {}, open: true, error: e});
     });
 });
 

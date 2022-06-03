@@ -1,7 +1,7 @@
 extends head 
 block head
-    title Estatísitcas
-    script(src="https://cdn.jsdelivr.net/npm/chart.js")
+    title Estatísticas
+    script(src="https://cdn.plot.ly/plotly-2.12.1.min.js")
 
 prepend header
     -currentPage = "stats"
@@ -17,156 +17,153 @@ append form
         button.btn.w-100(type="submit", formaction=`./list?q=${q || ""}`): u Ver agrupamentos da pesquisa
 
 block main
-    pre: code #{JSON.stringify(aggs["Secções"])}
     .row.p-2
-        .col-12: h4 Acórdãos por tribunal e ano
-        .p-relative(style="height: 70vh; width: 100%")
-            canvas#trib-ano
-    .row.p-2
-        .col-12: h4 Acórdãos por Origem e ano
-        .p-relative(style="height: 70vh; width: 100%")
-            canvas#orig-ano
-    .row.p-2
-        .col-12.col-md-6
-            h4 Acórdãos por Origem
-            .p-relative(style="height: 70vh; width: 100%")
-                canvas#orig-round
-        .col-12.col-md-6
-            h4 Secção dos Acórdãos 
-            .p-relative(style="height: 70vh; width: 100%")
-                canvas#seccao
-    .row.p-2 
+        .col-12#loading: h4 A carregar estatísticas...
+        .col-12#years
+        .col-12.col-md-4#tribs
+        .col-12.col-md-4#origs
+        .col-12.col-md-4#seccao
         small 
             | <b>Nota:</b> no caso de filtrar por um ano em particular, o gráfico poderá incluir outros anos.
             | Isto significa que alguma das datas associadas com o acórdão pertencem a esse ano, o acórdão aparece no gráfico com a maior data associada.
         script.
+            const name2code = {
+                "Supremo Tribunal de Justiça": "STJ",
+                "Tribunal da Relação de Coimbra": "TRC",
+                "Tribunal da Relação de Évora": "TRE",
+                "Tribunal da Relação de Guimarães": "TRG",
+                "Tribunal da Relação de Lisboa": "TRL",
+                "Tribunal da Relação do Porto": "TRP",
+                "Tribunal da Propriedade Intelectual": "TPI",
+                "Tribunal da Concorrência, Regulação e Supervisão": "TCR",
+                "Supremo Tribunal Administrativo": "STA",
+                "Tribunal Central Administrativo Sul": "TCA",
+                "Tribunal Central Administrativo Norte": "TCN",
+                "Tribunal de Conflitos": "CON",
+                "Acórdãos do Tribunal Constitucional": "TCO",
+                "Tribunal Constitucional": "TCO",
+                "Tribunal dos Conflitos": "CON"
+            }
             fetch("./allStats?!{querystring}").then(r => r.json()).then(aggs => {
+                document.getElementById("loading").remove()
                 const maxYear = parseInt(aggs.MaxAno.value_as_string);
                 const minYear = parseInt(aggs.MinAno.value_as_string);
-                const labelsYears = strRange(minYear, maxYear);
-
-                new Chart(document.querySelector('#trib-ano'), {
+                
+                Plotly.newPlot("tribs", [{
+                    x: aggs.Anos.buckets.map(b => name2code[b.key]),
+                    y: aggs.Anos.buckets.map(b => b.doc_count),
                     type: "bar",
-                    data: {
-                        labels: labelsYears,
-                        datasets: aggs.Anos.buckets.map(trib => ({
-                            label: trib.key,
-                            borderWidth: 0,
-                            data: trib.Anos.buckets.map(ano => ({x: (ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
-                            backgroundColor: tribColor(trib.key)
-                        }))
-                    },
-                    options: {
-                            plugins: {
-                            legend: {
-                                display: true,
-                                position: "bottom",
-                                align: "start"
-                            }
-                        },
-                        scales: {
-                            x: {
-                                stacked: true
-                            },
-                            y: {
-                                stacked: true
-                            }
-                        },
-                        maintainAspectRatio: false,
-                        onClick: barClick(aggs.Anos.buckets, "Tribunal")
+                    marker: {
+                        color: aggs.Anos.buckets.map(b => tribColor(b.key))
                     }
+                }], {
+                    title: "Acórdãos por Tribunal",
+                    xaxis: {
+                        title: "Número de acórdãos",
+                        
+                    },
+                    yaxis: {
+                        title: "Tribunal",
+                        
+                    }
+                }, {responsive: true}).then( elem => {
+                    elem.on("plotly_click", function(data){
+                        let tribCod = data.points[0].label;
+                        document.querySelectorAll(`input[name="Tribunal"]`).forEach(i => i.checked = false);
+                        let trib = Object.entries(name2code).find(e => e[1] == tribCod)[0];
+                        document.querySelector("#onclickgraph").insertAdjacentHTML("beforebegin", `<input type="hidden" name="Tribunal" value="${trib}">`);
+                        document.querySelector("#onclickgraph").click(data.event);
+                    });
                 })
-                new Chart(document.querySelector('#orig-ano'), {
+
+                Plotly.newPlot("origs", [{
+                    x: aggs.Origens.buckets.map(b => b.key.replace("-indexer","")),
+                    y: aggs.Origens.buckets.map(b => b.doc_count),
                     type: "bar",
-                    data: {
-                        labels: labelsYears,
-                        datasets: aggs.Origens.buckets.map(trib => ({
-                            label: trib.key,
-                            borderWidth: 0,
-                            data: trib.Anos.buckets.map(ano => ({x: (ano.key_as_string), y: ano.doc_count})).sort((a, b) => a.x - b.x),
-                            backgroundColor: origemColor(trib.key)
-                        }))
-                    },
-                    options: {
-                            plugins: {
-                            legend: {
-                                display: true,
-                                position: "bottom",
-                                align: "start"
-                            }
-                        },
-                        scales: {
-                            x: {
-                                stacked: true
-                            },
-                            y: {
-                                stacked: true
-                            }
-                        },
-                        maintainAspectRatio: false,
-                        onClick: barAnoClick(aggs.Origens.buckets, "Origem")
+                    marker: {
+                        color: aggs.Origens.buckets.map(b => origemColor(b.key))
                     }
-                });
-                new Chart(document.getElementById("orig-round"), {
-                    type: "doughnut",
-                    data: {
-                        labels: aggs.Origens.buckets.map(o => o.key),
-                        datasets: [{
-                            label: "Origem",
-                            borderWidth: 0,
-                            data: aggs.Origens.buckets.map(o => o.doc_count),
-                            backgroundColor: aggs.Origens.buckets.map(o => origemColor(o.key))
-                        }]
+                }], {
+                    title: "Acórdãos por Origem",
+                    xaxis: {
+                        title: "Número de acórdãos",
+                        
                     },
-                    options: {
-                            plugins: {
-                            legend: {
-                                display: true,
-                                position: "bottom",
-                                align: "start"
-                            }
-                        },
-                        maintainAspectRatio: false,
-                        onClick: barClick(aggs.Origens.buckets, "Origem")
+                    yaxis: {
+                        title: "Origem",
+                        
                     }
+                }, {responsive: true}).then( elem => {
+                    elem.on("plotly_click", function(data){
+                        let Origem = data.points[0].label.replace("-", "-indexer-");
+                        Origem = Origem.match('-indexer') ? Origem : Origem + "-indexer";
+                        document.querySelectorAll(`input[name="Origem"]`).forEach(i => i.remove());
+                        document.querySelector(`#onclickgraph`).insertAdjacentHTML("beforebegin", `<input type="hidden" name="Origem" value="${Origem}">`);
+                        document.querySelector("#onclickgraph").click(data.event);
+                    });
                 });
-                console.log(aggs["Secções"])
-                new Chart(document.getElementById("seccao"), {
-                    type: "doughnut",
-                    data: {
-                        labels: Object.keys(aggs["Secções"].buckets),
-                        datasets: [{
-                            label: "Secções",
-                            borderWidth: 0,
-                            data: Object.values(aggs["Secções"].buckets).map(o => o.doc_count),
-                            backgroundColor: Object.keys(aggs["Secções"].buckets).map(o => o.match(/com/i) ? origemColor("dgsi-indexer-STJ") : origemColor("csm-indexer"))
-                        }]
-                    },
-                    options: {
-                            plugins: {
-                            legend: {
-                                display: true,
-                                position: "bottom",
-                                align: "start"
-                            }
-                        },
-                        maintainAspectRatio: false,
-                        onClick: (event, elems) => {
-                            if( elems.length <= 0 ) return;
-                            let val = Object.keys(aggs["Secções"].buckets)[elems[0].index];
-                            if( val.match(/com/i) ){
-                                document.querySelector("input[name=hasField]" ).value = "Secção";
-                            }
-                            else{
-                                document.querySelector("input[name=notHasField]" ).value = "Secção";
-                            }
-                            document.querySelector("#onclickgraph").dispatchEvent(event.native);
+
+                Plotly.newPlot("years", aggs.Anos.buckets.map(b => {
+                    return {
+                        text: b.key,
+                        x: b.Anos.buckets.map(b => parseInt(b.key_as_string)),
+                        y: b.Anos.buckets.map(b => b.doc_count),
+                        type: "bar",
+                        name: name2code[b.key],
+                        text: [],
+                        marker: {
+                            color: tribColor(b.key)
                         }
                     }
+                }), {
+                    title: "Acórdãos por Ano",
+                    xaxis: {
+                        title: "Ano",
+                        
+                    },
+                    yaxis: {
+                        title: "Número de acórdãos",
+                        
+                    },
+                    barmode: "stack"
+                }, {responsive: true}).then( elem => {
+                    elem.on("plotly_click", function(data){
+                        let year = data.points[0].x;
+                        document.querySelector(`input[name="MinAno"]`).value = year;
+                        document.querySelector(`input[name="MaxAno"]`).value = year;
+                        document.querySelector("#onclickgraph").click(data.event);
+                    });
                 });
 
-                
+                Plotly.newPlot("seccao", Object.entries(aggs["Secções"].buckets).map(([name, value]) => ({
+                    x: [name],
+                    y: [value.doc_count],
+                    name: name,
+                    type: "bar"
+                })), {
+                    title: "Acórdãos com Secção",
+                    showlegend: false,
+                    xaxis: {
+                        title: "Número de acórdãos",
+                        
+                    },
+                    yaxis: {
+                        title: "Secção"
+                    }
+                }, {responsive: true}).then( elem => {
+                    elem.on("plotly_click", function(data){
+                        let sec = data.points[0].label;
+                        if( sec.match(/com/i) ){
+                            document.querySelector(`#onclickgraph`).insertAdjacentHTML("beforebegin", `<input type="hidden" name="hasField" value="Secção">`);                        
+                        }
+                        else{
+                            document.querySelector(`#onclickgraph`).insertAdjacentHTML("beforebegin", `<input type="hidden" name="notHasField" value="Secção">`);                        
+                        }
+                        document.querySelector("#onclickgraph").click(data.event);
+                    });
+                });
             });
+
 
             function barAnoClick(buckets, inputName){
                 return (event, elems) => {
@@ -203,13 +200,18 @@ block main
             }
 
             function tribColor(trib){
-                return getComputedStyle(document.querySelector(`[data-tribunal="${trib}"]`)).getPropertyValue("--tribunal-color") || "#000"
+                let div = document.createElement("div");
+                div.dataset.tribunal=trib;
+                document.body.appendChild(div);
+                let color = getComputedStyle(div).getPropertyValue("--tribunal-color");
+                document.body.removeChild(div);
+                return color;
             }
 
             function origemColor(ori){
-                if( ori == "csm-indexer" ) return tribColor("Supremo Tribunal Administrativo")
-                if( ori.match("dgsi-indexer-.*") ) return tribColor("Supremo Tribunal de Justiça")
-                if( ori == "tcon-indexer" ) return tribColor("Tribunal Constitucional")            
+                if( ori == "csm-indexer" ) return tribColor("STA")
+                if( ori.match("dgsi-indexer-.*") ) return tribColor(ori.match("dgsi-indexer-(.*)")[1])
+                if( ori == "tcon-indexer" ) return tribColor("TCO")
             }
 
             function strRange(min, max) {
