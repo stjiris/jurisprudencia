@@ -35,7 +35,7 @@ html(lang="en")
                             a.nav-link(href="./list", class=currentPage=="list"?"active":""): h6.m-0 Listas
                         li.nav-item.py-1.px-2.mx-1
                             a.nav-link(href="./table/", class=currentPage=="table"?"active":""): h6.m-0 Tabelas
-        main.container#top
+        main.container-fluid#top
             if error 
                 pre.alert.alert-danger
                     code !{JSON.stringify(error, null , 2)}
@@ -45,7 +45,7 @@ html(lang="en")
                     .row
                         .col-12.col-md-3.d-print-none.infofilters
                             .row.p-2
-                                form(method="get").col-12
+                                form(method="get").col-12#filter-form
                                     block form
                                         input(type="search", name="q", value=q, hidden)
                                         button.btn.color-link(type="submit", hidden)
@@ -59,7 +59,7 @@ html(lang="en")
                                                 -let tribunais = []
                                                 .form-check.form-check-inline
                                                     input.form-check-input(type="checkbox", id="tribunais-all")
-                                                    label.form-check-label(for="tribunais-all"): h6 Tribunal
+                                                    label.form-check-label(for="tribunais-all"): h6.m-0 Tribunal
                                                 -let key = "Tribunal"
                                                 for bucket in aggs[key].buckets
                                                     -let checked = !filters[key] || filters[key].indexOf(bucket.key) > -1
@@ -71,7 +71,7 @@ html(lang="en")
                                                             span.d-block !{bucket.key} 
                                                             span.d-block (!{bucket.doc_count})
                                             .d-flex.flex-column.my-2
-                                                h6 Anos
+                                                h6.m-0 Anos
                                                 .input-group
                                                     .input-group-prepend.w-25
                                                         label(for="data_inicio").input-group-text.w-100 De
@@ -93,9 +93,9 @@ html(lang="en")
                                                                     i.d-blocl.bi-trash
                                             mixin filterlist(key)
                                                 .d-flex.flex-column.my-2
-                                                    span 
+                                                    h6.m-0 
                                                         | !{key}
-                                                        small: button.btn.color-link(type="submit", formaction="./list", name="term", value=key) (Lista)
+                                                        small: button.btn.btn-sm.color-link(type="submit", formaction="./list", name="term", value=key) (Lista)
                                                     +await(`./datalist?id=datalist-${key}&agg=${key}&${querystring}`)
                                                     input.form-control(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`Filtrar ${key}...`)
                                                     +usedFilters(key)
@@ -146,13 +146,19 @@ html(lang="en")
                 }
                 if( overallCheckbox ){
                     setOverallCheckboxState();                    
-                    overallCheckbox.addEventListener("change", () => {
+                    overallCheckbox.addEventListener("change", (e) => {
                         for( let i = 0; i < checkboxes.length; i++ ) {
                             checkboxes[i].checked = overallCheckbox.checked;
                         }
+                        e.stopPropagation();
                     });
                     for( let i = 0; i < checkboxes.length; i++ ) {
                         checkboxes[i].addEventListener("change", setOverallCheckboxState);
                     }
                 }
+
+                // Auto-submit form
+                document.getElementById("filter-form").addEventListener("change", function(e){
+                    document.getElementById("filter-form").submit();
+                });
             })
