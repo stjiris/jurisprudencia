@@ -57,7 +57,7 @@ app.render = (name, obj, next) => {
     tmp(name, { properties, ...obj }, next);
 }
 
-const DEFAULT_AGGS = {Tribunal: {...aggs.Tribunal, aggs: {Codigo: {terms: {field: 'Código Tribunal', size: 1}}}}};
+const DEFAULT_AGGS = {Tribunal: {...aggs.Tribunal, aggs: {Codigo: {terms: {field: 'Código Tribunal', size: 1}}}}, MaxAno: aggs.MaxAno, MinAno: aggs.MinAno};
 
 
 let search = (
@@ -97,7 +97,7 @@ const padZero = (num, size=4) => {
     return s;
 }
 
-const populateFilters = (filters, body={}, afters=["Tribunal"]) => { // filters={pre: [], after: []}
+const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]) => { // filters={pre: [], after: []}
     const filtersUsed = {}
     for( let key in aggs ){
         let aggName = key;
@@ -374,6 +374,8 @@ app.get("/allStats", (req, res) => {
 function listAggregation(term){
     return {
         Tribunal: aggs.Tribunal,
+        MinAno: aggs.MinAno,
+        MaxAno: aggs.MaxAno,
         [term]: {
             terms: {
                 field: aggs[term].terms.field,  
