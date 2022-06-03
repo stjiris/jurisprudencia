@@ -72,10 +72,10 @@ html(lang="en")
                                         .d-flex.flex-column.my-1
                                             .input-group
                                                 .input-group-prepend.flex-grow-1
-                                                    input.form-control(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="De...")#data_inicio
+                                                    input.form-control(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="Desde (ano)")#data_inicio
                                                 span.input-group-text  <i class="bi-calendar"></i> - <i class="bi-calendar"></i>
                                                 .input-group-append.flex-grow-1
-                                                    input.form-control(type="number", name="MaxAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder="Até...")#data_fim
+                                                    input.form-control(type="number", name="MaxAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder="Até (ano)")#data_fim
                                         mixin usedFilters(key)
                                             -let cache = []
                                             if key in filters

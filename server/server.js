@@ -208,6 +208,9 @@ function parseSort(value, array){
         array.push({
             _score: "desc"
         });
+        array.push({
+            Data: "desc"
+        })
     }
     return sortV;
 }
