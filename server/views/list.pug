@@ -12,7 +12,7 @@ block printpageinfo
 append form
     .d-flex.flex-column.my-2
         h5 Campo do agrupamento
-            select.form-select
+            select.form-select(name="term")
                 for op of fields 
                     option(selected=op.key==term) !{op.key}
     .d-flex.my-2.justify-content-center.align-items-center
