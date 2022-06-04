@@ -58,7 +58,7 @@ html(lang="en")
                                             -let tribunais = []
                                             .form-check.form-check-inline
                                                 input.form-check-input(type="checkbox", id="tribunais-all")
-                                                label.form-check-label(for="tribunais-all"): h6.m-0 Tribunal
+                                                label.form-check-label.text-decoration-none(for="tribunais-all"): h6.m-0 Tribunal
                                             -let key = "Tribunal"
                                             for bucket in aggs[key].buckets
                                                 -let checked = !filters[key] || filters[key].indexOf(bucket.key) > -1

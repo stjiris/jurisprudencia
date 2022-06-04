@@ -45,7 +45,7 @@ header nav a.nav-link:hover h6{
 }
 
 form label{
-    font-size: 0.85rem;
+    font-size: 0.75rem;
 }
 
 input[type=checkbox] ~ label{
