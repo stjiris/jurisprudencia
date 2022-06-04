@@ -64,6 +64,11 @@ client.search({
                         term: {
                             "Origem": "csm-indexer"
                         }
+                    },
+                    {
+                        script: {
+                            script: "doc['Descritores'].length > 1"
+                        }
                     }
                 ]
             }
