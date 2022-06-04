@@ -20,7 +20,7 @@ append form
     .d-flex.flex-row.my-2.justify-content-center.align-items-center
         button.btn.w-100(type="submit", formaction=`./stats?q=${q || ""}`): u Ver estatísticas da pesquisa
     .d-flex.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`./list?q=${q || ""}`): u Ver indíces da pesquisa
+        button.btn.w-100(type="submit", formaction=`./list?q=${q || ""}`): u Ver Índices da pesquisa
 
 block main
     if body.hits.total.value == 0
