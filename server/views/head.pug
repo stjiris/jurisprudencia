@@ -43,7 +43,7 @@ html(lang="en")
             else
                 block allmain
                     .row
-                        .col-12.col-md-3.d-print-none.infofilters
+                        .col-12.col-sm-4.col-md-3.col-xl-2.d-print-none.infofilters
                             form(method="get")#filter-form
                                 block form
                                     input(type="search", name="q", value=q, hidden)
@@ -54,9 +54,9 @@ html(lang="en")
                                                 i.bi-funnel 
                                                 | Filtrar 
                                                 small: i.bi-minimizemaximize
-                                        .d-flex.flex-column.my-2
+                                        .d-flex.flex-column.my-1
                                             -let tribunais = []
-                                            .form-check.form-check-inline
+                                            .form-check.form-check-inline.my-0
                                                 input.form-check-input(type="checkbox", id="tribunais-all")
                                                 label.form-check-label.text-decoration-none.text-body(for="tribunais-all"): h6.m-0 Tribunal
                                             -let key = "Tribunal"
@@ -64,18 +64,18 @@ html(lang="en")
                                                 -let checked = !filters[key] || filters[key].indexOf(bucket.key) > -1
                                                 if checked
                                                     -tribunais.push(bucket.key)
-                                                .form-check.form-check-inline(data-tribunal=bucket.key)
+                                                .form-check.form-check-inline.my-0(data-tribunal=bucket.key)
                                                     input.form-check-input.tribunal-checkbox(type="checkbox", name=key, value=bucket.key, checked=checked, id=bucket.key.replace(/\s/g, ""), hidden)
                                                     label.form-check-label(for=bucket.key.replace(/\s/g, "")).d-flex.justify-content-between.align-items-center.w-100
                                                         span.d-block !{bucket.key} 
                                                         span.d-block (!{bucket.doc_count})
                                         .d-flex.flex-column.my-1
-                                            .input-group
+                                            .input-group.input-group-sm
                                                 .input-group-prepend.flex-grow-1
-                                                    input.form-control(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="Desde (ano)")#data_inicio
-                                                span.input-group-text  <i class="bi-calendar"></i> - <i class="bi-calendar"></i>
+                                                    input.form-control.form-control-sm(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="Desde (ano)")#data_inicio
+                                                span.input-group-text.input-group-text-sm  <i class="bi-calendar"></i> - <i class="bi-calendar"></i>
                                                 .input-group-append.flex-grow-1
-                                                    input.form-control(type="number", name="MaxAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder="Até (ano)")#data_fim
+                                                    input.form-control.form-control-sm(type="number", name="MaxAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder="Até (ano)")#data_fim
                                         mixin usedFilters(key)
                                             -let cache = []
                                             if key in filters
@@ -90,7 +90,7 @@ html(lang="en")
                                         mixin filterlist(key)
                                             .d-flex.flex-column.my-1
                                                 +await(`./datalist?id=datalist-${key}&agg=${key}&${querystring}`)
-                                                input.form-control(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`Filtrar ${key}...`)
+                                                input.form-control.form-control-sm(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`Filtrar ${key}...`)
                                                 +usedFilters(key)
                                         for p of Object.keys(properties)
                                             if ["Tribunal", "ECLI", "Código Tribunal", "Processo", "Tipo", "Jurisprudência", "Original URL"].indexOf(p) == -1
@@ -98,14 +98,14 @@ html(lang="en")
                                         .d-flex.flex-column.my-2
                                             h6.m-0 Campos 
                                                 +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)
-                                                input.form-control(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de conter o campo...`)
+                                                input.form-control.form-control-sm(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de conter o campo...`)
                                                 +usedFilters("hasField")
-                                                input.form-control(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode conter o campo...`)
+                                                input.form-control.form-control-sm(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode conter o campo...`)
                                                 +usedFilters("notHasField")
                                         .d-flex.flex-row.my-2.justify-content-between.align-items-center
                                             button.btn.btn-primary(type="submit") Aplicar
                                             a.btn.btn-danger(href=`?q=${q || ""}`) Limpar
-                        .col-12.col-md-9#main: block main
+                        .col-12.col-sm-8.col-md-9.col-xl-10#main: block main
         footer.d-print-none.mt-2
             .container.row.align-items-center.m-auto.p-4
                 a(href="#top").col-12.col-lg-6.align-items-center.d-flex.flex-wrap.py-2
