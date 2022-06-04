@@ -52,6 +52,7 @@ input[type=checkbox] ~ label{
     position: relative;
     cursor: pointer;
     opacity: 0.5;
+    text-decoration: line-through;
 }
 
 input[type=checkbox] ~ label:before{
@@ -68,6 +69,7 @@ input[type=checkbox] ~ label:before{
 
 input[type=checkbox]:checked ~ label{
     opacity: 1;
+    text-decoration: none;
 }
 
 input[type=checkbox]:checked ~ label:before{
