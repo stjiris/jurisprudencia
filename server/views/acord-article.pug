@@ -1,4 +1,5 @@
 for doc in hits
+    -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.s?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     article.row(data-tribunal=doc._source.Tribunal)
         .col-12.pt-1
             a(href=`./${doc._source.ECLI}`, target="_blank", style="color: var(--tribunal-color);").text-decoration-none !{doc._source.ECLI}
@@ -7,10 +8,10 @@ for doc in hits
                 b Tribunal:&nbsp;
                 span(style="color: var(--tribunal-color);") #{doc._source.Tribunal}&nbsp;
                 if doc._source.Secção
-                    span (#{doc._source.Secção})
+                    span (#{Str(doc._source.Secção)})
             div.mx-1
                 b Relator:&nbsp;
-                span #{doc._source.Relator}
+                span #{Str(doc._source.Relator)}
             div.mx-1
                 b Data(s):&nbsp;
                 span #{doc.fields.Data}
@@ -18,7 +19,7 @@ for doc in hits
             if doc._source.Espécie
                 div.mx-1
                     b Espécie:&nbsp;
-                    span #{doc._source.Espécie}
+                    span #{Str(doc._source.Espécie)}
             if doc._source["Meio Processual"]
                 div.mx-1
                     b Meio Processual:&nbsp;
@@ -27,17 +28,17 @@ for doc in hits
             .col-12
                 div.mx-1
                     b Descritores:&nbsp;
-                    span #{doc._source.Descritores.join(' / ')}
+                    span #{Str(doc._source.Descritores.join(' / '))}
         if doc._source.Votação
             .col-12
                 div.mx-1
                     b Votação:&nbsp;
-                    span #{doc._source.Votação}
+                    span #{Str(doc._source.Votação)}
         if doc._source.Decisão
             .col-12
                 div.mx-1.d-flex
                     b Decisão:&nbsp;
-                    div !{doc._source.Decisão}
+                    div !{Str(doc._source.Decisão)}
         if doc.highlight && Object.keys(doc.highlight).length > 0
             .col-12.d-print-none
                 div.mx-1
