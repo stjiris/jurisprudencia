@@ -23,7 +23,7 @@ for doc in hits
             if doc._source["Meio Processual"]
                 div.mx-1
                     b Meio Processual:&nbsp;
-                    span #{doc._source["Meio Processual"]}
+                    span #{Str(doc._source["Meio Processual"])}
         if Array.isArray(doc._source.Descritores)
             .col-12
                 div.mx-1

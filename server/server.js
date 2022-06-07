@@ -352,7 +352,7 @@ let runtimeMapping = {
     }
 }
 
-app.get("/stats", (req, res) => {
+app.get("/estatisticas", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query);
     search(queryObject(req.query.q), sfilters, 0, DEFAULT_AGGS, 0, {}).then(body => {
@@ -413,7 +413,7 @@ function groupByLetter(aggregations){
     return letters
 }
 
-app.get("/list", (req, res) => {
+app.get("/indices", (req, res) => {
     const term = req.query.term || "Relator";
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
@@ -500,8 +500,7 @@ app.use('/csm-errados', (req, res) => {
 
 app.use('/test-anonimizador', (_, res) => res.render("anonimizador"));
 
-app.use('/table', require('./tables'));
-app.use('/dashboard', require('./dashboard'));
+app.use('/tabelas', require('./tables'));
 app.use('/tinymce', express.static(path.join(require.resolve('tinymce'),'..')));
 app.use('/stats-sse', require('./csm-errados'))
 app.use(express.static(path.join(__dirname, "static")));
