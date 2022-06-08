@@ -1,5 +1,5 @@
 for doc in hits
-    -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.s?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+    -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     article.row(data-tribunal=doc._source.Tribunal)
         .col-12.pt-1
             a(href=`./${doc._source.ECLI}`, target="_blank", style="color: var(--tribunal-color);").text-decoration-none !{doc._source.ECLI}
