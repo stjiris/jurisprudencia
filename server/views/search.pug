@@ -45,20 +45,6 @@ block main
                     option(value="score",selected=sort=="score"): u Relevância
                     option(value="asc",selected=sort=="asc"): u Data Ascendente
                     option(value="des",selected=sort=="des"): u Data Descendente
-                //nav
-                    ul.pagination.justify-content-center.text-center
-                        li.page-item.w-100(class=sort=="score"?"active":"")
-                            a.page-link(href=`./?sort=score&page=${page}&${querystring}`)
-                                i.bi.bi-list-stars
-                                small.ps-2 Relevância
-                        li.page-item.w-100(class=sort=="des"?"active":"")
-                            a.page-link(href=`./?sort=des&page=${page}&${querystring}`)
-                                i.bi.bi-calendar
-                                small.ps-2 Data Descendente
-                        li.page-item.w-100(class=sort=="asc"?"active":"")
-                            a.page-link(href=`./?sort=asc&page=${page}&${querystring}`)
-                                i.bi.bi-calendar
-                                small.ps-2 Data Ascendente
         include acord-article
         article.row(data-tribunal)#looking
             h3 A receber acórdãos...
@@ -145,6 +131,7 @@ block main
                 break-inside: avoid !important;
             }
             nav{ display: none; }
+            .border{ border: none !important; }
         }
 
         article[data-tribunal] {
@@ -153,6 +140,8 @@ block main
             overflow: hidden;
             transition: 0.5s 0.3s;
             padding-bottom: 2.5px;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 1px;
         }
 
         /*article[data-tribunal]:focus-within, article[data-tribunal]:hover {

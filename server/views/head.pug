@@ -48,12 +48,11 @@ html(lang="en")
                                 block form
                                     input(type="search", name="q", value=q, hidden)
                                     button.btn.color-link(type="submit", hidden)
-                                    details(open=!!open)
-                                        summary.d-block
-                                            h4.d-inline
-                                                i.bi-funnel 
-                                                | Filtrar 
-                                                small: i.bi-minimizemaximize
+                                    .d-block
+                                        h4.d-inline
+                                            i.bi-funnel 
+                                            | Filtrar 
+                                            small: a(href=`?q=${q || ""}`).text-danger: i.bi-eraser
                                         .d-flex.flex-column.my-1
                                             -let tribunais = []
                                             .form-check.form-check-inline.my-0
@@ -72,8 +71,7 @@ html(lang="en")
                                         .d-flex.flex-column.my-1
                                             .input-group.input-group-sm
                                                 .input-group-prepend.flex-grow-1
-                                                    input.form-control.form-control-sm(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="Desde (ano)")#data_inicio
-                                                span.input-group-text.input-group-text-sm  <i class="bi-calendar"></i> - <i class="bi-calendar"></i>
+                                                    input.form-control.form-control-sm(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="De (ano)")#data_inicio
                                                 .input-group-append.flex-grow-1
                                                     input.form-control.form-control-sm(type="number", name="MaxAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder="Até (ano)")#data_fim
                                         mixin usedFilters(key)
@@ -82,7 +80,7 @@ html(lang="en")
                                                 for f in filters[key]
                                                     if cache.indexOf(f) == -1
                                                         -cache.push(f)
-                                                        .form-check.form-check-inline(style="--tribunal-color: #0f0")
+                                                        .form-check.form-check-inline.my-0(style="--tribunal-color: #0f0")
                                                             input.form-check-input(type="checkbox", name=key, value=f, checked, id=`checkbox-${f.replace(/\s/g, "")}`, hidden)
                                                             label.form-check-label(for=`checkbox-${f.replace(/\s/g, "")}`).d-flex.justify-content-between.align-items-center.w-100
                                                                 span.d-block !{f}
@@ -90,21 +88,18 @@ html(lang="en")
                                         mixin filterlist(key)
                                             .d-flex.flex-column.my-1
                                                 +await(`./datalist?id=datalist-${key}&agg=${key}&${querystring}`)
-                                                input.form-control.form-control-sm(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`Filtrar ${key}...`)
+                                                input.form-control.form-control-sm(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`${key}`)
                                                 +usedFilters(key)
                                         for p of Object.keys(properties)
                                             if ["Tribunal", "ECLI", "Código Tribunal", "Processo", "Tipo", "Jurisprudência", "Original URL"].indexOf(p) == -1
                                                 +filterlist(p)
-                                        .d-flex.flex-column.my-2
+                                        .d-flex.flex-column.my-0
                                             h6.m-0 Campos 
                                                 +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)
                                                 input.form-control.form-control-sm(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de conter o campo...`)
                                                 +usedFilters("hasField")
                                                 input.form-control.form-control-sm(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode conter o campo...`)
                                                 +usedFilters("notHasField")
-                                        .d-flex.flex-row.my-2.justify-content-between.align-items-center
-                                            button.btn.btn-primary(type="submit") Aplicar
-                                            a.btn.btn-danger(href=`?q=${q || ""}`) Limpar
                         .col-12.col-sm-8.col-md-9.col-xl-10#main: block main
         footer.d-print-none.mt-2
             .container.row.align-items-center.m-auto.p-4

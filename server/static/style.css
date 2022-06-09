@@ -102,12 +102,6 @@ header a:hover, footer a:hover{
     text-decoration: none;
     color: var(--color-white);
 }
-details[open] .bi-minimizemaximize::before{
-    content: "\F14B";
-}
-details .bi-minimizemaximize::before{
-    content: "\F14C";
-}
 
 input[type=checkbox] ~ label{
     position: relative;

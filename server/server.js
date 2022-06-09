@@ -260,7 +260,16 @@ app.get("/acord-only", (req, res) => {
     let page = parseInt(req.query.page) || 0;
     let highlight = {
         fields: {
-            "*": { type: "unified" }
+            "*": { 
+                type: "unified",
+                highlight_query: {
+                    bool: {
+                        must: [
+                            queryObject(req.query.q)
+                        ]
+                    }
+                }
+            }
         },
         max_analyzed_offset: 1000000
     };
