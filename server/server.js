@@ -273,14 +273,16 @@ app.get("/acord-only", (req, res) => {
         },
         max_analyzed_offset: 1000000
     };
-    search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight }).then(results => {
+    search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true }).then(results => {
         res.render("acord-article", {
             hits: results.hits.hits,
+            max_score: results.hits.max_score
         });
     }).catch(e => {
         console.log(e);
         res.render("acord-article", {
-            hits: []
+            hits: [],
+            max_score: 0,
         });
     });
 });
