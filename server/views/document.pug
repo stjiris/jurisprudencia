@@ -10,29 +10,37 @@ block headerinput
     h4(style="color: var(--color-white);").fancy-font !{ecli}
 
 block form
+    -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     -let using = []
     if source
-        .d-block
-            h4.d-inline #{source.Processo}
+        div: h4.fancy-font Metadados
         mixin metadata(key, show)
             -using.push(key)
             if source[key]
-                .d-flex.align-items-center.my-1(data-tribunal=source.Tribunal)
+                .d-flex.align-items-center
                     if show
                         b #{key}:&nbsp;
-                    h5: a(href=`./?${key}=${source[key]}`) !{source[key]}
+                    if key == "Tribunal"
+                        a(href=`./?${key}=${source[key]}`,data-tribunal=source["Tribunal"]) !{Str(source[key])}
+                    else
+                        a(href=`./?${key}=${source[key]}`) !{Str(source[key])}
         for key in Object.keys(source)
             if key == "ECLI" || key == "Processo" || key == "Original URL" || key == "Descritores"
-                continue
             else if key in aggs
                 +metadata(key, true)
-        .d-flex.flex-column.align-items-right.justify-content-between(data-tribunal=source.Tribunal)
-            h6: b Descritores:
+        .d-flex.flex-column.align-items-right.justify-content-between
+            for key of Object.keys(source)
+                if key.startsWith("Data")
+                    div
+                        b #{key}:&nbsp;
+                        span.text-muted #{source[key]}
+        .d-flex.flex-column.align-items-right.justify-content-between
+            b Descritores:
             .d-flex.flex-column
                 for d in (source.Descritores||[])
-                    a(href=`./?Descritores="${d}"`) !{d}
-        .d-flex.align-items-center.my-2(data-tribunal=source.Tribunal)
-            h6: a(href=source["Original URL"]).d-flex.align-items-center Original
+                    a(href=`./?Descritores=${d}`) !{Str(d)}
+        .d-flex.align-items-center
+            b: a(href=source["Original URL"]).d-flex.align-items-center Original
 
 block main
     if !source
@@ -44,15 +52,23 @@ block main
             ol
                 li O recurso não foi encontrado ou ainda não foi publicado neste arquivo
     else
-        for f of Object.keys(fields)
-            .row.p-2(data-tribunal=source.Tribunal)
-                h4.col-12.pb-2.trib-spacer #!{f}
-                | !{fields[f].join("<br>")}
+        div(data-tribunal=source.Tribunal)
+            h4.col-12.pb-2.trib-spacer.fancy-font Processo !{source.Processo}
+        table
+            tbody 
+                for key of Object.keys(source)
+                    if !(key in aggs) && !key.startsWith("Data")
+                        if source[key].length < 240
+                            tr(data-tribunal=source.Tribunal)
+                                td: b !{key}:&nbsp;
+                                td !{source[key]}
         for key of Object.keys(source)
-            if !(key in aggs)
-                .row.p-2(data-tribunal=source.Tribunal)
-                    h4.col-12.pb-2.trib-spacer !{key}
-                    | !{source[key]}
+            if !(key in aggs) && !key.startsWith("Data")
+                if source[key].length >= 240
+                    .pt-2
+                        h5.p-2.trib-spacer(data-tribunal=source["Tribunal"]) !{key}:&nbsp;
+                        div !{source[key]}
+
     style.
         .trib-spacer{
             position: relative;
@@ -67,7 +83,7 @@ block main
             right: 10px;
             height: 5px;
         }
-        [data-tribunal] a{
+        a[data-tribunal]{
             color: var(--tribunal-color);
         }
         header h6 {
