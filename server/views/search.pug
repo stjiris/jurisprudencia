@@ -17,11 +17,7 @@ block printpageinfo
 
 
 append form
-    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`./estatisticas?q=${q || ""}`): u Ver estatísticas da pesquisa
-    .d-flex.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`./indices?q=${q || ""}`): u Ver Índices da pesquisa
-        input(type="hidden", name="sort", value=sort)#input-sort
+    input(type="hidden", name="sort", value=sort)#input-sort
 
 block main
     if body.hits.total.value == 0

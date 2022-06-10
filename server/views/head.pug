@@ -28,13 +28,11 @@ html(lang="en")
                 nav.w-100.d-print-none
                     ul.container.d-flex.nav.align-items-center.justify-content-evenly.flex-wrap
                         li.nav-item.py-1.px-2.mx-1
-                            a.nav-link(href="./", class=currentPage=="search"?"active":""): h6.m-0 Documentos
+                            input(type="submit", formaction="./", value="Documentos", form="filter-form",class=currentPage=="search"?"active":"").border-0.nav-link.fs-6.bg-transparent
                         li.nav-item.py-1.px-2.mx-1
-                            a.nav-link(href="./estatisticas", class=currentPage=="stats"?"active":""): h6.m-0 Estatísticas
+                            input(type="submit", formaction="./estatisticas", value="Estatísticas", form="filter-form",class=currentPage=="stats"?"active":"").border-0.nav-link.fs-6.bg-transparent
                         li.nav-item.py-1.px-2.mx-1
-                            a.nav-link(href="./indices", class=currentPage=="list"?"active":""): h6.m-0 Índices
-                        li.nav-item.py-1.px-2.mx-1
-                            a.nav-link(href="./tabelas/", class=currentPage=="table"?"active":""): h6.m-0 Tabelas
+                            input(type="submit", formaction="./indices", value="Indíces", form="filter-form",class=currentPage=="list"?"active":"").border-0.nav-link.fs-6.bg-transparent
         main.container-fluid#top
             if error 
                 pre.alert.alert-danger
@@ -88,19 +86,20 @@ html(lang="en")
                                                                 span.d-block !{f}
                                                                 i.d-blocl.bi-trash
                                         mixin filterlist(key)
-                                            .d-flex.flex-column.my-1
+                                            .d-flex.flex-column.my-1.border.pb-1
                                                 +await(`./datalist?id=datalist-${key}&agg=${key}&${querystring}`)
-                                                input.form-control.form-control-sm(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`${key}`)
+                                                input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`${key}`,disabled)
                                                 +usedFilters(key)
                                         for p of Object.keys(properties)
                                             if ["Tribunal", "ECLI", "Código Tribunal", "Processo", "Tipo", "Jurisprudência", "Original URL"].indexOf(p) == -1
                                                 +filterlist(p)
-                                        .d-flex.flex-column.my-0
-                                            h6.m-0 Campos 
-                                                +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)
-                                                input.form-control.form-control-sm(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de conter o campo...`)
-                                                +usedFilters("hasField")
-                                                input.form-control.form-control-sm(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode conter o campo...`)
+                                        +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)
+                                        .d-flex.flex-column.my-1.border.pb-1
+                                            input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de ter o campo`, disabled)
+                                            +usedFilters("hasField")
+                                        if "notHasField" in filters
+                                            .d-flex.flex-column.my-1.border.pb-1
+                                                input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode ter o campo`, disabled)
                                                 +usedFilters("notHasField")
                         .col-12.col-sm-8.col-md-9.col-xl-10#main: block main
         footer.d-print-none.mt-2
@@ -119,6 +118,9 @@ html(lang="en")
                     fetch(elem.dataset.await).then(response => response.text()).then(text => {
                         elem.classList.remove("await-loading");
                         elem.innerHTML = text;
+                        let loaded = document.createEvent("HTMLEvents");
+                        loaded.initEvent("loaded", true, true);
+                        elem.dispatchEvent(loaded);
                     });
                 });
 
@@ -159,4 +161,11 @@ html(lang="en")
                         e.target.reportValidity();
                     }
                 });
+            })
+            window.addEventListener('loaded', function(e){
+                let datalist = e.target.querySelector("datalist");
+                if( !datalist ) return;
+                if( datalist.children.length <= 0 ) return;
+
+                document.querySelectorAll(`input[list="${datalist.id}"]`).forEach(input => input.disabled = false);
             })

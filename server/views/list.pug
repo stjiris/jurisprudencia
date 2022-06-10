@@ -9,16 +9,12 @@ prepend header
 block printpageinfo
     p Lista de !{term} da pesquisa por: "!{q || ""}"
 
-append form
+prepend form
     .d-flex.flex-column.my-2
-        h5 Campo do agrupamento
+        h3 Indíce
             select.form-select(name="term")
                 for op of fields 
                     option(selected=op.key==term) !{op.key}
-    .d-flex.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`./?q=${q || ""}`): u Ver resultados da pesquisa
-    .d-flex.flex-row.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`./estatisticas?q=${q || ""}`): u Ver estatísticas da pesquisa
 
 block main
     if aggs[term].sum_other_doc_count > 0
