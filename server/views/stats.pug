@@ -44,6 +44,7 @@ block main
                 "Tribunal Constitucional": "TCO",
                 "Tribunal dos Conflitos": "CON"
             }
+            let _timeInfoStart = new Date();
             fetch("./allStats?!{querystring}").then(r => r.json()).then(aggs => {
                 document.getElementById("loading").remove()
                 const maxYear = parseInt(aggs.MaxAno.value_as_string);
@@ -162,6 +163,7 @@ block main
                         document.querySelector("#onclickgraph").click(data.event);
                     });
                 });
+                document.getElementById("data-time-info").textContent = `${(new Date() - _timeInfoStart)}`;
             });
 
 
