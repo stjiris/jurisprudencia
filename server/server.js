@@ -304,7 +304,9 @@ app.get("/acord-only", (req, res) => {
                         size: hit._source[k].length
                     }
                 }
-                delete hit._source[k];
+                if( k != "Sumário" ){
+                    delete hit._source[k];
+                }
             }
         })
         res.render("acord-article", {
