@@ -260,7 +260,7 @@ app.get("/acord-only", (req, res) => {
     let page = parseInt(req.query.page) || 0;
     let highlight = {
         fields: {
-            "*": { 
+            "Sumário": {
                 type: "unified",
                 highlight_query: {
                     bool: {
@@ -268,12 +268,45 @@ app.get("/acord-only", (req, res) => {
                             queryObject(req.query.q)
                         ]
                     }
-                }
+                },
+                number_of_fragments: 1000,
+                pre_tags: [""],
+                post_tags: [""],
+                boundary_chars: "<>"
+            },
+            "*Texto*": { 
+                type: "unified",
+                highlight_query: {
+                    bool: {
+                        must: [
+                            queryObject(req.query.q)
+                        ]
+                    }
+                },
+                number_of_fragments: 1000,
+                pre_tags: [""],
+                post_tags: [""],
+                boundary_chars: "<>"
             }
         },
         max_analyzed_offset: 1000000
     };
-    search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true }).then(results => {
+    search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true, _source:  [...Object.keys(properties), "Sumário", "*Texto*"] }).then(results => {
+        results.hits.hits.forEach( hit => {
+            if( !hit.highlight ) return;
+            let highlightedKeys = Object.keys(hit.highlight);
+            for( let k of highlightedKeys ){
+                for(let i = 0; i < hit.highlight[k].length; i++){
+                    let text = hit.highlight[k][i];
+                    hit.highlight[k][i] = {
+                        text: text,
+                        offset: hit._source[k].indexOf(text),
+                        size: hit._source[k].length
+                    }
+                }
+                delete hit._source[k];
+            }
+        })
         res.render("acord-article", {
             hits: results.hits.hits,
             max_score: results.hits.max_score

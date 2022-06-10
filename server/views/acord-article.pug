@@ -1,3 +1,45 @@
+style.
+    .highlight {
+        width: 100%;
+        display: flex;
+    }
+
+    .highlight-bar {
+        width: 100%;
+        flex-shrink: 1;
+        height: 4px;
+        background: var(--color-gray);
+        margin: 5px 0 5px;
+        position: relative;
+        border-radius: 10px;
+    }
+
+    .highlight-bar[data-key="Sumário"]{
+        width: 25%;
+        background: var(--color-gold);
+    }
+
+    .highlight-bar-hit {
+        position: absolute;
+        background: var(--tribunal-color);
+        height: 22px;
+        top: -9px;
+        width: 4px;
+    }
+
+    .highlight-bar-hit:hover::after {
+        content: attr(data-text);
+        position: absolute;
+        bottom: 20px;
+        font-size: 0.7rem;
+        color: var(--color-black);
+        background: var(--color-white);
+        border: 1px solid;
+        padding: 0.5rem;
+        width: 30vw;
+        z-index: 1;
+    }
+
 for doc in hits
     -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     -let relevanciaColor = (per) => per < 0.2 ? '#E3D5A1' : per < 0.4 ? '#CEB65E' : per < 0.6 ? '#B49936' : per < 0.8 ? '#8C752C' : '#6C5A22';
@@ -49,16 +91,16 @@ for doc in hits
                     div !{Str(doc._source.Decisão)}
         if doc.highlight && Object.keys(doc.highlight).length > 0
             .col-12.d-print-none
-                div.mx-1
-                    -let n = Object.entries(doc.highlight).reduce((acc, [key, value]) => acc + value.length, 0)
-                    if n > 1
-                        b Destaques da pesquisa:&nbsp;
-                    else
-                        b Destaque da pesquisa:&nbsp;
-                    ul.m-0
-                        for key of Object.keys(doc.highlight)
-                            for value of doc.highlight[key]
-                                li !{value.replace(/<[^>]+>/g, '')}
+                .highlight
+                    .highlight-bar(data-key="Sumário")
+                        if doc.highlight.Sumário
+                            each hit in doc.highlight.Sumário
+                                .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%` data-text=hit.text.replace(/<[^>]*>/g, ''))
+                    for key of Object.keys(doc.highlight)
+                        if key != "Sumário"
+                            .highlight-bar(data-key=key)
+                                each hit in doc.highlight[key]
+                                    .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%` data-text=hit.text.replace(/<[^>]*>/g, ''))
         if doc._source.Sumário
             details.col-12
                 summary.mx-1: b.mouse-click Sumário:

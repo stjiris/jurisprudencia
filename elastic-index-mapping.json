@@ -90,7 +90,7 @@
                 "analyzer": {
                     "default": {
                         "char_filter": ["html_strip", "iso_latin_1"],
-                        "filter": ["trim", "lowercase", "asciifolding", "synonym", "word_delimeter", "stopwords_pt"],
+                        "filter": ["trim", "lowercase", "asciifolding", "synonym", "word_delimeter", "stopwords_pt", "flatten_graph"],
                         "tokenizer": "whitespace"
                     },
                     "string_ci": {
