@@ -28,7 +28,7 @@ html(lang="en")
                 nav.w-100.d-print-none
                     ul.container.d-flex.nav.align-items-center.justify-content-evenly.flex-wrap
                         li.nav-item.py-1.px-2.mx-1
-                            a.nav-link(href="./", class=currentPage=="search"?"active":""): h6.m-0 Pesquisa
+                            a.nav-link(href="./", class=currentPage=="search"?"active":""): h6.m-0 Documentos
                         li.nav-item.py-1.px-2.mx-1
                             a.nav-link(href="./estatisticas", class=currentPage=="stats"?"active":""): h6.m-0 Estatísticas
                         li.nav-item.py-1.px-2.mx-1
@@ -49,10 +49,12 @@ html(lang="en")
                                     input(type="search", name="q", value=q, hidden)
                                     button.btn.color-link(type="submit", hidden)
                                     .d-block
-                                        h4.d-inline
-                                            i.bi-funnel 
-                                            | Filtrar 
-                                            small: a(href=`?q=${q || ""}`).text-danger: i.bi-eraser
+                                        .d-flex.align-items-center.justify-content-between
+                                            h4.d-inline
+                                                | Filtros
+                                            h6: a(href=`?q=${q || ""}`).text-danger.text-decoration-none
+                                                i.bi-eraser-fill
+                                                | Limpar
                                         .d-flex.flex-column.my-1
                                             -let tribunais = []
                                             .form-check.form-check-inline.my-0
@@ -106,6 +108,9 @@ html(lang="en")
                 a(href="#top").col-12.col-lg-6.align-items-center.d-flex.flex-wrap.py-2
                     i.bi.bi-chevron-up.mr-2
                     | Voltar ao topo
+            small#time-info.text-white
+                p.m-0 Página carregada em: !{new Date() - requestStart}ms
+                p.m-0 Dados carregados em: <span id="data-time-info">0</span>ms
                     
         script.
             window.addEventListener('DOMContentLoaded', function(){

@@ -61,7 +61,7 @@ block main
                                     document.querySelector("#looking").insertAdjacentHTML("beforebegin", html);
                                     page++;
                                     end = new Date().getTime();
-                                    document.getElementById("time").innerHTML = `${end-start}`;
+                                    document.getElementById("data-time-info").innerHTML = `${end-start}`;
                                 } else {
                                     observer.disconnect();
                                     document.querySelector("#looking").querySelector("h3").textContent = "Não há mais acórdãos...";
@@ -94,8 +94,6 @@ block main
                             a.page-link: i.bi.bi-chevron-right.disabled
                     li.page-item
                         a.page-link(href=`?page=${pages-1}&sort=${sort}&${querystring}`): i.bi.bi-chevron-double-right
-        article.row
-            small.text-muted Acórdãos carregados em: <span id="time"></span>ms
         
     script.
         // Close all summary elements

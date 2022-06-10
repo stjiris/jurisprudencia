@@ -54,7 +54,7 @@ let queryObject = (string) => {
 
 const tmp = app.render.bind(app);
 app.render = (name, obj, next) => {
-    tmp(name, { properties, ...obj }, next);
+    tmp(name, { properties, requestStart: new Date(), ...obj }, next);
 }
 
 const DEFAULT_AGGS = {Tribunal: {...aggs.Tribunal, aggs: {Codigo: {terms: {field: 'Código Tribunal', size: 1}}}}, MaxAno: aggs.MaxAno, MinAno: aggs.MinAno};
