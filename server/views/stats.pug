@@ -10,11 +10,7 @@ block printpageinfo
     p Estatísticas da pesquisa por: "!{q || ""}"
 
 append form
-    .d-flex.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`./?q=${q || ""}`): u Ver resultados da pesquisa
-        button#onclickgraph(type="submit", formaction=`./estatisticas?q=${q || ""}`, hidden)
-    .d-flex.my-2.justify-content-center.align-items-center
-        button.btn.w-100(type="submit", formaction=`./indices?q=${q || ""}`): u Ver Índices da pesquisa
+    button#onclickgraph(type="submit", formaction=`./estatisticas?q=${q || ""}`, hidden)
 
 block main
     .row.p-2

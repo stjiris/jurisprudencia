@@ -21,14 +21,14 @@ header nav{
     color: var(--color-dark);
 }
 
-header nav a.nav-link h6{
+header nav .nav-link{
     color: var(--color-gray);
     transition: 0.2s;
 }
-header nav a.nav-link.active h6, header nav a.nav-link.active:hover h6{
+header nav .nav-link.active, header nav .nav-link.active:hover{
     color: var(--color-dark);
 }
-header nav a.nav-link:hover h6{
+header nav .nav-link:hover{
     color: var(--color-white);
 }
 
