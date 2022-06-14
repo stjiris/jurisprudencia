@@ -1,7 +1,7 @@
 style.
     .highlight {
-        width: 100%;
-        display: flex;
+        display: inline-flex;
+        flex-grow: 1;
     }
 
     .highlight-bar {
@@ -26,18 +26,25 @@ style.
         top: -9px;
         width: 3px;
     }
-
-    .highlight-bar-hit:hover::after {
-        content: attr(data-text);
+    .highlight-bar-hit:hover ~ .highlight-bar-hit-content, .highlight-bar-hit-content:hover {
+        display: block !important;
         position: absolute;
-        bottom: 20px;
+        bottom: 10px;
         font-size: 0.7rem;
         color: var(--color-black);
         background: var(--color-white);
         border: 1px solid;
         padding: 0.5rem;
-        width: 30vw;
         z-index: 1;
+        right: 0;
+        left: 0;
+    }
+
+    details .bi-caret-downright-fill::before{
+        content: "\f231";
+    }
+    details[open] .bi-caret-downright-fill::before {
+        content: "\f229";
     }
 
 for doc in hits
@@ -51,7 +58,7 @@ for doc in hits
                         i.bi.bi-square.me-1
                     else
                         i.bi.bi-square-fill.me-1
-            a(href=`./${doc._source.ECLI}`, target="_blank", style="color: var(--tribunal-color);").text-decoration-none
+            a(href=`./${doc._source.ECLI}`, target="_blank", style="color: var(--tribunal-color);")
                 | !{doc._source.ECLI}
         .col-12.d-flex.flex-wrap
             div.mx-1
@@ -89,19 +96,34 @@ for doc in hits
                 div.mx-1.d-flex
                     b Decisão:&nbsp;
                     div !{Str(doc._source.Decisão)}
-        if doc.highlight && Object.keys(doc.highlight).length > 0
-            .col-12.d-print-none
-                .highlight
-                    .highlight-bar(data-key="Sumário")
-                        if doc.highlight.Sumário
-                            each hit in doc.highlight.Sumário
-                                .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%` data-text=hit.text.replace(/<[^>]*>/g, ''))
-                    for key of Object.keys(doc.highlight)
-                        if key != "Sumário"
-                            .highlight-bar(data-key=key)
-                                each hit in doc.highlight[key]
-                                    .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%` data-text=hit.text.replace(/<[^>]*>/g, ''))
         if doc._source.Sumário
             details.col-12
-                summary.mx-1: b.mouse-click Sumário:
+                summary.d-flex.align-items-center
+                    i.bi.bi-caret-downright-fill
+                    b.mouse-click Sumário:
                 div.col-12.p-2.border !{doc._source["Sumário"]}
+        if doc.highlight && Object.keys(doc.highlight).length > 0
+            details.col-12.d-print-none
+                summary.d-flex.align-items-center
+                    i.bi.bi-caret-downright-fill
+                    b.mouse-click Pesquisa:
+                    .highlight.w-75
+                        .highlight-bar(data-key="Sumário")
+                            if doc.highlight.Sumário
+                                each hit in doc.highlight.Sumário
+                                    .highlight-bar-hit-parent
+                                        .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%` data-text=hit.text.replace(/<[^>]*>/g, ''))
+                                        .highlight-bar-hit-content.d-none !{hit.text.replace(/<[^>]*>/g, '')}
+                        for key of Object.keys(doc.highlight)
+                            if key != "Sumário"
+                                .highlight-bar(data-key=key)
+                                    each hit in doc.highlight[key]
+                                        .highlight-bar-hit-parent
+                                            .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%`)
+                                            .highlight-bar-hit-content.d-none !{hit.text.replace(/<[^>]*>/g, '')}
+
+                div.col-12.p-2.border
+                    for key of Object.keys(doc.highlight)
+                            if key != "Sumário"
+                                each hit in doc.highlight[key]
+                                    | !{hit.text.replace(/<[^>]*>/g, '')} (...) 
