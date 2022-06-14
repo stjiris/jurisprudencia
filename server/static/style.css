@@ -67,12 +67,12 @@ input[type=checkbox] ~ label:before{
     transition: 0.2s;
 }
 
-input[type=checkbox]:checked ~ label{
+input[type=checkbox]:checked ~ label, .not-used input[type=checkbox] ~ label{
     opacity: 1;
     text-decoration: none;
 }
 
-input[type=checkbox]:checked ~ label:before{
+input[type=checkbox]:checked ~ label:before, .not-used input[type=checkbox] ~ label:before{
     width: 5px;
 }
 

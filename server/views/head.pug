@@ -48,22 +48,22 @@ html(lang="en")
                                     button.btn.color-link(type="submit", hidden)
                                     .d-block
                                         .d-flex.align-items-center.justify-content-between
-                                            h4.d-inline
+                                            h4.d-inline.m-0
                                                 | Filtros
                                             h6: a(href=`?q=${q || ""}`).text-danger.text-decoration-none
                                                 i.bi-eraser-fill
                                                 | Limpar
-                                        .d-flex.flex-column.my-1
+                                        .d-flex.flex-column.mb-1.border-top
                                             -let tribunais = []
                                             .form-check.form-check-inline.my-0
                                                 input.form-check-input(type="checkbox", id="tribunais-all")
                                                 label.form-check-label.text-decoration-none.text-body(for="tribunais-all"): h6.m-0 Tribunal
                                             -let key = "Tribunal"
                                             for bucket in aggs[key].buckets
-                                                -let checked = !filters[key] || filters[key].indexOf(bucket.key) > -1
+                                                -let checked = filters[key] && filters[key].indexOf(bucket.key) > -1
                                                 if checked
                                                     -tribunais.push(bucket.key)
-                                                .form-check.form-check-inline.my-0(data-tribunal=bucket.key)
+                                                .form-check.form-check-inline.my-0(data-tribunal=bucket.key,class=filters[key]?"":"not-used")
                                                     input.form-check-input.tribunal-checkbox(type="checkbox", name=key, value=bucket.key, checked=checked, id=bucket.key.replace(/\s/g, ""), hidden)
                                                     label.form-check-label(for=bucket.key.replace(/\s/g, "")).d-flex.justify-content-between.align-items-center.w-100
                                                         span.d-block !{bucket.key} 
@@ -145,7 +145,7 @@ html(lang="en")
                         for( let i = 0; i < checkboxes.length; i++ ) {
                             checkboxes[i].checked = overallCheckbox.checked;
                         }
-                        e.stopPropagation();
+                        //e.stopPropagation();
                     });
                     for( let i = 0; i < checkboxes.length; i++ ) {
                         checkboxes[i].addEventListener("change", setOverallCheckboxState);

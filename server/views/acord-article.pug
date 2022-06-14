@@ -50,7 +50,7 @@ style.
 for doc in hits
     -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     -let relevanciaColor = (per) => per < 0.2 ? '#E3D5A1' : per < 0.4 ? '#CEB65E' : per < 0.6 ? '#B49936' : per < 0.8 ? '#8C752C' : '#6C5A22';
-    article.row(data-tribunal=doc._source.Tribunal)
+    article.row(data-tribunal=doc._source.Tribunal).border-top
         .col-12.pt-1.d-flex
             small.relevancia(style=`color: ${relevanciaColor(doc._score/max_score)}`)
                 each bin in [0.2,0.4,0.6,0.8,1]
