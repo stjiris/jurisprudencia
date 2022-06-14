@@ -81,11 +81,6 @@ for doc in hits
                 div.mx-1
                     b Meio Processual:&nbsp;
                     span #{Str(doc._source["Meio Processual"])}
-        if Array.isArray(doc._source.Descritores)
-            .col-12
-                div.mx-1
-                    b Descritores:&nbsp;
-                    span #{Str(doc._source.Descritores.join(' / '))}
         if doc._source.Votação
             .col-12
                 div.mx-1
@@ -96,6 +91,11 @@ for doc in hits
                 div.mx-1.d-flex
                     b Decisão:&nbsp;
                     div !{Str(doc._source.Decisão)}
+        if Array.isArray(doc._source.Descritores)
+            .col-12
+                div.mx-1
+                    b Descritores:&nbsp;
+                    span #{Str(doc._source.Descritores.join(' / '))}
         if doc._source.Sumário
             details.col-12
                 summary.d-flex.align-items-center
