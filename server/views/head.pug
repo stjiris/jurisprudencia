@@ -53,11 +53,9 @@ html(lang="en")
                                             h6: a(href=`?q=${q || ""}`).text-danger.text-decoration-none
                                                 i.bi-eraser-fill
                                                 | Limpar
-                                        .d-flex.flex-column.mb-1.border-top
+                                        .d-flex.flex-column.mb-1.border
                                             -let tribunais = []
-                                            .form-check.form-check-inline.my-0
-                                                input.form-check-input(type="checkbox", id="tribunais-all")
-                                                label.form-check-label.text-decoration-none.text-body(for="tribunais-all"): h6.m-0 Tribunal
+                                            input.form-control.form-control-sm.border-0.border-bottom.rounded-0(disabled,placeholder="Tribunal")
                                             -let key = "Tribunal"
                                             for bucket in aggs[key].buckets
                                                 -let checked = filters[key] && filters[key].indexOf(bucket.key) > -1
@@ -123,34 +121,6 @@ html(lang="en")
                         elem.dispatchEvent(loaded);
                     });
                 });
-
-                let overallCheckbox = document.getElementById("tribunais-all");
-                let checkboxes = document.getElementsByClassName("tribunal-checkbox");
-                let setOverallCheckboxState = () => {
-                    let checked = false;
-                    let indeterminate = false;
-                    let c = 0;
-                    for( let i = 0; i < checkboxes.length; i++ ) {
-                        if( checkboxes[i].checked ) {
-                            checked = true;
-                            c++;
-                        }
-                    }
-                    overallCheckbox.checked = checked;
-                    overallCheckbox.indeterminate = c < checkboxes.length && c > 0;
-                }
-                if( overallCheckbox ){
-                    setOverallCheckboxState();                    
-                    overallCheckbox.addEventListener("change", (e) => {
-                        for( let i = 0; i < checkboxes.length; i++ ) {
-                            checkboxes[i].checked = overallCheckbox.checked;
-                        }
-                        //e.stopPropagation();
-                    });
-                    for( let i = 0; i < checkboxes.length; i++ ) {
-                        checkboxes[i].addEventListener("change", setOverallCheckboxState);
-                    }
-                }
 
                 // Auto-submit form
                 document.getElementById("filter-form").addEventListener("change", function(e){
