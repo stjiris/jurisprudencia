@@ -171,4 +171,42 @@ defineTable("entidades-PER", ()=>indexer._client.search({
     return {header, values};
 }));
 
+defineTable("descritores-tribunal", (req)=>agg({
+    Descritores: {
+        terms: {
+            field: "Descritores.keyword",
+            include: {
+                partition: req.query.p || 0,
+                num_partitions: PARTITIONS
+            },
+            size: 317685
+        },
+        aggs: {
+            Tribunal: {
+                terms: {
+                    field: "Tribunal",
+                    size: 15,
+                    min_doc_count: 0
+                }
+            }
+        }
+    }
+}).then(aggs => {
+    let tribunais = aggs.Descritores.buckets[0].Tribunal.buckets.map(bucket => bucket.key).sort((b1,b2) => b1.localeCompare(b2));
+    let header = ["Descritor", "Total", ...tribunais];
+    let values = aggs.Descritores.buckets.map(b => [b.key, b.doc_count, ...(b.Tribunal.buckets.length > 0 ? b.Tribunal.buckets.sort((b1,b2) => b1.key.localeCompare(b2.key)) : tribunais.map(() => ({doc_count:0}))).map(b => b.doc_count)]);
+    
+
+    let p = parseInt(req.query.p || "0");
+    return {header, values, warning: `
+        <p>A ver partição ${p+1} de ${PARTITIONS}.</p>
+        <ul>Ir para:
+
+            <li><a href="?p=0">Primeira partição</a></li>
+            ${ p > 0  ? `<li><a href="?p=${p-1}">Partição anterior</a></li>` : "" }
+            ${ p < 60  ? `<li><a href="?p=${p+1}">Partição Seguinte</a></li>` : "" }
+            <li><a href="?p=${PARTITIONS-1}">Última partição</a></li>
+        </ul>`};
+}))
+
 app.get("/", (req, res) => res.render("tables", {header: ["Tabelas"], values: tables.map((t) => [`<a href="./${t}">${t}</a>`])}));
