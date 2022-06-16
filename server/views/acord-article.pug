@@ -46,6 +46,19 @@ style.
         font-weight: normal;
     }
 
+    .pesquisa-sep {
+        background: var(--color-gray);
+        color: var(--color-white);
+        font-size: smaller;
+        display: inline;
+        font-weight: normal;
+        font-style: italic;
+        margin: 0 0.4rem;
+    }
+    .pesquisa-sep::before {
+        content: "(...)";
+    }
+
 for doc in hits
     -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     -let relevanciaColor = (per) => per < 0.2 ? '#E3D5A1' : per < 0.4 ? '#CEB65E' : per < 0.6 ? '#B49936' : per < 0.8 ? '#8C752C' : '#6C5A22';
@@ -129,4 +142,4 @@ for doc in hits
                         for key of highlightKeys
                             each hit in doc.highlight[key]
                                 | !{hit.text}
-                                small: i.text-muted  (...) 
+                                .pesquisa-sep
