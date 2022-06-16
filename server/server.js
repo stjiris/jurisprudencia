@@ -312,7 +312,7 @@ app.get("/acord-only", (req, res) => {
                 for(let i = 0; i < hit.highlight[k].length; i++){
                     let text = hit.highlight[k][i];
                     hit.highlight[k][i] = {
-                        text: text.replace(/<[^>]+>/g, "").replace(/HIGHLIGHT_START/g, "<mark>").replace(/HIGHLIGHT_END/g, "</mark>"),
+                        text: text.replace(/<[^>]+>/g, "").replace(/HIGHLIGHT_START/g, "<mark>").replace(/HIGHLIGHT_END/g, "</mark>").replace(/$(\w+)>/g, "</$1>").replace(/<(\/?\w+)$/g, "<$1>"),
                         offset: hit._source[k].indexOf(text.substring(0, text.indexOf("HIGHLIGHT_START"))),
                         size: hit._source[k].length
                     }
