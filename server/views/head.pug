@@ -69,9 +69,9 @@ html(lang="en")
                                         .d-flex.flex-column.my-1
                                             .input-group.input-group-sm
                                                 .input-group-prepend.flex-grow-1
-                                                    input.form-control.form-control-sm(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="De (ano)")#data_inicio
+                                                    input.form-control.form-control-sm.rounded-0(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="De (ano)")#data_inicio
                                                 .input-group-append.flex-grow-1
-                                                    input.form-control.form-control-sm(type="number", name="MaxAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder="Até (ano)")#data_fim
+                                                    input.form-control.form-control-sm.rounded-0(type="number", name="MaxAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder="Até (ano)")#data_fim
                                         mixin usedFilters(key)
                                             -let cache = []
                                             if key in filters
