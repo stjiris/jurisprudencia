@@ -55,7 +55,7 @@ html(lang="en")
                                                 | Limpar
                                         .d-flex.flex-column.mb-1.border
                                             -let tribunais = []
-                                            input.form-control.form-control-sm.border-0.border-bottom.rounded-0(disabled,placeholder="Tribunal")
+                                            input.form-control.form-control-sm.border-0.border-bottom.rounded-0.bg-transparent(disabled,placeholder="Tribunal")
                                             -let key = "Tribunal"
                                             for bucket in aggs[key].buckets
                                                 -let checked = filters[key] && filters[key].indexOf(bucket.key) > -1
@@ -82,7 +82,7 @@ html(lang="en")
                                                             input.form-check-input(type="checkbox", name=key, value=f, checked, id=`checkbox-${f.replace(/\s/g, "")}`, hidden)
                                                             label.form-check-label(for=`checkbox-${f.replace(/\s/g, "")}`).d-flex.justify-content-between.align-items-center.w-100
                                                                 span.d-block !{f}
-                                                                i.d-blocl.bi-trash
+                                                                span.d-block: i.bi-trash
                                         mixin filterlist(key)
                                             .d-flex.flex-column.my-1.border.pb-1
                                                 +await(`./datalist?id=datalist-${key}&agg=${key}&${querystring}`)
