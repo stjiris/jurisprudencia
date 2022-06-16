@@ -569,11 +569,16 @@ app.use('/csm-errados', (req, res) => {
     res.render("csm-errados");
 });
 
+app.use('/procurar-seccoes', (req, res) => {
+    res.render("procurar-seccoes");
+});
+
 app.use('/test-anonimizador', (_, res) => res.render("anonimizador"));
 
 app.use('/tabelas', require('./tables'));
 app.use('/tinymce', express.static(path.join(require.resolve('tinymce'),'..')));
-app.use('/stats-sse', require('./csm-errados'))
+app.use('/stats-sse', require('./csm-errados'));
+app.use('/seccoes-sse', require('./procurar-seccoes'));
 app.use(express.static(path.join(__dirname, "static")));
 
 app.listen(9100)
