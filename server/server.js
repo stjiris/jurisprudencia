@@ -284,8 +284,7 @@ app.get("/acord-only", (req, res) => {
                 },
                 number_of_fragments: 0,
                 pre_tags: ["<mark>"],
-                post_tags: ["</mark>"],
-                boundary_chars: "<>"
+                post_tags: ["</mark>"]
             },
             "*Texto*": { 
                 type: "unified",
@@ -297,9 +296,8 @@ app.get("/acord-only", (req, res) => {
                     }
                 },
                 number_of_fragments: 1000,
-                pre_tags: ["HIGHLIGHT_START"],
-                post_tags: ["HIGHLIGHT_END"],
-                boundary_chars: "<>"
+                pre_tags: ["MARK_START"],
+                post_tags: ["MARK_END"]
             }
         },
         max_analyzed_offset: 1000000
@@ -312,8 +310,8 @@ app.get("/acord-only", (req, res) => {
                 for(let i = 0; i < hit.highlight[k].length; i++){
                     let text = hit.highlight[k][i];
                     hit.highlight[k][i] = {
-                        text: text.replace(/<[^>]+>/g, "").replace(/HIGHLIGHT_START/g, "<mark>").replace(/HIGHLIGHT_END/g, "</mark>").replace(/$(\w+)>/g, "</$1>").replace(/<(\/?\w+)$/g, "<$1>"),
-                        offset: hit._source[k].indexOf(text.substring(0, text.indexOf("HIGHLIGHT_START"))),
+                        text: text.replace(/<[^>]+>/g, "").replace(/MARK_START/g, "<mark>").replace(/MARK_END/g, "</mark>").replace(/<\/?\w*$/, ""),
+                        offset: hit._source[k].indexOf(text.substring(0, text.indexOf("MARK_START"))),
                         size: hit._source[k].length
                     }
                 }
@@ -332,6 +330,22 @@ app.get("/acord-only", (req, res) => {
         });
     });
 });
+
+// validate html
+function validate(html) {
+    let open = 0;
+    let close = 0;
+    html.matchAll(/<(?<tag>[^>]+)>/g).forEach(m => {
+        let tag = m.groups.tag.split(" ")[0];
+        if( tag.startsWith("/") ){
+            close++;
+        }
+        else{
+            open++;
+        }
+    });
+    return open == close;
+}
 
 const statsAggs = {
     Tribunal: aggs.Tribunal,
