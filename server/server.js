@@ -260,6 +260,19 @@ app.get("/acord-only", (req, res) => {
     let page = parseInt(req.query.page) || 0;
     let highlight = {
         fields: {
+            "Descritores": {
+                type: "unified",
+                highlight_query: {
+                    bool: {
+                        must: [
+                            queryObject(req.query.q)
+                        ]
+                    }
+                },
+                pre_tags: [""],
+                post_tags: [""],
+                number_of_fragments: 0           
+            },
             "Sumário": {
                 type: "unified",
                 highlight_query: {
@@ -269,9 +282,9 @@ app.get("/acord-only", (req, res) => {
                         ]
                     }
                 },
-                number_of_fragments: 1000,
-                pre_tags: [""],
-                post_tags: [""],
+                number_of_fragments: 0,
+                pre_tags: ["<mark>"],
+                post_tags: ["</mark>"],
                 boundary_chars: "<>"
             },
             "*Texto*": { 
@@ -284,8 +297,8 @@ app.get("/acord-only", (req, res) => {
                     }
                 },
                 number_of_fragments: 1000,
-                pre_tags: [""],
-                post_tags: [""],
+                pre_tags: ["HIGHLIGHT_START"],
+                post_tags: ["HIGHLIGHT_END"],
                 boundary_chars: "<>"
             }
         },
@@ -294,19 +307,17 @@ app.get("/acord-only", (req, res) => {
     search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true, _source:  [...Object.keys(properties), "Sumário", "*Texto*"] }).then(results => {
         results.hits.hits.forEach( hit => {
             if( !hit.highlight ) return;
-            let highlightedKeys = Object.keys(hit.highlight);
+            let highlightedKeys = Object.keys(hit.highlight).filter(k => k.match(/Texto/));
             for( let k of highlightedKeys ){
                 for(let i = 0; i < hit.highlight[k].length; i++){
                     let text = hit.highlight[k][i];
                     hit.highlight[k][i] = {
-                        text: text,
-                        offset: hit._source[k].indexOf(text),
+                        text: text.replace(/<[^>]+>/g, "").replace(/HIGHLIGHT_START/g, "<mark>").replace(/HIGHLIGHT_END/g, "</mark>"),
+                        offset: hit._source[k].indexOf(text.substring(0, text.indexOf("HIGHLIGHT_START"))),
                         size: hit._source[k].length
                     }
                 }
-                if( k != "Sumário" ){
-                    delete hit._source[k];
-                }
+                delete hit._source[k];
             }
         })
         res.render("acord-article", {

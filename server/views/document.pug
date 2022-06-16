@@ -13,7 +13,7 @@ block form
     -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     -let using = []
     if source
-        div: h4.fancy-font Metadados
+        div: h4 Metadados
         mixin metadata(key, show)
             -using.push(key)
             if source[key]
@@ -53,7 +53,7 @@ block main
                 li O recurso não foi encontrado ou ainda não foi publicado neste arquivo
     else
         div(data-tribunal=source.Tribunal)
-            h4.col-12.pb-2.trib-spacer.fancy-font Processo !{source.Processo}
+            h4.col-12.pb-2.trib-spacer Processo !{source.Processo}
         table
             tbody 
                 for key of Object.keys(source)

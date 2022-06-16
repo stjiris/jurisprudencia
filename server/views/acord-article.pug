@@ -14,11 +14,6 @@ style.
         border-radius: 10px;
     }
 
-    .highlight-bar[data-key="Sumário"]{
-        width: 25%;
-        background: var(--color-gold);
-    }
-
     .highlight-bar-hit {
         position: absolute;
         background: var(--tribunal-color);
@@ -45,6 +40,10 @@ style.
     }
     details[open] .bi-caret-downright-fill::before {
         content: "\f229";
+    }
+
+    .normalize-sumario-weight b{
+        font-weight: normal;
     }
 
 for doc in hits
@@ -95,35 +94,39 @@ for doc in hits
             .col-12
                 div.mx-1
                     b Descritores:&nbsp;
-                    span #{Str(doc._source.Descritores.join(' / '))}
+                    - let descritores = []
+                    if doc.highlight && doc.highlight.Descritores
+                        - descritores = doc._source.Descritores.map(origin => doc.highlight.Descritores.find(highlight => highlight.includes(origin)) ? `<mark>${Str(origin)}</mark>` : Str(origin))
+                    else 
+                        - descritores = doc._source.Descritores.map(Str)
+                    span !{descritores.join(' / ')}
         if doc._source.Sumário
             details.col-12
                 summary.d-flex.align-items-center
                     i.bi.bi-caret-downright-fill
                     b.mouse-click Sumário:
-                div.col-12.p-2.border !{doc._source["Sumário"]}
-        if doc.highlight && Object.keys(doc.highlight).length > 0
-            details.col-12.d-print-none
-                summary.d-flex.align-items-center
-                    i.bi.bi-caret-downright-fill
-                    b.mouse-click Pesquisa:
-                    .highlight
-                        .highlight-bar(data-key="Sumário")
-                            if doc.highlight.Sumário
-                                each hit in doc.highlight.Sumário
-                                    .highlight-bar-hit-parent
-                                        .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%` data-text=hit.text.replace(/<[^>]*>/g, ''))
-                                        .highlight-bar-hit-content.d-none !{hit.text.replace(/<[^>]*>/g, '')}
-                        for key of Object.keys(doc.highlight)
-                            if key != "Sumário"
+                if doc.highlight && doc.highlight.Sumário
+                    div.col-12.p-2.border.normalize-sumario-weight !{doc.highlight.Sumário}
+                else
+                    div.col-12.p-2.border.normalize-sumario-weight !{doc._source.Sumário}
+                    
+        if doc.highlight
+            -let highlightKeys = Object.keys(doc.highlight).filter( o => o.match(/Texto/))
+            if highlightKeys.length > 0
+                details.col-12.d-print-none
+                    summary.d-flex.align-items-center
+                        i.bi.bi-caret-downright-fill
+                        b.mouse-click Pesquisa:
+                        .highlight
+                            for key of highlightKeys
                                 .highlight-bar(data-key=key)
                                     each hit in doc.highlight[key]
                                         .highlight-bar-hit-parent
                                             .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%`)
-                                            .highlight-bar-hit-content.d-none !{hit.text.replace(/<[^>]*>/g, '')}
+                                            .highlight-bar-hit-content.d-none !{hit.text}
 
-                div.col-12.p-2.border
-                    for key of Object.keys(doc.highlight)
-                            if key != "Sumário"
-                                each hit in doc.highlight[key]
-                                    | !{hit.text.replace(/<[^>]*>/g, '')} (...) 
+                    div.col-12.p-2.border
+                        for key of highlightKeys
+                            each hit in doc.highlight[key]
+                                | !{hit.text}
+                                small: i.text-muted  (...) 
