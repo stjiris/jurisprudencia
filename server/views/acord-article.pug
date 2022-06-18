@@ -1,14 +1,17 @@
 style.
     .highlight {
         display: inline-flex;
+        margin-left: auto;
         flex-grow: 1;
     }
 
     .highlight-bar {
         width: 100%;
         flex-shrink: 1;
-        height: 2px;
-        background: var(--color-gray);
+        height: 0px;
+        background-color: var(--color-gray);
+        border: solid var(--color-gray);
+        border-width: 1px 0px 1px 0px;
         margin: 6px 0 6px;
         position: relative;
         border-radius: 10px;
@@ -17,9 +20,11 @@ style.
     .highlight-bar-hit {
         position: absolute;
         background: var(--tribunal-color);
-        height: 22px;
-        top: -9px;
-        width: 3px;
+        border: solid var(--tribunal-color);
+        border-width: 0px 1.5px 0px 1.5px;
+        height: 15px;
+        top: -7.5px;
+        width: 0px;
     }
     .highlight-bar-hit:hover ~ .highlight-bar-hit-content, .highlight-bar-hit-content:hover {
         display: block !important;
@@ -115,9 +120,17 @@ for doc in hits
                     span !{descritores.join(' / ')}
         if doc._source.Sumário
             details.col-12
-                summary.d-flex.align-items-center
-                    i.bi.bi-caret-downright-fill
-                    b.mouse-click Sumário:
+                summary.d-flex.align-items-center.list-unstyled
+                    span(style="width: 10%; flex-shrink: 1;")
+                        i.bi.bi-caret-downright-fill
+                        b.mouse-click Sumário:
+                    .highlight
+                        .highlight-bar(data-key="Sumário")
+                            if doc.highlight && doc.highlight.SumárioMarks
+                                each hit in doc.highlight.SumárioMarks
+                                    .highlight-bar-hit-parent
+                                        .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%`)
+                                        .highlight-bar-hit-content.d-none !{hit.text}
                 if doc.highlight && doc.highlight.Sumário
                     div.col-12.p-2.border.normalize-sumario-weight !{doc.highlight.Sumário}
                 else
@@ -127,9 +140,10 @@ for doc in hits
             -let highlightKeys = Object.keys(doc.highlight).filter( o => o.match(/Texto/))
             if highlightKeys.length > 0
                 details.col-12.d-print-none
-                    summary.d-flex.align-items-center
-                        i.bi.bi-caret-downright-fill
-                        b.mouse-click Pesquisa:
+                    summary.d-flex.align-items-center.list-unstyled
+                        span(style="width: 10%; flex-shrink: 1;")
+                            i.bi.bi-caret-downright-fill
+                            b.mouse-click Pesquisa:
                         .highlight
                             for key of highlightKeys
                                 .highlight-bar(data-key=key)

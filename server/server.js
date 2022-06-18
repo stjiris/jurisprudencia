@@ -317,6 +317,17 @@ app.get("/acord-only", (req, res) => {
                 }
                 delete hit._source[k];
             }
+            if( hit.highlight.Sumário ){
+                let it = hit.highlight.Sumário[0].matchAll(/[^>]{0,100}<mark>\w+<\/mark>[^<]{0,100}/g)
+                hit.highlight.SumárioMarks = [];
+                for( let m of it ){
+                    hit.highlight.SumárioMarks.push({
+                        text: m[0],
+                        offset: m.index,
+                        size: hit._source.Sumário.length
+                    });
+                }
+            }
         })
         res.render("acord-article", {
             hits: results.hits.hits,
@@ -330,22 +341,6 @@ app.get("/acord-only", (req, res) => {
         });
     });
 });
-
-// validate html
-function validate(html) {
-    let open = 0;
-    let close = 0;
-    html.matchAll(/<(?<tag>[^>]+)>/g).forEach(m => {
-        let tag = m.groups.tag.split(" ")[0];
-        if( tag.startsWith("/") ){
-            close++;
-        }
-        else{
-            open++;
-        }
-    });
-    return open == close;
-}
 
 const statsAggs = {
     Tribunal: aggs.Tribunal,
