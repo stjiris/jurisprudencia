@@ -54,13 +54,13 @@ block main
     else
         div(data-tribunal=source.Tribunal)
             h4.col-12.pb-2.trib-spacer Processo !{source.Processo}
-        table
+        table.table.table-sm
             tbody 
                 for key of Object.keys(source)
                     if !(key in aggs) && !key.startsWith("Data")
                         if source[key].length < 240
-                            tr(data-tribunal=source.Tribunal)
-                                td: b !{key}:&nbsp;
+                            tr(data-tribunal=source.Tribunal).align-top
+                                th !{key}
                                 td !{source[key]}
         for key of Object.keys(source)
             if !(key in aggs) && !key.startsWith("Data")
