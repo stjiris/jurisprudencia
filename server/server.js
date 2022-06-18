@@ -174,8 +174,17 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
         filtersUsed.hasField = (Array.isArray(body.hasField) ? body.hasField : [body.hasField]).filter(o => o.length> 0);
         filtersUsed.hasField.forEach(field => {
             filters.pre.push({
-                exists: {
-                    field: field
+                bool: {
+                    must: {
+                        exists: {
+                            field: field
+                        }
+                    },
+                    must_not: {
+                        term: {
+                            [field]: ""
+                        }
+                    }
                 }
             });
         });
