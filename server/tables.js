@@ -1,5 +1,4 @@
-const express = require("express");
-const {Router} = require("express");
+const {Router, query} = require("express");
 const indexer = require("../indexer");
 
 const app = Router();
@@ -233,6 +232,63 @@ defineTable("votacao-tribunal", ()=>agg({
     
     return {header, values};
 }));
+
+defineTable("atributos-tribunal", async ()=>{
+    let tribunais = await indexer._client.search({
+        index: indexer.mapping.index,
+        size: 0,
+        aggs: {
+            Tribunais: {
+                terms: {
+                    field: "Tribunal",
+                    size: 150
+                }
+            }
+        }
+    }).then(r => r.aggregations);
+    let attributes = Object.keys((await indexer._client.indices.getMapping({
+        index: indexer.mapping.index
+    }))[indexer.mapping.index].mappings.properties);
+
+    let aggs = await indexer._client.search({
+        size: 0,
+        aggs: {
+            Atributos: {
+                filters: {
+                    filters: attributes.reduce((obj, atr) => { 
+                        obj[atr] = {
+                            bool: {
+                                must: {
+                                    exists: {
+                                        field: atr
+                                    }
+                                }
+                            }
+                        }
+                        return obj; }, {})
+                },
+                aggs: {
+                    Tribunal: {
+                        terms: {
+                            field: "Tribunal",
+                            size: 15,
+                            min_doc_count: 0
+                        }
+                    }
+                }
+            }
+        }
+    }).then(res => res.aggregations)
+    
+    let header = ["Atributo", "Total", ...tribunais.Tribunais.buckets.map(b => b.key).sort((b1,b2) => b1.localeCompare(b2))];
+    let values = Object.keys(aggs.Atributos.buckets).map(atr => {
+        let bucket = Object.entries(aggs.Atributos.buckets).find(([name, _]) => name === atr)[1];
+        return [atr, bucket ? bucket.doc_count : 0, ...(bucket ? bucket.Tribunal.buckets.sort((b1,b2) => b1.key.localeCompare(b2.key)) : tribunais.Tribunais.buckets.map(() => ({doc_count:0}))).map(b => b.doc_count)];
+    });
+
+    return {header, values};
+})
+
 
 
 defineTable("meioprocessual-tribunal", ()=>agg({
