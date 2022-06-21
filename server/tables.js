@@ -101,10 +101,6 @@ defineTable("ecli-repetido", (req)=>agg({
     ECLI: {
         terms: {
             field: "ECLI",
-            include: {
-                partition: req.query.p || 0,
-                num_partitions: PARTITIONS
-            },
             size: 317685,
             min_doc_count: 2
         },
@@ -123,15 +119,7 @@ defineTable("ecli-repetido", (req)=>agg({
     if( aggs.ECLI.sum_other_doc_count > 0 ){
         values.unshift([`<b>Outros ECLI não listados:</b> ${aggs.ECLI.sum_other_doc_count}</b>`, "", ""]);
     }
-    let p = parseInt(req.query.p || "0");
-    return {header, values, warning: `
-        <p>A ver partição ${p+1} de ${PARTITIONS}.</p>
-        <ul>Ir para:
-            <li><a href="?p=0">Primeira partição</a></li>
-            ${ p > 0  ? `<li><a href="?p=${p-1}">Partição anterior</a></li>` : "" }
-            ${ p < 60  ? `<li><a href="?p=${p+1}">Partição Seguinte</a></li>` : "" }
-            <li><a href="?p=${PARTITIONS-1}">Última partição</a></li>
-        </ul>`};
+    return {header, values};
 }))
 
 defineTable("entidades-ORG", ()=>indexer._client.search({
@@ -298,55 +286,6 @@ defineTable("meioprocessual-tribunal", ()=>agg({
 }).then(aggs => {
     let tribunais = aggs.Meio.buckets[0].Tribunal.buckets.map(bucket => bucket.key).sort((b1,b2) => b1.localeCompare(b2));
     let header = ["Meio Processual", "Total", ...tribunais];
-    let values = aggs.Meio.buckets.map(b => [b.key, b.doc_count, ...(b.Tribunal.buckets.length > 0 ? b.Tribunal.buckets.sort((b1,b2) => b1.key.localeCompare(b2.key)) : tribunais.map(() => ({doc_count:0}))).map(b => b.doc_count)]);
-    
-    return {header, values};
-}));
-
-defineTable("seccao-tribunal", ()=>agg({
-    Meio: {
-        terms: {
-            field: "Secção",
-            size: 317685
-        },
-        aggs: {
-            Tribunal: {
-                terms: {
-                    field: "Tribunal",
-                    size: 15,
-                    min_doc_count: 0
-                }
-            }
-        }
-    }
-}).then(aggs => {
-    let tribunais = aggs.Meio.buckets[0].Tribunal.buckets.map(bucket => bucket.key).sort((b1,b2) => b1.localeCompare(b2));
-    let header = ["Secção", "Total", ...tribunais];
-    let values = aggs.Meio.buckets.map(b => [b.key, b.doc_count, ...(b.Tribunal.buckets.length > 0 ? b.Tribunal.buckets.sort((b1,b2) => b1.key.localeCompare(b2.key)) : tribunais.map(() => ({doc_count:0}))).map(b => b.doc_count)]);
-    
-    return {header, values};
-}));
-
-
-defineTable("especie-tribunal", ()=>agg({
-    Meio: {
-        terms: {
-            field: "Espécie",
-            size: 317685
-        },
-        aggs: {
-            Tribunal: {
-                terms: {
-                    field: "Tribunal",
-                    size: 15,
-                    min_doc_count: 0
-                }
-            }
-        }
-    }
-}).then(aggs => {
-    let tribunais = aggs.Meio.buckets[0].Tribunal.buckets.map(bucket => bucket.key).sort((b1,b2) => b1.localeCompare(b2));
-    let header = ["Espécie", "Total", ...tribunais];
     let values = aggs.Meio.buckets.map(b => [b.key, b.doc_count, ...(b.Tribunal.buckets.length > 0 ? b.Tribunal.buckets.sort((b1,b2) => b1.key.localeCompare(b2.key)) : tribunais.map(() => ({doc_count:0}))).map(b => b.doc_count)]);
     
     return {header, values};
