@@ -85,7 +85,7 @@ let search = (
     from: page*rpp,
     track_total_hits: true,
     _source: [...Object.keys(properties), "Sumário"],
-    fields: ["Data"],
+    fields: ["Datas"],
     ...extras
 });
 
