@@ -26,7 +26,7 @@ function defineTable(name, cb){
 defineTable("ano-origem", ()=>agg({
     Ano: {
         date_histogram: {
-            field: "Data",
+            field: "Datas",
             interval: "year",
             min_doc_count: 0,
             format: "yyyy"
@@ -51,7 +51,7 @@ defineTable("ano-origem", ()=>agg({
 defineTable("ano-tribunal", ()=>agg({
     Ano: {
         date_histogram: {
-            field: "Data",
+            field: "Datas",
             interval: "year",
             min_doc_count: 0,
             format: "yyyy"
