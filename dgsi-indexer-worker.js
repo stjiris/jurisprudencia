@@ -1,4 +1,3 @@
-const { JSDOM } = require("jsdom");
 const { workerData } = require("worker_threads");
 const ECLI = require('./util/ecli');
 const indexer = require('./indexer');
@@ -79,52 +78,6 @@ function getDescritores(table){
 
 function strip_empty_html_and_remove_font_tag(html){
     return strip_empty_html(html).replace(/<\/?font>/g, '')
-}
-
-function getTexto(table){
-    if( "Decisão Texto Integral" in table ){
-        return strip_empty_html_and_remove_font_tag(table["Decisão Texto Integral"].innerHTML)
-    }
-    if( "Texto Integral" in table ){
-        return strip_empty_html_and_remove_font_tag(table["Texto Integral"].innerHTML)
-    }
-    return null;
-}
-
-function getSumario(table){
-    if( "Sumário" in table ){
-        return strip_empty_html_and_remove_font_tag(table["Sumário"].innerHTML)
-    }
-    return null;
-}
-
-function getDecisao(table){
-    if( "Decisão" in table ){
-        return strip_empty_html_and_remove_font_tag(table["Decisão"].innerHTML)
-    }
-    return null;
-}
-
-function getData(table){
-    if( "Data do Acordão" in table ){
-        return table["Data do Acordão"].textContent.trim();
-    }
-    if( "Data da Decisão Sumária" in table ){
-        return table["Data da Decisão Sumária"].textContent.trim();
-    }
-    if( "Data da Reclamação" in table ){
-        return table["Data da Reclamação"].textContent.trim();
-    }
-    return null;
-}
-
-function getFirst(table, keys, link){
-    for( let key of keys ){
-        if( key in table ){
-            return table[key].textContent.trim();
-        }
-    }
-    return null;
 }
 
 async function forEachCourtDecisionLink( fn ){
