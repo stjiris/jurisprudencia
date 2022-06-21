@@ -252,6 +252,7 @@ defineTable("atributos-tribunal", async ()=>{
 
     let aggs = await indexer._client.search({
         size: 0,
+        index: indexer.mapping.index,
         aggs: {
             Atributos: {
                 filters: {
