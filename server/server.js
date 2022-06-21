@@ -11,13 +11,13 @@ const {mappings: {properties}, index: INDEXNAME} = require('../elastic-index-map
 const aggs = {
     MinAno: {
         min: {
-            field: 'Data',
+            field: 'Datas',
             format: 'yyyy'
         }
     },
     MaxAno: {
         max: {
-            field: 'Data',
+            field: 'Datas',
             format: 'yyyy'
         }
     }
@@ -126,7 +126,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
         filtersUsed.MaxAno = body.MaxAno;
         filters.pre.push({
             range: {
-                Data: {
+                Datas: {
                     gte: padZero(body.MinAno),
                     lt: padZero((parseInt(body.MaxAno) || new Date().getFullYear())+1),
                     format: "yyyy"
@@ -138,7 +138,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
         filtersUsed.MinAno = body.MinAno;
         filters.pre.push({
             range: {
-                Data: {
+                Datas: {
                     gte: padZero(body.MinAno),
                     format: "yyyy"
                 }
@@ -149,7 +149,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
         filtersUsed.MaxAno = body.MaxAno;
         filters.pre.push({
             range: {
-                Data: {
+                Datas: {
                     lt: padZero((parseInt(body.MaxAno) || new Date().getFullYear())+1),
                     format: "yyyy"
                 }
@@ -205,12 +205,12 @@ function parseSort(value, array){
     const sortV = value || "score";
     if( sortV == "des" ){
         array.push({
-            Data: "desc"
+            Datas: "desc"
         });
     }
     else if( sortV == "asc" ){
         array.push({
-            Data: "asc"
+            Datas: "asc"
         });
     }
     else if( sortV == "score" ){
@@ -218,7 +218,7 @@ function parseSort(value, array){
             _score: "desc"
         });
         array.push({
-            Data: "desc"
+            Datas: "desc"
         })
     }
     return sortV;
@@ -415,8 +415,8 @@ let runtimeMapping = {
             type: "date",
             format: "yyyy",
             script: `
-                def lastDate = doc['Data'][0];
-                for( item in doc['Data'] ){
+                def lastDate = doc['Datas'][0];
+                for( item in doc['Datas'] ){
                     if( item.getMillis() > lastDate.getMillis() ){
                         lastDate = item;
                     }
@@ -504,7 +504,7 @@ app.get("/indices", (req, res) => {
 
 app.get("/:ecli(ECLI:*)", (req, res) => {
     let ecli = req.params.ecli;
-    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: ['Data']}).then((body) => {
+    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: ['Datas']}).then((body) => {
         if( body.hits.total.value == 0 ){
             res.render("document", {ecli});
         }
