@@ -174,10 +174,6 @@ defineTable("descritores-tribunal", (req)=>agg({
     Descritores: {
         terms: {
             field: "Descritores.keyword",
-            include: {
-                partition: req.query.p || 0,
-                num_partitions: PARTITIONS
-            },
             size: 317685
         },
         aggs: {
@@ -196,16 +192,7 @@ defineTable("descritores-tribunal", (req)=>agg({
     let values = aggs.Descritores.buckets.map(b => [b.key, b.doc_count, ...(b.Tribunal.buckets.length > 0 ? b.Tribunal.buckets.sort((b1,b2) => b1.key.localeCompare(b2.key)) : tribunais.map(() => ({doc_count:0}))).map(b => b.doc_count)]);
     
 
-    let p = parseInt(req.query.p || "0");
-    return {header, values, warning: `
-        <p>A ver partição ${p+1} de ${PARTITIONS}.</p>
-        <ul>Ir para:
-
-            <li><a href="?p=0">Primeira partição</a></li>
-            ${ p > 0  ? `<li><a href="?p=${p-1}">Partição anterior</a></li>` : "" }
-            ${ p < 60  ? `<li><a href="?p=${p+1}">Partição Seguinte</a></li>` : "" }
-            <li><a href="?p=${PARTITIONS-1}">Última partição</a></li>
-        </ul>`};
+    return {header, values};
 }));
 
 
@@ -252,6 +239,7 @@ defineTable("atributos-tribunal", async ()=>{
 
     let aggs = await indexer._client.search({
         size: 0,
+        index: indexer.mapping.index,
         aggs: {
             Atributos: {
                 filters: {
@@ -278,7 +266,7 @@ defineTable("atributos-tribunal", async ()=>{
                 }
             }
         }
-    }).then(res => res.aggregations)
+    }).then(res => res.aggregations);
     
     let header = ["Atributo", "Total", ...tribunais.Tribunais.buckets.map(b => b.key).sort((b1,b2) => b1.localeCompare(b2))];
     let values = Object.keys(aggs.Atributos.buckets).map(atr => {
