@@ -3,9 +3,7 @@ const client = new Client({
     node: "http://localhost:9200"
 });
 const {Router} = require("express")
-const {scroll} = require("../indexer");
-const INDEX = 'jurisprudencia.1.0';
-const ECLI = require("../util/ecli");
+const {scroll, mapping} = require("../indexer");
 
 const app = Router();
 module.exports = app;
@@ -31,7 +29,7 @@ app.get("/", async (req, res) => {
     let sent = {};
 
     for await (const {_source} of scroll({
-        index: INDEX,
+        index: mapping.index,
         size: 1,
         query: NO_SECTION_QUERY
     })) {
