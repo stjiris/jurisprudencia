@@ -10,11 +10,17 @@ module.exports = app;
 
 const NO_SECTION_QUERY = {
     bool: {
-        must_not: {
-            exists: {
+        must_not: [
+            {exists: {
                 field: "Secção"
-            }
-        }
+            }},
+            {wildcard: {
+                "Nº Convencional": {
+                    value: "*secção*",
+                    case_insensitive: true
+                }
+            }}
+        ]
     }
 }
 
@@ -34,14 +40,16 @@ app.get("/", async (req, res) => {
         query: NO_SECTION_QUERY
     })) {
         found = false;
-        for( let key in _source ) {
-            if( !key.match(/(Texto|Aditamento|Sumário)/) && _source[key].match && _source[key].match(/Secção/i) ){
-                found = {
-                    key: key,
-                    value: _source[key],
-                    Tribunal: _source.Tribunal,
+        if( !_source["Nº Convencional"].match(/Secção/i) ){
+            for( let key in _source ) {
+                if( !key.match(/(Texto|Aditamento|Sumário)/) && _source[key].match && _source[key].match(/Secção/i) ){
+                    found = {
+                        key: key,
+                        value: _source[key],
+                        Tribunal: _source.Tribunal,
+                    }
+                    break;
                 }
-                break;
             }
         }
         if( found && !sent[`${found.key} - ${found.value} - ${found.Tribunal}`] ) {
