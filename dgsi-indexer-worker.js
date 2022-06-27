@@ -54,7 +54,7 @@ forEachCourtDecisionLink(async link => {
                 else{
                     body[key] = strip_empty_html_and_remove_font_tag(table[key].innerHTML);
                 }
-            }´
+            }
         }
         if( TribunalCode == "STJ" && body["Nº Convencional"] ){
             body["Secção"] = body["Nº Convencional"];
