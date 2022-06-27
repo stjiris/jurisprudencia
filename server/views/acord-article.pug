@@ -20,12 +20,35 @@ style.
     .highlight-bar-hit {
         position: absolute;
         background: var(--tribunal-color);
-        border: solid var(--tribunal-color);
-        border-width: 0px 1.5px 0px 1.5px;
         height: 15px;
         top: -7.5px;
-        width: 0px;
+        width: 2px;
+        transition: 200ms;
     }
+
+    .highlight-bar-hit:before {
+        content: "";
+        position: absolute;
+        right: 100%;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        background: transparent;
+    }
+    .highlight-bar-hit:after {
+        content: "";
+        position: absolute;
+        left: 100%;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        background: transparent;
+    }
+
+    .highlight-bar-hit:hover {
+        filter: brightness(1.7);
+    }
+
     .highlight-bar-hit:hover ~ .highlight-bar-hit-content, .highlight-bar-hit-content:hover {
         display: block !important;
         position: absolute;
