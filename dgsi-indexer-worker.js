@@ -56,7 +56,7 @@ forEachCourtDecisionLink(async link => {
                 }
             }
         }
-        if( TribunalCode == "STJ" && body["Nº Convencional"] ){
+        if( TribunalCode == "STJ" && body["Nº Convencional"] && body["Nº Convencional"].match(/SEC/) ){
             body["Secção"] = table["Nº Convencional"].textContent.trim();
         }
         body["ECLI"] = builder.setNumber(processo).setYear(year).build();
