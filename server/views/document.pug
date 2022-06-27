@@ -13,34 +13,37 @@ block form
     -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     -let using = []
     if source
-        div: h4 Metadados
+        div: h4.trib-spacer.pb-2 &nbsp;
         mixin metadata(key, show)
             -using.push(key)
             if source[key]
-                .d-flex.align-items-center
-                    if show
-                        b #{key}:&nbsp;
-                    if key == "Tribunal"
-                        a(href=`./?${key}=${source[key]}`,data-tribunal=source["Tribunal"]) !{Str(source[key])}
-                    else
-                        a(href=`./?${key}=${source[key]}`) !{Str(source[key])}
-        for key in Object.keys(source)
-            if key == "ECLI" || key == "Processo" || key == "Original URL" || key == "Descritores"
-            else if key in aggs
-                +metadata(key, true)
-        .d-flex.flex-column.align-items-right.justify-content-between
+                tr
+                    td
+                        if show
+                            b #{key}:&nbsp;
+                    td
+                        if key == "Tribunal"
+                            a(href=`./?${key}=${source[key]}`,data-tribunal=source["Tribunal"]) !{Str(source[key])}
+                        else
+                            a(href=`./?${key}=${source[key]}`) !{Str(source[key])}
+        table.table.table-sm
+            for key in Object.keys(source)
+                if key == "ECLI" || key == "Processo" || key == "Original URL" || key == "Descritores"
+                else if key in aggs
+                    +metadata(key, true)
             for key of Object.keys(source)
                 if key.startsWith("Data")
-                    div
-                        b #{key}:&nbsp;
-                        span.text-muted #{source[key]}
-        .d-flex.flex-column.align-items-right.justify-content-between
-            b Descritores:
-            .d-flex.flex-column
-                for d in (source.Descritores||[])
-                    a(href=`./?Descritores=${d}`) !{Str(d)}
-        .d-flex.align-items-center
-            b: a(href=source["Original URL"]).d-flex.align-items-center Original
+                    tr
+                        td: b #{key}:&nbsp;
+                        td: span.text-muted #{source[key]}
+            tr
+                td: b Descritores:
+                td
+                    for d in (source.Descritores||[])
+                        p.m-0: a(href=`./?Descritores=${d}`) !{Str(d)}
+            tr
+                td
+                td: b: a(href=source["Original URL"]).d-flex.align-items-center Original
 
 block main
     if !source
