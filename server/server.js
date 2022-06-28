@@ -585,4 +585,4 @@ app.use('/stats-sse', require('./csm-errados'));
 app.use('/seccoes-sse', require('./procurar-seccoes'));
 app.use(express.static(path.join(__dirname, "static")));
 
-app.listen(9100)
+app.listen(parseInt(process.env.PORT) || 9100)
