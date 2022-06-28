@@ -7,17 +7,18 @@ const path = require('path');
 app.set('view engine', 'pug');
 app.set('views', './views');
 
-const {mappings: {properties}, index: INDEXNAME} = require('../elastic-index-mapping.json');
+const {mappings: {properties}} = require('../elastic-index-mapping.json');
+const INDEXNAME = "jurisprudencia.1.0"
 const aggs = {
     MinAno: {
         min: {
-            field: 'Datas',
+            field: 'Data',
             format: 'yyyy'
         }
     },
     MaxAno: {
         max: {
-            field: 'Datas',
+            field: 'Data',
             format: 'yyyy'
         }
     }
@@ -35,8 +36,6 @@ for( p in properties ){
 }
 
 aggs["Descritores"].terms.field = "Descritores.keyword";
-aggs["Tribunal"].terms.min_doc_count = 0;
-aggs["Código Tribunal"].terms.min_doc_count = 0;
 
 const RESULTS_PER_PAGE = 50;
 
@@ -47,7 +46,7 @@ let queryObject = (string) => {
     return {
         simple_query_string: {
             query: string,
-            default_operator: "AND"
+            default_operator: "OR"
         }
     };
 }
@@ -72,7 +71,14 @@ let search = (
     query: {
         bool: {
             must: query,
-            filter: filters.pre // Hide documents from aggregations
+            filter: filters.pre, // Hide documents from aggregations
+            must_not: [
+                { term: {
+                    Origem: {
+                        value: "csm-indexer"
+                    }
+                }}
+            ]
         }
     },
     post_filter: { // Filter after aggregations
@@ -85,7 +91,7 @@ let search = (
     from: page*rpp,
     track_total_hits: true,
     _source: [...Object.keys(properties), "Sumário"],
-    fields: ["Datas"],
+    fields: ["Data"],
     ...extras
 });
 
@@ -97,7 +103,7 @@ const padZero = (num, size=4) => {
     return s;
 }
 
-const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]) => { // filters={pre: [], after: []}
+const populateFilters = (filters, body={}, afters=["MinAno","MaxAno"]) => { // filters={pre: [], after: []}
     const filtersUsed = {}
     for( let key in aggs ){
         let aggName = key;
@@ -126,7 +132,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
         filtersUsed.MaxAno = body.MaxAno;
         filters.pre.push({
             range: {
-                Datas: {
+                Data: {
                     gte: padZero(body.MinAno),
                     lt: padZero((parseInt(body.MaxAno) || new Date().getFullYear())+1),
                     format: "yyyy"
@@ -138,7 +144,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
         filtersUsed.MinAno = body.MinAno;
         filters.pre.push({
             range: {
-                Datas: {
+                Data: {
                     gte: padZero(body.MinAno),
                     format: "yyyy"
                 }
@@ -149,7 +155,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
         filtersUsed.MaxAno = body.MaxAno;
         filters.pre.push({
             range: {
-                Datas: {
+                Data: {
                     lt: padZero((parseInt(body.MaxAno) || new Date().getFullYear())+1),
                     format: "yyyy"
                 }
@@ -205,12 +211,12 @@ function parseSort(value, array){
     const sortV = value || "score";
     if( sortV == "des" ){
         array.push({
-            Datas: "desc"
+            Data: "desc"
         });
     }
     else if( sortV == "asc" ){
         array.push({
-            Datas: "asc"
+            Data: "asc"
         });
     }
     else if( sortV == "score" ){
@@ -218,7 +224,7 @@ function parseSort(value, array){
             _score: "desc"
         });
         array.push({
-            Datas: "desc"
+            Data: "desc"
         })
     }
     return sortV;
@@ -226,6 +232,10 @@ function parseSort(value, array){
 
 // Returns page with filters
 app.get("/", (req, res) => {
+    if( !req.query.Tribunal ){
+        req.query.Tribunal = "Supremo Tribunal de Justiça"
+        req.originalUrl += `${req.originalUrl.indexOf('?') == -1 ? '?' : '&'}Tribunal=Supremo Tribunal de Justiça`
+    }
     const sfilters = {pre: [], after: []};
     const filtersUsed = populateFilters(sfilters, req.query);
     const sort = [];
@@ -415,8 +425,8 @@ let runtimeMapping = {
             type: "date",
             format: "yyyy",
             script: `
-                def lastDate = doc['Datas'][0];
-                for( item in doc['Datas'] ){
+                def lastDate = doc['Data'][0];
+                for( item in doc['Data'] ){
                     if( item.getMillis() > lastDate.getMillis() ){
                         lastDate = item;
                     }
@@ -504,7 +514,7 @@ app.get("/indices", (req, res) => {
 
 app.get("/:ecli(ECLI:*)", (req, res) => {
     let ecli = req.params.ecli;
-    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: ['Datas']}).then((body) => {
+    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: ['Data']}).then((body) => {
         if( body.hits.total.value == 0 ){
             res.render("document", {ecli});
         }
