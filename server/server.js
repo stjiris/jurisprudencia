@@ -7,36 +7,54 @@ const path = require('path');
 app.set('view engine', 'pug');
 app.set('views', './views');
 
-const {mappings: {properties}, index: INDEXNAME} = require('../elastic-index-mapping.json');
-const aggs = {
-    MinAno: {
+const {mappings: {properties}} = require('../elastic-index-mapping.json');
+const INDEXNAME = process.env.INDEX || "jurisprudencia.2.0"
+
+const aggs = {}
+let DATA_FIELD = "";
+const DEFAULT_AGGS = {};
+client.indices.getMapping({index: INDEXNAME}).then( obj => {
+    let props = obj[INDEXNAME].mappings.properties;
+    Object.entries(props).filter(([name, obj])=>obj.type == 'keyword').map(([name, _])=> name).forEach(name => {
+        aggs[name] = {
+            terms: {
+                field: name,
+                size: 65536,
+                order: {
+                    _term: "asc"
+                }
+            }
+        }
+    })
+    DATA_FIELD = Object.entries(props).filter(([name, obj]) => obj.type == 'date' && obj.copy_to)[0][1].copy_to[0] 
+    
+    aggs["MinAno"] = {
         min: {
-            field: 'Datas',
+            field: DATA_FIELD,
             format: 'yyyy'
         }
-    },
-    MaxAno: {
+    };
+    aggs["MaxAno"] = {
         max: {
-            field: 'Datas',
+            field: DATA_FIELD,
             format: 'yyyy'
         }
-    }
-};
-for( p in properties ){
-    aggs[p] = {
+    };
+    aggs["Descritores"] = {
         terms: {
-            field: p,
+            field: "Descritores.keyword",
             size: 65536,
             order: {
-                _term: "asc",
+                _term: "asc"
             }
         }
     }
-}
-
-aggs["Descritores"].terms.field = "Descritores.keyword";
-aggs["Tribunal"].terms.min_doc_count = 0;
-aggs["Código Tribunal"].terms.min_doc_count = 0;
+    aggs["Tribunal"].terms.min_doc_count = 0;
+    aggs["Código Tribunal"].terms.min_doc_count = 0;
+    DEFAULT_AGGS.Tribunal = {...aggs.Tribunal, aggs: {Codigo: {terms: {field: 'Código Tribunal', size: 1}}}}
+    DEFAULT_AGGS.MaxAno = aggs.MaxAno
+    DEFAULT_AGGS.MinAno = aggs.MinAno
+});
 
 const RESULTS_PER_PAGE = 50;
 
@@ -56,9 +74,6 @@ const tmp = app.render.bind(app);
 app.render = (name, obj, next) => {
     tmp(name, { properties, requestStart: new Date(), ...obj }, next);
 }
-
-const DEFAULT_AGGS = {Tribunal: {...aggs.Tribunal, aggs: {Codigo: {terms: {field: 'Código Tribunal', size: 1}}}}, MaxAno: aggs.MaxAno, MinAno: aggs.MinAno};
-
 
 let search = (
     query, // query string, ideally given by queryObject()
@@ -85,7 +100,7 @@ let search = (
     from: page*rpp,
     track_total_hits: true,
     _source: [...Object.keys(properties), "Sumário"],
-    fields: ["Datas"],
+    fields: [DATA_FIELD],
     ...extras
 });
 
@@ -126,7 +141,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
         filtersUsed.MaxAno = body.MaxAno;
         filters.pre.push({
             range: {
-                Datas: {
+                [DATA_FIELD]: {
                     gte: padZero(body.MinAno),
                     lt: padZero((parseInt(body.MaxAno) || new Date().getFullYear())+1),
                     format: "yyyy"
@@ -138,7 +153,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
         filtersUsed.MinAno = body.MinAno;
         filters.pre.push({
             range: {
-                Datas: {
+                [DATA_FIELD]: {
                     gte: padZero(body.MinAno),
                     format: "yyyy"
                 }
@@ -149,7 +164,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
         filtersUsed.MaxAno = body.MaxAno;
         filters.pre.push({
             range: {
-                Datas: {
+                [DATA_FIELD]: {
                     lt: padZero((parseInt(body.MaxAno) || new Date().getFullYear())+1),
                     format: "yyyy"
                 }
@@ -205,12 +220,12 @@ function parseSort(value, array){
     const sortV = value || "score";
     if( sortV == "des" ){
         array.push({
-            Datas: "desc"
+            [DATA_FIELD]: "desc"
         });
     }
     else if( sortV == "asc" ){
         array.push({
-            Datas: "asc"
+            [DATA_FIELD]: "asc"
         });
     }
     else if( sortV == "score" ){
@@ -218,7 +233,7 @@ function parseSort(value, array){
             _score: "desc"
         });
         array.push({
-            Datas: "desc"
+            [DATA_FIELD]: "desc"
         })
     }
     return sortV;
@@ -415,8 +430,8 @@ let runtimeMapping = {
             type: "date",
             format: "yyyy",
             script: `
-                def lastDate = doc['Datas'][0];
-                for( item in doc['Datas'] ){
+                def lastDate = doc['${DATA_FIELD}'][0];
+                for( item in doc['${DATA_FIELD}'] ){
                     if( item.getMillis() > lastDate.getMillis() ){
                         lastDate = item;
                     }
@@ -504,7 +519,7 @@ app.get("/indices", (req, res) => {
 
 app.get("/:ecli(ECLI:*)", (req, res) => {
     let ecli = req.params.ecli;
-    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: ['Datas']}).then((body) => {
+    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: [DATA_FIELD]}).then((body) => {
         if( body.hits.total.value == 0 ){
             res.render("document", {ecli});
         }
