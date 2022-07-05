@@ -592,6 +592,7 @@ app.use('/procurar-seccoes', (req, res) => {
 });
 
 app.use('/test-anonimizador', (_, res) => res.render("anonimizador"));
+app.use('/test-sumarizador', (_, res) => res.render("sumarizador"));
 
 app.use('/tabelas', require('./tables'));
 app.use('/tinymce', express.static(path.join(require.resolve('tinymce'),'..')));
