@@ -1,0 +1,57 @@
+extends head.pug 
+
+block printpageinfo
+    h6 Sumarizador
+
+block headerinput
+    h4(style="color: var(--color-white);").fancy-font Sumarizador
+
+block allmain
+    .row
+        .col-12
+            h4 Input
+        form#anonim-form(action="https://pe.inesc-id.pt/sumarizador/", method="post").col-12.col-sm-6
+            input(type="file", name="file")
+            button(type="submit") Correr a partir de ficheiro
+        form#anonim-form-text(action="https://pe.inesc-id.pt/sumarizador/", method="post").col-12.col-sm-6
+            textarea(name="file").w-100
+            button(type="submit") Correr este texto
+        .col-12
+            h4 Output
+            div#out
+    style.
+        mark::before{
+            content: attr(role);
+            font-size: 0.5rem;
+            font-weight: bold;
+            padding: 0.2rem;
+        }
+    script.
+        document.getElementById("anonim-form").addEventListener("submit", (evt) => {
+            evt.preventDefault();
+            let button = document.getElementById("anonim-form").querySelector("button");
+            button.disabled = true;
+            let formData = new FormData(document.getElementById("anonim-form"));
+            fetch("https://pe.inesc-id.pt/sumarizador/", {
+                method: "POST",
+                body: formData
+            }).then(response => response.text()).then(text => {
+                document.getElementById("out").innerHTML = text;
+                button.disabled = false;
+            });
+        });
+        document.getElementById("anonim-form-text").addEventListener("submit", (evt) => {
+            evt.preventDefault();
+            let button = document.getElementById("anonim-form-text").querySelector("button");
+            button.disabled = true;
+            let formData = new FormData();
+            formData.append("file", new Blob([document.getElementById("anonim-form-text").querySelector("textarea").value]), "text.txt");
+            fetch("https://pe.inesc-id.pt/sumarizador/", {
+                method: "POST",
+                body: formData
+            }).then(response => response.text()).then(text => {
+                document.getElementById("out").innerHTML = text;
+                button.disabled = false;
+            });
+        });
+
