@@ -111,7 +111,7 @@ for doc in hits
                 span #{Str(doc._source.Relator)}
             div.mx-1
                 b Data(s):&nbsp;
-                span #{doc.fields.Datas}
+                span #{doc.fields[DATA_FIELD]}
         .col-12.d-flex.flex-wrap
             if doc._source.Espécie
                 div.mx-1

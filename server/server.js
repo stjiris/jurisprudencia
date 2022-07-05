@@ -13,6 +13,7 @@ const INDEXNAME = process.env.INDEX || "jurisprudencia.2.0"
 const aggs = {}
 let DATA_FIELD = "";
 const DEFAULT_AGGS = {};
+const runtimeMapping = {};
 client.indices.getMapping({index: INDEXNAME}).then( obj => {
     let props = obj[INDEXNAME].mappings.properties;
     Object.entries(props).filter(([name, obj])=>obj.type == 'keyword').map(([name, _])=> name).forEach(name => {
@@ -54,6 +55,22 @@ client.indices.getMapping({index: INDEXNAME}).then( obj => {
     DEFAULT_AGGS.Tribunal = {...aggs.Tribunal, aggs: {Codigo: {terms: {field: 'Código Tribunal', size: 1}}}}
     DEFAULT_AGGS.MaxAno = aggs.MaxAno
     DEFAULT_AGGS.MinAno = aggs.MinAno
+
+    runtimeMapping.runtime_mappings = {
+        LastDate: {
+            type: "date",
+            format: "yyyy",
+            script: `
+                def lastDate = doc['${DATA_FIELD}'][0];
+                for( item in doc['${DATA_FIELD}'] ){
+                    if( item.getMillis() > lastDate.getMillis() ){
+                        lastDate = item;
+                    }
+                }
+                emit(lastDate.getMillis());
+            `
+        }
+    };
 });
 
 const RESULTS_PER_PAGE = 50;
@@ -72,7 +89,7 @@ let queryObject = (string) => {
 
 const tmp = app.render.bind(app);
 app.render = (name, obj, next) => {
-    tmp(name, { properties, requestStart: new Date(), ...obj }, next);
+    tmp(name, { properties, requestStart: new Date(), ...obj, DATA_FIELD }, next);
 }
 
 let search = (
@@ -424,24 +441,6 @@ const statsAggs = {
     }
 }
 
-let runtimeMapping = {
-    runtime_mappings: {
-        LastDate: {
-            type: "date",
-            format: "yyyy",
-            script: `
-                def lastDate = doc['${DATA_FIELD}'][0];
-                for( item in doc['${DATA_FIELD}'] ){
-                    if( item.getMillis() > lastDate.getMillis() ){
-                        lastDate = item;
-                    }
-                }
-                emit(lastDate.getMillis());
-            `
-        }
-    }
-}
-
 app.get("/estatisticas", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query);
@@ -459,7 +458,7 @@ app.get("/allStats", (req, res) => {
     search(queryObject(req.query.q), sfilters, 0, statsAggs, 0, runtimeMapping ).then(body => {
         res.json(body.aggregations);
     }).catch(err => {
-        console.log(req.originalUrl, err)
+        console.log(req.originalUrl, JSON.stringify(err.body))
         res.json({});
     });
 });
