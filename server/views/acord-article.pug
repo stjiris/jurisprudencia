@@ -147,9 +147,9 @@ for doc in hits
                     span(style="width: 10%; flex-shrink: 1;")
                         i.bi.bi-caret-downright-fill
                         b.mouse-click Sumário:
-                    .highlight
-                        .highlight-bar(data-key="Sumário")
-                            if doc.highlight && doc.highlight.SumárioMarks
+                    if doc.highlight && doc.highlight.SumárioMarks
+                        .highlight
+                            .highlight-bar(data-key="Sumário")
                                 each hit in doc.highlight.SumárioMarks
                                     .highlight-bar-hit-parent
                                         .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%`)
