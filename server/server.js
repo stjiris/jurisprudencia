@@ -104,7 +104,12 @@ let search = (
     query: {
         bool: {
             must: query,
-            filter: filters.pre // Hide documents from aggregations
+            filter: filters.pre, // Hide documents from aggregations
+            must_not: [{
+                term: {
+                    "Origem": "csm-indexer"
+                }
+            }]
         }
     },
     post_filter: { // Filter after aggregations
