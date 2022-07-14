@@ -16,9 +16,8 @@ block allmain
         form#anonim-form-text(action="https://pe.inesc-id.pt/sumarizador/", method="post").col-12.col-sm-6
             textarea(name="file").w-100
             button(type="submit") Correr este texto
-        .col-12
-            h4 Output
-            div#out
+        .col-12.bg-dark.p-4
+            div#out.bg-white.w-100.m-auto.p-5(style="max-width: 1240px")
     style.
         mark::before{
             content: attr(role);
@@ -35,8 +34,8 @@ block allmain
             fetch("https://pe.inesc-id.pt/sumarizador/", {
                 method: "POST",
                 body: formData
-            }).then(response => response.text()).then(text => {
-                document.getElementById("out").innerHTML = text;
+            }).then(response => response.json()).then(obj => {
+                showResponse(obj);
                 button.disabled = false;
             });
         });
@@ -49,9 +48,25 @@ block allmain
             fetch("https://pe.inesc-id.pt/sumarizador/", {
                 method: "POST",
                 body: formData
-            }).then(response => response.text()).then(text => {
-                document.getElementById("out").innerHTML = text;
+            }).then(response => response.json()).then(obj => {
+                showResponse(obj);
                 button.disabled = false;
             });
         });
 
+        function showResponse(json){
+            let out = document.getElementById("out");
+            out.innerHTML = "";
+            let max = json.reduce((o, acc) => o.score > acc.score ? o : acc);
+            let min = json.reduce((o, acc) => o.score < acc.score ? o : acc);
+            for(let i = 0; i < json.length; i++){
+                let p = document.createElement("p");
+                p.innerText = json[i].text;
+                p.style.opacity = logistic((json[i].score - min.score) / (max.score - min.score));
+                out.appendChild(p);
+            }
+        }
+
+        function logistic(x){
+            return 0.75 / (1+Math.exp(-200*(x-0.99))) + 0.25;
+        }
