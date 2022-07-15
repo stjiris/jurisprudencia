@@ -54,7 +54,7 @@ block allmain
             });
         });
 
-        function showResponse(json){
+        function showResponse({sentences: json, html}){
             let out = document.getElementById("out");
             out.innerHTML = "";
             let max = json.reduce((o, acc) => o.score > acc.score ? o : acc);
