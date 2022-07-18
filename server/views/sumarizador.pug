@@ -1,72 +1,126 @@
-extends head.pug 
-
-block printpageinfo
-    h6 Sumarizador
-
-block headerinput
-    h4(style="color: var(--color-white);").fancy-font Sumarizador
-
-block allmain
-    .row
-        .col-12
-            h4 Input
-        form#anonim-form(action="https://pe.inesc-id.pt/sumarizador/", method="post").col-12.col-sm-6
-            input(type="file", name="file")
-            button(type="submit") Correr a partir de ficheiro
-        form#anonim-form-text(action="https://pe.inesc-id.pt/sumarizador/", method="post").col-12.col-sm-6
-            textarea(name="file").w-100
-            button(type="submit") Correr este texto
-        .col-12.bg-dark.p-4
-            div#out.bg-white.w-100.m-auto.p-5(style="max-width: 1240px")
-    style.
-        mark::before{
-            content: attr(role);
-            font-size: 0.5rem;
-            font-weight: bold;
-            padding: 0.2rem;
-        }
-    script.
-        document.getElementById("anonim-form").addEventListener("submit", (evt) => {
-            evt.preventDefault();
-            let button = document.getElementById("anonim-form").querySelector("button");
-            button.disabled = true;
-            let formData = new FormData(document.getElementById("anonim-form"));
-            fetch("https://pe.inesc-id.pt/sumarizador/", {
-                method: "POST",
-                body: formData
-            }).then(response => response.json()).then(obj => {
-                showResponse(obj);
-                button.disabled = false;
-            });
-        });
-        document.getElementById("anonim-form-text").addEventListener("submit", (evt) => {
-            evt.preventDefault();
-            let button = document.getElementById("anonim-form-text").querySelector("button");
-            button.disabled = true;
-            let formData = new FormData();
-            formData.append("file", new Blob([document.getElementById("anonim-form-text").querySelector("textarea").value]), "text.txt");
-            fetch("https://pe.inesc-id.pt/sumarizador/", {
-                method: "POST",
-                body: formData
-            }).then(response => response.json()).then(obj => {
-                showResponse(obj);
-                button.disabled = false;
-            });
-        });
-
-        function showResponse({sentences: json, html}){
-            let out = document.getElementById("out");
-            out.innerHTML = "";
-            let max = json.reduce((o, acc) => o.score > acc.score ? o : acc);
-            let min = json.reduce((o, acc) => o.score < acc.score ? o : acc);
-            for(let i = 0; i < json.length; i++){
-                let p = document.createElement("p");
-                p.innerText = json[i].text;
-                p.style.opacity = logistic((json[i].score - min.score) / (max.score - min.score));
-                out.appendChild(p);
+doctype html
+html(lang="en")
+    head
+        meta(charset="UTF-8")
+        meta(http-equiv="X-UA-Compatible", content="IE=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Sumarizador
+        link(rel="stylesheet",href="./style.css")
+        link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous")
+    body
+        .row.container.m-auto.py-2.align-items-center
+            form#anonim-form(action="https://pe.inesc-id.pt/sumarizador/", method="post").col-12.col-sm-6
+                input.form-control.form-control-sm(type="file", name="file")
+                button.form-control.form-control-sm(type="submit") Correr a partir de ficheiro
+            form#anonim-form-text(action="https://pe.inesc-id.pt/sumarizador/", method="post").col-12.col-sm-6
+                textarea.form-control.form-control-sm(name="file", rows="1").w-100
+                button.form-control.form-control-sm(type="submit") Correr este texto
+        .row
+            .col-12
+                #sentences.d-flex.flex-column
+            .col-12.bg-dark.p-4
+                #out.bg-white.w-100.m-auto.p-5(style="max-width: 1240px")
+        style.
+            .best{
+                background: pink;
             }
-        }
+        script.
+            document.getElementById("anonim-form").addEventListener("submit", (evt) => {
+                evt.preventDefault();
+                let buttons = document.querySelectorAll("button[type=submit]");
+                buttons.forEach(o => o.disabled = true);
+                let formData = new FormData(document.getElementById("anonim-form"));
+                fetch("https://pe.inesc-id.pt/sumarizador/", {
+                    method: "POST",
+                    body: formData
+                }).then(response => response.json()).then(obj => {
+                    showResponse(obj);
+                }).finally(() => {
+                    buttons.forEach(o => o.disabled = false);
+                });
+            });
+            document.getElementById("anonim-form-text").addEventListener("submit", (evt) => {
+                evt.preventDefault();
+                let buttons = document.querySelectorAll("button[type=submit]");
+                buttons.forEach(o => o.disabled = true);
+                let formData = new FormData();
+                formData.append("file", new Blob([document.getElementById("anonim-form-text").querySelector("textarea").value]), "text.txt");
+                fetch("https://pe.inesc-id.pt/sumarizador/", {
+                    method: "POST",
+                    body: formData
+                }).then(response => response.json()).then(obj => {
+                    showResponse(obj);
+                }).finally(() => {
+                    buttons.forEach(o => o.disabled = false);
+                });
+            });
 
-        function logistic(x){
-            return 0.75 / (1+Math.exp(-200*(x-0.99))) + 0.25;
-        }
+            function showResponse({sentences: sentences, html}){ // sentences: {text:"", start_char:0, end_char:0, score:0}
+                let out = document.getElementById("out");
+                out.innerHTML = html;
+                let bestN = sentences.sort((a, b) => b.score - a.score).slice(0, 5);
+
+                for( let [i, sent] of enumerate(bestN) ){
+                    let bestChild = {best: null, score: Infinity};
+                    for( let child of Array.from(out.children) ){
+                        let dist = levenshteinDistance(child.innerText, sent.text);
+                        if( dist < bestChild.score ){
+                            bestChild.best = child;
+                            bestChild.score = dist;
+                        }
+                    }
+                    if( bestChild.best ){
+                        bestChild.best.classList.add("best");
+                        bestChild.best.dataset.score = sent.score;
+                        bestChild.best.id = `best-${i}`;
+
+                        let a = document.createElement("a");
+                        a.href = "#" + bestChild.best.id;
+                        a.innerText = sent.text;
+                        document.getElementById("sentences").appendChild(a);
+
+                    }
+                }
+
+                
+                
+
+
+                /*out.innerHTML = "";
+                let max = json.reduce((o, acc) => o.score > acc.score ? o : acc);
+                let min = json.reduce((o, acc) => o.score < acc.score ? o : acc);
+                for(let i = 0; i < json.length; i++){
+                    let p = document.createElement("p");
+                    p.innerText = json[i].text;
+                    p.style.opacity = logistic((json[i].score - min.score) / (max.score - min.score));
+                    out.appendChild(p);
+                }*/
+            }
+
+            function* enumerate(arr){
+                let i = 0; 
+                while( i < arr.length ){
+                    yield [i, arr[i++]];
+                }
+            }
+
+            function levenshteinDistance(s0, s1){
+                let d = [];
+                for(let i = 0; i <= s0.length; i++){
+                    d[i] = [];
+                    d[i][0] = i;
+                }
+                for(let j = 0; j <= s1.length; j++){
+                    d[0][j] = j;
+                }
+                for(let i = 1; i <= s0.length; i++){
+                    for(let j = 1; j <= s1.length; j++){
+                        d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (s0[i-1] === s1[j-1] ? 0 : 1));
+                    }
+                }
+                return d[s0.length][s1.length];
+            }
+
+            function logistic(x){
+                return 0.75 / (1+Math.exp(-200*(x-0.99))) + 0.25;
+            }
