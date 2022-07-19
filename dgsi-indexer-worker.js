@@ -2,7 +2,7 @@ const { workerData } = require("worker_threads");
 const ECLI = require('./util/ecli');
 const indexer = require('./indexer');
 const url2table = require('./url-to-table');
-const { strip_empty_html } = require('./util/html');
+const { strip_empty_html, strip_attrs } = require('./util/html');
 const fetch = require('./util/fetch');
 
 let count = 0;
@@ -16,13 +16,12 @@ const Origem = `dgsi-indexer-${TribunalCode}`;
 const IGNORE_KEYS = ["", "1"]
 
 forEachCourtDecisionLink(async link => {
-    let table = await url2table(link+'&ExpandSection=1');
-    
+    if( await indexer._client.count({index: indexer.mapping.index, query: { term: { "Original URL": link } } }).then( c => c.count > 0 ) ){
+        return;
+    }
     try{
+        let table = await url2table(link+'&ExpandSection=1');
         let processo = table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, "");
-        if( await indexer.exists({"Tribunal": Tribunal,"Processo": processo, "Origem": Origem}) ){
-            return;
-        }
         let year = 0;
 
         let body = {
@@ -52,7 +51,7 @@ forEachCourtDecisionLink(async link => {
                     body[key] = table[key].textContent.trim();
                 }
                 else{
-                    body[key] = strip_empty_html_and_remove_font_tag(table[key].innerHTML);
+                    body[key] = strip_attrs(table[key].innerHTML);
                 }
             }
         }
