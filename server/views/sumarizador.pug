@@ -7,8 +7,10 @@ html(lang="en")
         title Sumarizador
         link(rel="stylesheet",href="./style.css")
         link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous")
-    body.bg-dark(style="width: 100vw; height: 100vh;")
+    body.bg-dark(style="width: 100%; height: 100vh;")
         input#file.form-control.form-control-sm(type="file", name="file", hidden)
+        #progress-parent.progress(hidden)
+            #progress-bar.progress-bar.progress-bar-striped.progress-bar-animated
         .row.m-auto
             .col-12.col-sm-5
                 #out.bg-white.m-4.p-4
@@ -21,42 +23,51 @@ html(lang="en")
                 background: pink;
             }
         script.
+            // Setup post events
             addEventListener("load", function(){
                 document.getElementById("file").addEventListener("change", function(e){
-                    let formData = new FormData();
-                    formData.append("file", e.target.files[0]);
-                    fetch("https://pe.inesc-id.pt/sumarizador/", {
-                        method: "POST",
-                        body: formData
-                    }).then(response => response.json()).then(obj => {
-                        showResponse(obj);
-                    }).finally(() => {
-                        buttons.forEach(o => o.disabled = false);
-                    });
+                    postFile(e.target.files[0]);
                 });
-
-                document.getElementById("fake-input").addEventListener("click", function(e){
+                document.body.addEventListener("dragover", function(e){
                     e.preventDefault();
+                    e.stopPropagation();
+                });
+                document.body.addEventListener("drop", function(e){
+                    e.preventDefault();
+                    e.stopPropagation();
+                    document.getElementById("file").files = e.dataTransfer.files;
+                    document.getElementById("file").dispatchEvent(new Event("change"));
+                });
+                document.getElementById("fake-input").addEventListener("click", function(e){
                     document.getElementById("file").click();
                 });
             });
 
-            document.body.addEventListener("dragover", function(e){
-                e.preventDefault();
-                e.stopPropagation();
-            });
-            document.body.addEventListener("drop", function(e){
-                e.preventDefault();
-                e.stopPropagation();
+
+            let processingPost = false;
+            function postFile(file){
+                if(processingPost) return;
+                processingPost = true;
+                let progressParent = document.getElementById("progress-parent");
+                let progressBar = document.getElementById("progress-bar");
+                progressParent.removeAttribute("hidden");
+                progressBar.style.width = "10%";
                 let formData = new FormData();
-                formData.append("file", e.dataTransfer.files[0]);
+                formData.append("file", file);
                 fetch("https://pe.inesc-id.pt/sumarizador/", {
                     method: "POST",
                     body: formData
-                }).then(response => response.json()).then(obj => {
+                }).then(response => {
+                    progressBar.style.width = "50%";
+                    return response.json()
+                }).then(obj => {
+                    progressBar.style.width = "75%";
                     showResponse(obj);
+                }).finally(() => {
+                    processingPost = false;
+                    progressParent.setAttribute("hidden", "");
                 });
-            });
+            }
 
             function flatChildren(parent){
                 if( parent.innerText.split("\n").length > 1 ){
@@ -71,21 +82,25 @@ html(lang="en")
             function showResponse({sentences: sentences, html}){ // sentences: {text:"", start_char:0, end_char:0, score:0}
                 let out = document.getElementById("out");
                 out.innerHTML = html;
-                let bestN = sentences.sort((a, b) => b.score - a.score).slice(0, 10).sort((a, b) => b.start_char - a.start_char);
+                let bestN = sentences.sort((a, b) => b.score - a.score).slice(0, 10).sort((a, b) => a.initial_char - b.initial_char);
 
                 let children = Array.from(out.children).flatMap(o => flatChildren(o));
+                document.getElementById("sentences").innerHTML = "";
 
                 for( let [i, sent] of enumerate(bestN) ){
                     let bestChild = {best: null, score: Infinity};
                     for( let child of children ){
-                        let dist = levenshteinDistance(child.innerText, sent.text);
+                        let dist = levenshteinDistance(child.innerText.replace(/\W/g,""), sent.text.replace(/\W/g,""));
                         if( dist < bestChild.score ){
                             bestChild.best = child;
                             bestChild.score = dist;
                         }
                     }
                     if( bestChild.best ){
-                        let clone = bestChild.best.cloneNode(true);
+                        let clone = document.createElement("div");
+                        clone.className = "m-1";
+                        clone.innerHTML = bestChild.best.innerHTML;
+                        clone.dataset.sentence = sent.text;
                         bestChild.best.classList.add("best");
                         bestChild.best.dataset.score = sent.score;
                         bestChild.best.id = `best-${i}`;
