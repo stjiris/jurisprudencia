@@ -33,15 +33,26 @@ html(lang="en")
                                 u.cursor-pointer.p-1.m-1(onclick="showTop(5)") 5
                                 u.cursor-pointer.p-1.m-1(onclick="showTop(10)") 10
                                 u.cursor-pointer.p-1.m-1(onclick="showTop(15)") 15
+                                u.cursor-pointer.p-1.m-1(onclick="showTop(20)") 20
                                 |)
                     tbody#sentences
                         tr
                             td 
                             td As frases serão mostradas aqui
         style.
-            .best{
-                background: gold !important;
+            tr.tops5 td:first-child{
+                background: #e6c300 !important;
             }
+            tr.tops10 td:first-child{
+                background: #ffdd1a !important;
+            }
+            tr.tops15 td:first-child{
+                background: #ffe866 !important;
+            }
+            tr.tops20 td:first-child{
+                background: #fff7cc !important;
+            }
+
             .cursor-pointer{
                 cursor: pointer;
             }
@@ -78,7 +89,10 @@ html(lang="en")
 
                 let title = document.getElementById("title");
                 title.innerText = file.name;
-                document.getElementById("fake-input").remove();
+                let fk = document.getElementById("fake-input");
+                if(fk){
+                    fk.remove();
+                } 
                 document.getElementById("toogle").removeAttribute("hidden");
 
                 let formData = new FormData();
@@ -127,6 +141,9 @@ html(lang="en")
                         tr.style.display = "";
                     }
                     else if( N >= 15 && tr.classList.contains("tops15") ){
+                        tr.style.display = "";
+                    }
+                    else if( N >= 20 && tr.classList.contains("tops20") ){
                         tr.style.display = "";
                     }
                 }
