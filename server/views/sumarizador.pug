@@ -131,6 +131,7 @@ html(lang="en")
                     }
                     else{
                         td.parentNode.setAttribute("hidden","");
+                        document.querySelector(td.parentNode.cells[0].children[0].getAttribute("href")).cells[0].classList.remove("best");
                     }
                 });
             }
