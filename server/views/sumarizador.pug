@@ -112,7 +112,7 @@ html(lang="en")
                 let parent = parentSentences.insertRow();
                 let linkCell = parent.insertCell();
                 let textCell = parent.insertCell();
-                linkCell.innerHTML = `<a href="#${parReference.id}" target="_blank">${parReference.dataset.par}</a>`;
+                linkCell.innerHTML = `<a href="#${parReference.id}">${parReference.dataset.par}</a>`;
                 textCell.innerHTML = parReference.cells[1].innerHTML;
                 parent.className = parReference.className;
             }
