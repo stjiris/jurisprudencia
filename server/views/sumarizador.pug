@@ -25,16 +25,21 @@ html(lang="en")
                     thead 
                         tr
                             th Parágrafo
-                            th Exertos importantes
-                            th Importancia
+                            th Exertos importantes (
+                                span.cursor-pointer.p-1.m-1(onclick="showTop(5)") 5
+                                span.cursor-pointer.p-1.m-1(onclick="showTop(10)") 10
+                                span.cursor-pointer.p-1.m-1(onclick="showTop(15)") 15
+                                |)
                     tbody#sentences
                         tr
                             td 
                             td As frases serão mostradas aqui
-                            td
         style.
             .best{
-                background: pink;
+                background: gold !important;
+            }
+            .cursor-pointer{
+                cursor: pointer;
             }
         script.
             // Setup post events
@@ -95,27 +100,40 @@ html(lang="en")
                 }
             }
 
-            function findClosest(words, elementArray){
-                let maxScore = 0;
-                let maxElement = null;
-                for(let element of elementArray){
-                    let count = 0;
-                    let lastPos = 0;
-                    for( let word of element.dataset.normWords.split(",")){
-                        if( words.includes(word, lastPos) ){
-                            count++;
-                            lastPos = words.indexOf(word, lastPos) + 1;
-                        }
-                    }
-                    let score = count / words.length;
-                    if(score > maxScore){
-                        maxScore = score;
-                        maxElement = element;
-                    }
-                }
-                return maxElement;
+            function hash( string ){
+                return string.toLowerCase().replace(/[^a-z]/g, "");
             }
 
+            let top15scores = [];
+            function addSentence(reference, sentence){
+                let parentSentences = document.getElementById("sentences");
+                let row = parentSentences.insertRow();
+                let parCell = row.insertCell();
+                let anchor = document.createElement("a");
+                anchor.href = `#${reference.id}`;
+                anchor.innerText = reference.dataset.par;
+                parCell.appendChild(anchor);
+                let textCell = row.insertCell();
+                textCell.innerHTML = sentence.text;
+                textCell.dataset.score = sentence.score;
+                textCell.dataset.text = sentence.text;
+                row.setAttribute("hidden","");
+
+                top15scores.push(sentence.score);
+            }
+
+            function showTop(N){
+                let top15 = top15scores.sort((a,b) => b-a).slice(0,N).map( s => s.toString() );
+                document.querySelectorAll("td[data-score]").forEach(td => {
+                    if( top15.indexOf(td.dataset.score) > -1 ){
+                        td.parentNode.removeAttribute("hidden");
+                        document.querySelector(td.parentNode.cells[0].children[0].getAttribute("href")).cells[0].classList.add("best");
+                    }
+                    else{
+                        td.parentNode.setAttribute("hidden","");
+                    }
+                });
+            }
 
             function showResponse({sentences: sentences, html}){ // sentences: {text:"", start_char:0, end_char:0, score:0}
                 let outTable = document.getElementById("out");
@@ -123,37 +141,43 @@ html(lang="en")
                 let template = document.createElement("template");
                 template.innerHTML = html;
                 let pars = Array.from(template.content.children);
+                let parentSentences = document.getElementById("sentences");
+                parentSentences.innerHTML = "";
+                top15scores = [];
+
+                let currentSentence = sentences.shift();
+                let cumHash = "";
+                let lastI = 0;
+                let lastParent = null;
+                
                 for( let [i, par] of enumerate(pars) ){
                     let parRow = outTable.insertRow();
                     let parCell = parRow.insertCell();
                     parCell.innerText = i+1;
                     let textCell = parRow.insertCell();
                     let clone = par.cloneNode(true);
+                    let currHash = hash(clone.innerText);
                     textCell.appendChild(clone);
                     parRow.id = "par-"+(i+1);
                     parRow.dataset.par = i+1;
-                    if(!clone.classList.contains("footnotes")){
-                        parRow.dataset.normWords = parRow.innerText.toLowerCase().split(/\s/).filter(o => o.length > 0).map(o => o.replace(/\W/g, "")).join(",");
+                    while( currentSentence && cumHash.indexOf(hash(currentSentence.text).slice(5,-5)) > lastI ){
+                        lastI = cumHash.indexOf(hash(currentSentence.text).slice(5,-5));
+                        addSentence(lastParent, currentSentence);
+                        currentSentence = sentences.shift();
                     }
+                    while( currentSentence && currHash.indexOf(hash(currentSentence.text).slice(5,-5)) > -1 ){
+                        lastI += currHash.indexOf(hash(currentSentence.text).slice(5,-5));
+                        addSentence(parRow, currentSentence);
+                        currentSentence = sentences.shift();
+                    }
+                    while( currentSentence && !hash(currentSentence.text) ){
+                        currentSentence = sentences.shift();
+                    }
+                    lastParent = parRow;
+                    cumHash += currHash;
                 }
-                
-                let parentSentences = document.getElementById("sentences");
-                parentSentences.innerHTML = "";
-                for( let sent of sentences ){
-                    let words = sent.text.toLowerCase().split(/\s/).filter(o => o.length > 0).map(o => o.replace(/\W/g, ""));
-                    let elem = findClosest(words, document.querySelectorAll("[data-norm-words]"));
-                    let row = parentSentences.insertRow();
-                    let parCell = row.insertCell();
-                    let anchor = document.createElement("a");
-                    anchor.href = `#${elem.id}`;
-                    anchor.innerText = elem.dataset.par;
-                    parCell.appendChild(anchor);
 
-                    let textCell = row.insertCell();
-                    textCell.innerHTML = elem.cells[1].innerHTML;
-                    textCell.dataset.score = sent.score;
-                    textCell.dataset.text = sent.text;
-                }
+                showTop(5);
 
                 /*let bestN = sentences.sort((a, b) => b.score - a.score).slice(0, 10).sort((a, b) => a.initial_char - b.initial_char);
 
