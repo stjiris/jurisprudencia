@@ -35,21 +35,21 @@ html(lang="en")
                                 u.cursor-pointer.p-1.m-1(onclick="showTop(15)") 15
                                 u.cursor-pointer.p-1.m-1(onclick="showTop(20)") 20
                                 |)
-                    tbody#sentences
+                    tbody#sentences.show-tops-20
                         tr
                             td 
                             td As frases serão mostradas aqui
         style.
-            tr.tops5 td:first-child{
+            .show-tops-5 tr.tops5 td:first-child, .show-tops-10 tr.tops5 td:first-child, .show-tops-15 tr.tops5 td:first-child, .show-tops-20 tr.tops5 td:first-child{
                 background: #e6c300 !important;
             }
-            tr.tops10 td:first-child{
+            .show-tops-10 tr.tops10 td:first-child, .show-tops-15 tr.tops10 td:first-child, .show-tops-20 tr.tops10 td:first-child{
                 background: #ffdd1a !important;
             }
-            tr.tops15 td:first-child{
+            .show-tops-15 tr.tops15 td:first-child, .show-tops-20 tr.tops15 td:first-child{
                 background: #ffe866 !important;
             }
-            tr.tops20 td:first-child{
+            .show-tops-20 tr.tops20 td:first-child{
                 background: #fff7cc !important;
             }
 
@@ -132,6 +132,7 @@ html(lang="en")
             }
 
             function displayTopTr(N){
+                document.getElementById("out").className = "show-tops-" + N;
                 return (tr) => {
                     tr.style.display = "none";
                     if( N >= 5 && tr.classList.contains("tops5") ){
