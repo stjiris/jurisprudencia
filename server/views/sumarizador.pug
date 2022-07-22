@@ -6,7 +6,6 @@ html(lang="en")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title Sumarizador
         link(rel="stylesheet",href="./style.css")
-        link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous")
     body.bg-dark(style="width: 100%; height: 100vh;")
         input#file.form-control.form-control-sm(type="file", name="file", hidden)
         #progress-parent.progress(hidden)
@@ -16,19 +15,24 @@ html(lang="en")
                 table.table.table-sm.bg-white.table-borderless
                     thead
                         tr
-                            th Paragrafo
-                            th#title
+                            th P
+                            th
+                                span#title
                                 u.cursor-pointer#fake-input Inserir documento aqui
+                                |  (
+                                u.cursor-pointer.p-1.m-1#toogle(onclick="tooglePars()",hidden)
+                                | )
+
                     tbody#out
             .col-12.col-sm-7.py-4
                 table.table.table-sm.bg-white(style="position: sticky; top: 0;")
                     thead 
                         tr
-                            th Parágrafo
+                            th P
                             th Exertos importantes (
-                                span.cursor-pointer.p-1.m-1(onclick="showTop(5)") 5
-                                span.cursor-pointer.p-1.m-1(onclick="showTop(10)") 10
-                                span.cursor-pointer.p-1.m-1(onclick="showTop(15)") 15
+                                u.cursor-pointer.p-1.m-1(onclick="showTop(5)") 5
+                                u.cursor-pointer.p-1.m-1(onclick="showTop(10)") 10
+                                u.cursor-pointer.p-1.m-1(onclick="showTop(15)") 15
                                 |)
                     tbody#sentences
                         tr
@@ -74,6 +78,9 @@ html(lang="en")
 
                 let title = document.getElementById("title");
                 title.innerText = file.name;
+                document.getElementById("fake-input").remove();
+                document.getElementById("toogle").removeAttribute("hidden");
+
                 let formData = new FormData();
                 formData.append("file", file);
                 fetch("https://pe.inesc-id.pt/sumarizador/", {
@@ -81,10 +88,10 @@ html(lang="en")
                     body: formData
                 }).then(response => {
                     progressBar.style.width = "50%";
-                    return response.json()
-                }).then(obj => {
+                    return response.text()
+                }).then(html => {
                     progressBar.style.width = "75%";
-                    showResponse(obj);
+                    showResponse(html);
                 }).finally(() => {
                     processingPost = false;
                     progressParent.setAttribute("hidden", "");
@@ -100,43 +107,57 @@ html(lang="en")
                 }
             }
 
-            function hash( string ){
-                return string.toLowerCase().replace(/[^a-z]/g, "");
-            }
-
-            let top15scores = [];
-            function addSentence(reference, sentence){
+            function addSentence(parReference){
                 let parentSentences = document.getElementById("sentences");
-                let row = parentSentences.insertRow();
-                let parCell = row.insertCell();
-                let anchor = document.createElement("a");
-                anchor.href = `#${reference.id}`;
-                anchor.innerText = reference.dataset.par;
-                parCell.appendChild(anchor);
-                let textCell = row.insertCell();
-                textCell.innerHTML = sentence.text;
-                textCell.dataset.score = sentence.score;
-                textCell.dataset.text = sentence.text;
-                row.setAttribute("hidden","");
-
-                top15scores.push(sentence.score);
+                let parent = parentSentences.insertRow();
+                let linkCell = parent.insertCell();
+                let textCell = parent.insertCell();
+                linkCell.innerHTML = `<a href="#${parReference.id}" target="_blank">${parReference.dataset.par}</a>`;
+                textCell.innerHTML = parReference.cells[1].innerHTML;
+                parent.className = parReference.className;
             }
 
+            function displayTopTr(N){
+                return (tr) => {
+                    tr.style.display = "none";
+                    if( N >= 5 && tr.classList.contains("tops5") ){
+                        tr.style.display = "";
+                    }
+                    else if( N >= 10 && tr.classList.contains("tops10") ){
+                        tr.style.display = "";
+                    }
+                    else if( N >= 15 && tr.classList.contains("tops15") ){
+                        tr.style.display = "";
+                    }
+                }
+            }
+            let currentTop = 0;
             function showTop(N){
-                let top15 = top15scores.sort((a,b) => b-a).slice(0,N).map( s => s.toString() );
-                document.querySelectorAll("td[data-score]").forEach(td => {
-                    if( top15.indexOf(td.dataset.score) > -1 ){
-                        td.parentNode.removeAttribute("hidden");
-                        document.querySelector(td.parentNode.cells[0].children[0].getAttribute("href")).cells[0].classList.add("best");
-                    }
-                    else{
-                        td.parentNode.setAttribute("hidden","");
-                        document.querySelector(td.parentNode.cells[0].children[0].getAttribute("href")).cells[0].classList.remove("best");
-                    }
-                });
+                let parentSentences = document.getElementById("sentences");
+                let trs = Array.from(parentSentences.querySelectorAll("tr"));
+                currentTop = N;
+                trs.forEach(displayTopTr(currentTop));
+                tooglePars();
+                tooglePars();
             }
 
-            function showResponse({sentences: sentences, html}){ // sentences: {text:"", start_char:0, end_char:0, score:0}
+            let hidden = true;
+            function tooglePars(){
+                if( hidden ){
+                    document.querySelectorAll("#out > tr[data-par]").forEach(tr => {
+                        tr.style.display = "";
+                    });
+                    document.getElementById("toogle").innerText = "Esconder parágrafos";
+                    hidden = false;
+                }
+                else{
+                    document.querySelectorAll("#out > [data-par]").forEach(displayTopTr(currentTop));
+                    document.getElementById("toogle").innerText = "Mostrar parágrafos";
+                    hidden = true;
+                }
+            }
+
+            function showResponse(html){
                 let outTable = document.getElementById("out");
                 outTable.innerHTML = "";
                 let template = document.createElement("template");
@@ -144,12 +165,6 @@ html(lang="en")
                 let pars = Array.from(template.content.children);
                 let parentSentences = document.getElementById("sentences");
                 parentSentences.innerHTML = "";
-                top15scores = [];
-
-                let currentSentence = sentences.shift();
-                let cumHash = "";
-                let lastI = 0;
-                let lastParent = null;
                 
                 for( let [i, par] of enumerate(pars) ){
                     let parRow = outTable.insertRow();
@@ -157,28 +172,30 @@ html(lang="en")
                     parCell.innerText = i+1;
                     let textCell = parRow.insertCell();
                     let clone = par.cloneNode(true);
-                    let currHash = hash(clone.innerText);
                     textCell.appendChild(clone);
                     parRow.id = "par-"+(i+1);
                     parRow.dataset.par = i+1;
-                    while( currentSentence && cumHash.indexOf(hash(currentSentence.text).slice(5,-5)) > lastI ){
-                        lastI = cumHash.indexOf(hash(currentSentence.text).slice(5,-5));
-                        addSentence(lastParent, currentSentence);
-                        currentSentence = sentences.shift();
+
+                    let scores = Array.from(clone.querySelectorAll("span[data-score]"));
+                    if(scores.length > 0){
+                        let best = scores.reduce((best, score) => {
+                            if( parseFloat(score.dataset.score) > parseFloat(best.dataset.score) ){
+                                best = score;
+                            }
+                            return best;
+                        });
+                        parRow.className = best.className;
+                        addSentence(parRow);
                     }
-                    while( currentSentence && currHash.indexOf(hash(currentSentence.text).slice(5,-5)) > -1 ){
-                        lastI += currHash.indexOf(hash(currentSentence.text).slice(5,-5));
-                        addSentence(parRow, currentSentence);
-                        currentSentence = sentences.shift();
+                    else{
+                        parRow.className = "others";
                     }
-                    while( currentSentence && !hash(currentSentence.text) ){
-                        currentSentence = sentences.shift();
-                    }
-                    lastParent = parRow;
-                    cumHash += currHash;
                 }
 
                 showTop(5);
+                if( hidden ){
+                    tooglePars();
+                }
 
                 /*let bestN = sentences.sort((a, b) => b.score - a.score).slice(0, 10).sort((a, b) => a.initial_char - b.initial_char);
 
