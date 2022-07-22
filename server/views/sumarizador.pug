@@ -13,10 +13,10 @@ html(lang="en")
         .row.m-auto
             .col-12.col-sm-5.py-4
                 table.table.table-sm.bg-white.table-borderless
-                    thead
+                    thead.sticky-top.bg-white
                         tr
-                            th P
-                            th
+                            th.p-2 P
+                            th.p-2
                                 span#title
                                 u.cursor-pointer#fake-input Inserir documento aqui
                                 |  (
@@ -25,11 +25,11 @@ html(lang="en")
 
                     tbody#out
             .col-12.col-sm-7.py-4
-                table.table.table-sm.bg-white(style="position: sticky; top: 0;")
-                    thead 
+                table.table.table-sm.bg-white
+                    thead.sticky-top.bg-white
                         tr
-                            th P
-                            th Exertos importantes (
+                            th.p-2 P
+                            th.p-2 Exertos importantes (
                                 u.cursor-pointer.p-1.m-1(onclick="showTop(5)") 5
                                 u.cursor-pointer.p-1.m-1(onclick="showTop(10)") 10
                                 u.cursor-pointer.p-1.m-1(onclick="showTop(15)") 15
@@ -55,6 +55,14 @@ html(lang="en")
 
             .cursor-pointer{
                 cursor: pointer;
+            }
+
+            #sentences .no-text {
+                display: none;
+            }
+
+            #out .no-text td:nth-child(2) {
+                display: none;
             }
         script.
             // Setup post events
@@ -134,18 +142,18 @@ html(lang="en")
             function displayTopTr(N){
                 document.getElementById("out").className = "show-tops-" + N;
                 return (tr) => {
-                    tr.style.display = "none";
+                    tr.classList.add("no-text");
                     if( N >= 5 && tr.classList.contains("tops5") ){
-                        tr.style.display = "";
+                        tr.classList.remove("no-text");
                     }
                     else if( N >= 10 && tr.classList.contains("tops10") ){
-                        tr.style.display = "";
+                        tr.classList.remove("no-text");
                     }
                     else if( N >= 15 && tr.classList.contains("tops15") ){
-                        tr.style.display = "";
+                        tr.classList.remove("no-text");
                     }
                     else if( N >= 20 && tr.classList.contains("tops20") ){
-                        tr.style.display = "";
+                        tr.classList.remove("no-text");
                     }
                 }
             }
@@ -162,8 +170,8 @@ html(lang="en")
             let hidden = true;
             function tooglePars(){
                 if( hidden ){
-                    document.querySelectorAll("#out > tr[data-par]").forEach(tr => {
-                        tr.style.display = "";
+                    document.querySelectorAll("#out .no-text").forEach(tr => {
+                        tr.classList.remove("no-text");
                     });
                     document.getElementById("toogle").innerText = "Esconder parágrafos";
                     hidden = false;
