@@ -12,12 +12,26 @@ html(lang="en")
         #progress-parent.progress(hidden)
             #progress-bar.progress-bar.progress-bar-striped.progress-bar-animated
         .row.m-auto
-            .col-12.col-sm-5
-                #out.bg-white.m-4.p-4
-                    u.cursor-pointer#fake-input Inserir documento aqui
-            .col-12.col-sm-7
-                #sentences.d-flex.flex-column.bg-white.m-4.p-4(style="position: sticky; top: 0;")
-                    | As frases serão mostradas aqui
+            .col-12.col-sm-5.py-4
+                table.table.table-sm.bg-white.table-borderless
+                    thead
+                        tr
+                            th Paragrafo
+                            th#title
+                                u.cursor-pointer#fake-input Inserir documento aqui
+                    tbody#out
+            .col-12.col-sm-7.py-4
+                table.table.table-sm.bg-white(style="position: sticky; top: 0;")
+                    thead 
+                        tr
+                            th Parágrafo
+                            th Exertos importantes
+                            th Importancia
+                    tbody#sentences
+                        tr
+                            td 
+                            td As frases serão mostradas aqui
+                            td
         style.
             .best{
                 background: pink;
@@ -52,6 +66,9 @@ html(lang="en")
                 let progressBar = document.getElementById("progress-bar");
                 progressParent.removeAttribute("hidden");
                 progressBar.style.width = "10%";
+
+                let title = document.getElementById("title");
+                title.innerText = file.name;
                 let formData = new FormData();
                 formData.append("file", file);
                 fetch("https://pe.inesc-id.pt/sumarizador/", {
@@ -78,11 +95,67 @@ html(lang="en")
                 }
             }
 
+            function findClosest(words, elementArray){
+                let maxScore = 0;
+                let maxElement = null;
+                for(let element of elementArray){
+                    let count = 0;
+                    let lastPos = 0;
+                    for( let word of element.dataset.normWords.split(",")){
+                        if( words.includes(word, lastPos) ){
+                            count++;
+                            lastPos = words.indexOf(word, lastPos) + 1;
+                        }
+                    }
+                    let score = count / words.length;
+                    if(score > maxScore){
+                        maxScore = score;
+                        maxElement = element;
+                    }
+                }
+                return maxElement;
+            }
+
 
             function showResponse({sentences: sentences, html}){ // sentences: {text:"", start_char:0, end_char:0, score:0}
-                let out = document.getElementById("out");
-                out.innerHTML = html;
-                let bestN = sentences.sort((a, b) => b.score - a.score).slice(0, 10).sort((a, b) => a.initial_char - b.initial_char);
+                let outTable = document.getElementById("out");
+                outTable.innerHTML = "";
+                let template = document.createElement("template");
+                template.innerHTML = html;
+                let pars = Array.from(template.content.children);
+                for( let [i, par] of enumerate(pars) ){
+                    let parRow = outTable.insertRow();
+                    let parCell = parRow.insertCell();
+                    parCell.innerText = i+1;
+                    let textCell = parRow.insertCell();
+                    let clone = par.cloneNode(true);
+                    textCell.appendChild(clone);
+                    parRow.id = "par-"+(i+1);
+                    parRow.dataset.par = i+1;
+                    if(!clone.classList.contains("footnotes")){
+                        parRow.dataset.normWords = parRow.innerText.toLowerCase().split(/\s/).filter(o => o.length > 0).map(o => o.replace(/\W/g, "")).join(",");
+                    }
+                }
+                
+                let parentSentences = document.getElementById("sentences");
+                parentSentences.innerHTML = "";
+                for( let sent of sentences ){
+                    let words = sent.text.toLowerCase().split(/\s/).filter(o => o.length > 0).map(o => o.replace(/\W/g, ""));
+                    let elem = findClosest(words, document.querySelectorAll("[data-norm-words]"));
+                    let row = parentSentences.insertRow();
+                    let parCell = row.insertCell();
+                    let anchor = document.createElement("a");
+                    anchor.href = `#${elem.id}`;
+                    anchor.innerText = elem.dataset.par;
+                    parCell.appendChild(anchor);
+
+                    let textCell = row.insertCell();
+                    textCell.innerHTML = elem.cells[1].innerHTML;
+                    textCell.dataset.score = sent.score;
+                    textCell.dataset.text = sent.text;
+                }
+
+                /*let bestN = sentences.sort((a, b) => b.score - a.score).slice(0, 10).sort((a, b) => a.initial_char - b.initial_char);
 
                 let children = Array.from(out.children).flatMap(o => flatChildren(o));
                 document.getElementById("sentences").innerHTML = "";
@@ -105,14 +178,16 @@ html(lang="en")
                         bestChild.best.dataset.score = sent.score;
                         bestChild.best.id = `best-${i}`;
 
+                        let row = document.getElementById("sentences").insertRow();
                         let a = document.createElement("a");
+                        a.innerText = bestChild.best.dataset.par+1;
                         a.href = "#" + bestChild.best.id;
-                        a.appendChild(clone);
-                        a.classList.add("text-decoration-none");
-                        a.classList.add("text-body");
-                        document.getElementById("sentences").appendChild(a);
+                        row.insertCell().appendChild(a);
+                        row.insertCell().appendChild(clone);
+                        row.insertCell().innerText = sent.score;
+                        
                     }
-                }
+                }*/
             }
 
             function* enumerate(arr){
