@@ -14,8 +14,7 @@ html(lang="en")
             .col-12.col-sm-5.py-4
                 table.table.table-sm.bg-white.table-borderless
                     thead.sticky-top.bg-white
-                        tr
-                            th.p-2 P
+                        tr(data-par="P")
                             th.p-2
                                 span#title
                                 u.cursor-pointer#fake-input Inserir documento aqui
@@ -27,8 +26,7 @@ html(lang="en")
             .col-12.col-sm-7.py-4
                 table.table.table-sm.bg-white
                     thead.sticky-top.bg-white
-                        tr
-                            th.p-2 P
+                        tr(data-par="P")
                             th.p-2 Exertos importantes (
                                 u.cursor-pointer.p-1.m-1(onclick="showTop(5)") 5
                                 u.cursor-pointer.p-1.m-1(onclick="showTop(10)") 10
@@ -61,14 +59,28 @@ html(lang="en")
                 display: none;
             }
 
-            #out .no-text td:nth-child(2) {
-                display: none;
-            }
-
-            td:first-child, th:first-child {
+            tr[data-par]:before, a[data-par]:before{
+                content: attr(data-par);
                 text-align: center;
                 font: 12px monospace;
+                line-height: 12px;
+                margin: 0px 0px 0px 4px;
+            }
+            a[data-par]:before{
+                margin: 0;
+            }
+
+            tr[data-par].no-text:before {
+                font-size: 8px;
                 line-height: 8px;
+            }
+
+            tr[data-par].no-text{
+                line-height: 0px;
+            }
+
+            tr[data-par].no-text td{
+                display: none;
             }
         script.
             // Setup post events
@@ -140,8 +152,8 @@ html(lang="en")
                 let parent = parentSentences.insertRow();
                 let linkCell = parent.insertCell();
                 let textCell = parent.insertCell();
-                linkCell.innerHTML = `<a href="#${parReference.id}">${parReference.dataset.par}</a>`;
-                textCell.innerHTML = parReference.cells[1].innerHTML;
+                linkCell.innerHTML = `<a href="#${parReference.id}" data-par="${parReference.dataset.par}"></a>`;
+                textCell.innerHTML = parReference.cells[0].innerHTML;
                 parent.className = parReference.className;
             }
 
@@ -188,7 +200,7 @@ html(lang="en")
                     hidden = true;
                 }
             }
-
+            let multipleTags = ["OL", "UL", "BLOCKQUOTE"];
             function showResponse(html){
                 let outTable = document.getElementById("out");
                 outTable.innerHTML = "";
@@ -198,70 +210,58 @@ html(lang="en")
                 let parentSentences = document.getElementById("sentences");
                 parentSentences.innerHTML = "";
                 
-                for( let [i, par] of enumerate(pars) ){
-                    let parRow = outTable.insertRow();
-                    let parCell = parRow.insertCell();
-                    parCell.innerText = i+1;
-                    let textCell = parRow.insertCell();
-                    let clone = par.cloneNode(true);
-                    textCell.appendChild(clone);
-                    parRow.id = "par-"+(i+1);
-                    parRow.dataset.par = i+1;
-
-                    let scores = Array.from(clone.querySelectorAll("span[data-score]"));
-                    if(scores.length > 0){
-                        let best = scores.reduce((best, score) => {
-                            if( parseFloat(score.dataset.score) > parseFloat(best.dataset.score) ){
-                                best = score;
-                            }
-                            return best;
-                        });
-                        parRow.className = best.className;
-                        addSentence(parRow);
+                let parI = 1;
+                for( let par of pars ){
+                    if( multipleTags.includes(par.tagName) ){
+                        parI = makeParForMultiple(parI, par);
                     }
                     else{
-                        parRow.className = "others";
+                        makePar(parI++, par);
                     }
-                }
 
+                }
                 showTop(5);
                 if( hidden ){
                     tooglePars();
                 }
+            }
 
-                /*let bestN = sentences.sort((a, b) => b.score - a.score).slice(0, 10).sort((a, b) => a.initial_char - b.initial_char);
+            function makeParForMultiple(i, parent, elementPadding){
+                let start = 1;
+                while( parent.children.length > 0 ){
+                    let child = parent.children[0];
+                    let padding = parent.cloneNode(false);
+                    padding.setAttribute("start", start);
+                    padding.appendChild(child);
+                    makePar(i++, padding);
+                    start++;
+                }
+                return i;
+            }
+            
+            function makePar(i, par){
+                let outTable = document.getElementById("out");
+                let parRow = outTable.insertRow();
+                let textCell = parRow.insertCell();
+                let clone = par.cloneNode(true);
+                textCell.appendChild(clone);
+                parRow.id = "par-"+(i+1);
+                parRow.dataset.par = i+1;
 
-                let children = Array.from(out.children).flatMap(o => flatChildren(o));
-                document.getElementById("sentences").innerHTML = "";
-
-                for( let [i, sent] of enumerate(bestN) ){
-                    let bestChild = {best: null, score: Infinity};
-                    for( let child of children ){
-                        let dist = levenshteinDistance(child.innerText.replace(/\W/g,""), sent.text.replace(/\W/g,""));
-                        if( dist < bestChild.score ){
-                            bestChild.best = child;
-                            bestChild.score = dist;
+                let scores = Array.from(clone.querySelectorAll("span[data-score]"));
+                if(scores.length > 0){
+                    let best = scores.reduce((best, score) => {
+                        if( parseFloat(score.dataset.score) > parseFloat(best.dataset.score) ){
+                            best = score;
                         }
-                    }
-                    if( bestChild.best ){
-                        let clone = document.createElement("div");
-                        clone.className = "m-1";
-                        clone.innerHTML = bestChild.best.innerHTML;
-                        clone.dataset.sentence = sent.text;
-                        bestChild.best.classList.add("best");
-                        bestChild.best.dataset.score = sent.score;
-                        bestChild.best.id = `best-${i}`;
-
-                        let row = document.getElementById("sentences").insertRow();
-                        let a = document.createElement("a");
-                        a.innerText = bestChild.best.dataset.par+1;
-                        a.href = "#" + bestChild.best.id;
-                        row.insertCell().appendChild(a);
-                        row.insertCell().appendChild(clone);
-                        row.insertCell().innerText = sent.score;
-                        
-                    }
-                }*/
+                        return best;
+                    });
+                    parRow.className = best.className;
+                    addSentence(parRow);
+                }
+                else{
+                    parRow.className = "others";
+                }
             }
 
             function* enumerate(arr){
