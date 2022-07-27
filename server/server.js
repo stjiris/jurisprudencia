@@ -550,12 +550,12 @@ app.get("/:ecli(ECLI:*)", (req, res) => {
 });
 
 let spawn = require('child_process').spawn;
-function sendDocxOfHtml(res, html){
+function sendDocxOfHtml(res, html, name){
     let docx = spawn("pandoc", ["-f", "html", "-t", "docx", "-o", "-"]);
     docx.stdin.write(html);
     docx.stdin.end();
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-    res.setHeader('Content-Disposition', 'attachment; filename=document.docx');
+    res.setHeader('Content-Disposition', `attachment; filename=${name}.docx`);
     docx.stdout.pipe(res);
 }
 
@@ -566,7 +566,7 @@ app.get("/docx/:ecli(ECLI:*)", (req, res) => {
             res.render("document", {ecli});
         }
         else if( body.hits.total.value == 1 ) {
-            sendDocxOfHtml(res, body.hits.hits[0]._source["Decisão Texto Integral"]);
+            sendDocxOfHtml(res, body.hits.hits[0]._source["Decisão Texto Integral"], ecli);
         }
         else{
             let docnum = req.query.docnum;
@@ -578,7 +578,7 @@ app.get("/docx/:ecli(ECLI:*)", (req, res) => {
                 res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
             }
             else{
-                sendDocxOfHtml(res, body.hits.hits[docnum]._source["Decisão Texto Integral"]);
+                sendDocxOfHtml(res, body.hits.hits[docnum]._source["Decisão Texto Integral"], ecli);
             }
         }
     }).catch(err => {
