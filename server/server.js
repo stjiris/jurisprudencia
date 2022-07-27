@@ -557,12 +557,12 @@ app.get("/docx/:ecli(ECLI:*)", (req, res) => {
         }
         else if( body.hits.total.value == 1 ) {
             console.log(body.hits.hits[0]._source["Decisão Texto Integral"]);
-            let process = require("child_process").exec("pandoc -f html -t docx -o -");
-            process.stdin.write(body.hits.hits[0]._source["Decisão Texto Integral"]);
-            process.stdin.end();
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
             res.setHeader('Content-Disposition', `attachment; filename=${ecli}.docx`);
-            process.stdout.pipe(res);
+            let childp = require("child_process").exec("pandoc -f html -t docx -o -");
+            childp.stdout.pipe(res);
+            childp.stdin.write(body.hits.hits[0]._source["Decisão Texto Integral"]);
+            childp.stdin.end();
         }
         else{
             let docnum = req.query.docnum;
@@ -574,12 +574,12 @@ app.get("/docx/:ecli(ECLI:*)", (req, res) => {
                 res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
             }
             else{
-                let process = require("child_process").exec("pandoc -f html -t docx -o -");
-                process.stdin.write(body.hits.hits[docnum]._source["Decisão Texto Integral"]);
-                process.stdin.end();
                 res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
                 res.setHeader('Content-Disposition', `attachment; filename=${ecli}.docx`);
-                process.stdout.pipe(res);
+                let childp = require("child_process").exec("pandoc -f html -t docx -o -");
+                childp.stdout.pipe(res);
+                childp.stdin.write(body.hits.hits[0]._source["Decisão Texto Integral"]);
+                childp.stdin.end();
             }
         }
     }).catch(err => {
