@@ -549,8 +549,16 @@ app.get("/:ecli(ECLI:*)", (req, res) => {
     });
 });
 
-let exec = require('child_process').exec;
-let tmpdir = require("os").tmpdir();
+let spawn = require('child_process').spawn;
+function sendDocxOfHtml(res, html){
+    let docx = spawn("pandoc", ["-f", "html", "-t", "docx", "-o", "-"]);
+    docx.stdin.write(html);
+    docx.stdin.end();
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', 'attachment; filename=document.docx');
+    docx.stdout.pipe(res);
+}
+
 app.get("/docx/:ecli(ECLI:*)", (req, res) => {
     let ecli = req.params.ecli;
     search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Decisão Texto Integral'], fields: []}).then((body) => {
@@ -558,17 +566,7 @@ app.get("/docx/:ecli(ECLI:*)", (req, res) => {
             res.render("document", {ecli});
         }
         else if( body.hits.total.value == 1 ) {
-            let p = exec(`pandoc -f html -t docx -o ${path.join(tmpdir, ecli)}.docx`, (err, stdout, stderr) => {
-                if (err) {
-                    console.log(err);
-                    res.render("document", {ecli, error: err});
-                }
-                else {
-                    res.download(`${ecli}.docx`, `${ecli}.docx`, { root: tmpdir });
-                }
-            });
-            p.stdin.write(body.hits.hits[0]._source["Decisão Texto Integral"]);
-            p.stdin.end();
+            sendDocxOfHtml(res, body.hits.hits[0]._source["Decisão Texto Integral"]);
         }
         else{
             let docnum = req.query.docnum;
@@ -580,17 +578,7 @@ app.get("/docx/:ecli(ECLI:*)", (req, res) => {
                 res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
             }
             else{
-                let p = exec(`pandoc -f html -t docx -o ${path.join(tmpdir, ecli)}.docx`, (err, stdout, stderr) => {
-                    if (err) {
-                        console.log(err);
-                        res.render("document", {ecli, error: err});
-                    }
-                    else {
-                        res.download(`${ecli}.docx`, `${ecli}.docx`, { root: tmpdir });
-                    }
-                });
-                p.stdin.write(body.hits.hits[docnum]._source["Decisão Texto Integral"]);
-                p.stdin.end();
+                sendDocxOfHtml(res, body.hits.hits[docnum]._source["Decisão Texto Integral"]);
             }
         }
     }).catch(err => {
