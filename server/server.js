@@ -549,6 +549,45 @@ app.get("/:ecli(ECLI:*)", (req, res) => {
     });
 });
 
+app.get("/docx/:ecli(ECLI:*)", (req, res) => {
+    let ecli = req.params.ecli;
+    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Decisão Texto Integral'], fields: []}).then((body) => {
+        if( body.hits.total.value == 0 ){
+            res.render("document", {ecli});
+        }
+        else if( body.hits.total.value == 1 ) {
+            console.log(body.hits.hits[0]._source["Decisão Texto Integral"]);
+            let process = require("child_process").exec("pandoc -f html -t docx -o -");
+            process.stdin.write(body.hits.hits[0]._source["Decisão Texto Integral"]);
+            process.stdin.end();
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+            res.setHeader('Content-Disposition', `attachment; filename=${ecli}.docx`);
+            process.stdout.pipe(res);
+        }
+        else{
+            let docnum = req.query.docnum;
+            if( !docnum ){
+                let html = ''
+                for( let i = 0; i < body.hits.hits.length; i++ ){
+                    html += `<li><a href=?docnum=${i}>Abrir documento ${i}</a></li>`
+                }
+                res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
+            }
+            else{
+                let process = require("child_process").exec("pandoc -f html -t docx -o -");
+                process.stdin.write(body.hits.hits[docnum]._source["Decisão Texto Integral"]);
+                process.stdin.end();
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+                res.setHeader('Content-Disposition', `attachment; filename=${ecli}.docx`);
+                process.stdout.pipe(res);
+            }
+        }
+    }).catch(err => {
+        console.log(req.originalUrl, err);
+        res.render("document", {ecli, error: err});
+    });
+});
+
 app.get("/datalist", (req, res) => {
     let aggKey = req.query.agg;
     let agg = aggs[aggKey];

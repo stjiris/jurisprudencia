@@ -57,6 +57,8 @@ block main
     else
         div(data-tribunal=source.Tribunal)
             h4.col-12.pb-2.trib-spacer Processo !{source.Processo}
+                small
+                    a(href=`../docx/${source.ECLI}`) Download docx
         table.table.table-sm
             tbody 
                 for key of Object.keys(source)
