@@ -5,49 +5,60 @@ html(lang="en")
         meta(http-equiv="X-UA-Compatible", content="IE=edge")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title Sumarizador
-        link(rel="stylesheet",href="./style.css")
-    body.bg-dark(style="width: 100%; height: 100vh;")
-        input#file.form-control.form-control-sm(type="file", name="file", hidden)
-        #progress-parent.progress(hidden)
-            #progress-bar.progress-bar.progress-bar-striped.progress-bar-animated
-        .row.m-auto
-            .col-12.col-sm-5.py-4
-                table.table.table-sm.bg-white.table-borderless
-                    thead.sticky-top.bg-white
-                        tr(data-par="P")
-                            th.p-2
-                                span#title
-                                u.cursor-pointer#fake-input Inserir documento aqui
-                                |  (
-                                u.cursor-pointer.p-1.m-1#toogle(onclick="tooglePars()",hidden)
-                                | )
-
-                    tbody#out
-            .col-12.col-sm-7.py-4
-                table.table.table-sm.bg-white
-                    thead.sticky-top.bg-white
-                        tr(data-par="P")
-                            th.p-2 Exertos importantes (
-                                u.cursor-pointer.p-1.m-1(onclick="showTop(5)") 5
-                                u.cursor-pointer.p-1.m-1(onclick="showTop(10)") 10
-                                u.cursor-pointer.p-1.m-1(onclick="showTop(15)") 15
-                                u.cursor-pointer.p-1.m-1(onclick="showTop(20)") 20
-                                |)
-                    tbody#sentences.show-tops-20
-                        tr
-                            td 
-                            td As frases serão mostradas aqui
         style.
-            .show-tops-5 tr.tops5 td:first-child, .show-tops-10 tr.tops5 td:first-child, .show-tops-15 tr.tops5 td:first-child, .show-tops-20 tr.tops5 td:first-child{
+            @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css');            
+            @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css');
+
+            body{
+                display: grid;
+                grid-template:
+                    "controls controls" min-content
+                    "content extract" 
+                        / 1fr 99fr;
+                width: 100%;
+                height: 100vh;
+                background-color: #252525;
+                margin: 0;
+                padding: 0;
+            }
+            body > div {
+                margin: 5px;
+                background-color: #ffffff;
+            }
+    body
+        div(style="grid-area: controls; margin: 5px;")
+            input#file.form-control.form-control-sm(type="file", name="file", hidden)
+            #progress-parent.progress(hidden)
+                #progress-bar.progress-bar.progress-bar-striped.progress-bar-animated
+            .p-2
+                span.fw-bold#title 
+                u.cursor-pointer.fw-bold#fake-input Inserir documento aqui
+                |  |
+                u.cursor-pointer.fw-bold.p-1.m-1#toogle(onclick="tooglePars()",hidden)
+                u.cursor-pointer.fw-bold.p-1.m-1(onclick="showTop(5)") 5
+                u.cursor-pointer.fw-bold.p-1.m-1(onclick="showTop(10)") 10
+                u.cursor-pointer.fw-bold.p-1.m-1(onclick="showTop(15)") 15
+                u.cursor-pointer.fw-bold.p-1.m-1(onclick="showTop(20)") 20
+        div(style="grid-area: content; overflow: auto; resize: horizontal; width: 50vw;")    
+            table.table.table-sm.table-borderless
+                tbody#out
+                    tr(data-par="1"): td O documento será mostrado aqui
+        div(style="grid-area: extract; overflow: auto;")
+            table.table.table-sm.table-borderless(style="grid-area: extract;")
+                tbody#sentences.show-tops-20
+                    tr(data-par="1"): td As frases extraidas serão mostradas aqui
+        
+        style.
+            .show-tops-5 tr.tops5:before, .show-tops-10 tr.tops5:before, .show-tops-15 tr.tops5:before, .show-tops-20 tr.tops5:before{
                 background: #e6c300 !important;
             }
-            .show-tops-10 tr.tops10 td:first-child, .show-tops-15 tr.tops10 td:first-child, .show-tops-20 tr.tops10 td:first-child{
+            .show-tops-10 tr.tops10:before, .show-tops-15 tr.tops10:before, .show-tops-20 tr.tops10:before{
                 background: #ffdd1a !important;
             }
-            .show-tops-15 tr.tops15 td:first-child, .show-tops-20 tr.tops15 td:first-child{
+            .show-tops-15 tr.tops15:before, .show-tops-20 tr.tops15:before{
                 background: #ffe866 !important;
             }
-            .show-tops-20 tr.tops20 td:first-child{
+            .show-tops-20 tr.tops20:before{
                 background: #fff7cc !important;
             }
 
@@ -63,8 +74,8 @@ html(lang="en")
                 content: attr(data-par);
                 text-align: center;
                 font: 12px monospace;
-                line-height: 12px;
                 margin: 0px 0px 0px 4px;
+                display: table-cell;
             }
             a[data-par]:before{
                 margin: 0;
@@ -151,10 +162,23 @@ html(lang="en")
                 let parentSentences = document.getElementById("sentences");
                 let parent = parentSentences.insertRow();
                 let linkCell = parent.insertCell();
+                parent.dataset.par = parReference.dataset.par;
                 let textCell = parent.insertCell();
-                linkCell.innerHTML = `<a href="#${parReference.id}" data-par="${parReference.dataset.par}"></a>`;
+                linkCell.innerHTML = `
+                    <a href="#${parReference.id}"><i class="bi bi-arrow-up-left-circle"></i></a>
+                    <a href="#" onclick="copyToClipboard('${parReference.id}', this)" style="transition: 0.25s"><i class="bi bi-clipboard"></i></a>    
+                `;
                 textCell.innerHTML = parReference.cells[0].innerHTML;
                 parent.className = parReference.className;
+            }
+
+            function copyToClipboard(id, elem){
+                let text = document.getElementById(id);
+                navigator.clipboard.writeText(text.innerText);
+                elem.style.color = "lightgreen";
+                setTimeout(() => {
+                    elem.style.color = "";
+                }, 1500);
             }
 
             function displayTopTr(N){
@@ -245,8 +269,8 @@ html(lang="en")
                 let textCell = parRow.insertCell();
                 let clone = par.cloneNode(true);
                 textCell.appendChild(clone);
-                parRow.id = "par-"+(i+1);
-                parRow.dataset.par = i+1;
+                parRow.id = "par-"+(i);
+                parRow.dataset.par = i;
 
                 let scores = Array.from(clone.querySelectorAll("span[data-score]"));
                 if(scores.length > 0){
