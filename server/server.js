@@ -549,6 +549,8 @@ app.get("/:ecli(ECLI:*)", (req, res) => {
     });
 });
 
+let exec = require('child_process').exec;
+let tmpdir = require("os").tmpdir();
 app.get("/docx/:ecli(ECLI:*)", (req, res) => {
     let ecli = req.params.ecli;
     search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Decisão Texto Integral'], fields: []}).then((body) => {
@@ -556,13 +558,17 @@ app.get("/docx/:ecli(ECLI:*)", (req, res) => {
             res.render("document", {ecli});
         }
         else if( body.hits.total.value == 1 ) {
-            console.log(body.hits.hits[0]._source["Decisão Texto Integral"]);
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-            res.setHeader('Content-Disposition', `attachment; filename=${ecli}.docx`);
-            let childp = require("child_process").exec("pandoc -f html -t docx -o -");
-            childp.stdout.pipe(res);
-            childp.stdin.write(body.hits.hits[0]._source["Decisão Texto Integral"]);
-            childp.stdin.end();
+            let p = exec(`pandoc -f html -t docx -o ${path.join(tmpdir, ecli)}.docx`, (err, stdout, stderr) => {
+                if (err) {
+                    console.log(err);
+                    res.render("document", {ecli, error: err});
+                }
+                else {
+                    res.download(`${ecli}.docx`, `${ecli}.docx`, { root: tmpdir });
+                }
+            });
+            p.stdin.write(body.hits.hits[0]._source["Decisão Texto Integral"]);
+            p.stdin.end();
         }
         else{
             let docnum = req.query.docnum;
@@ -574,12 +580,17 @@ app.get("/docx/:ecli(ECLI:*)", (req, res) => {
                 res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
             }
             else{
-                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-                res.setHeader('Content-Disposition', `attachment; filename=${ecli}.docx`);
-                let childp = require("child_process").exec("pandoc -f html -t docx -o -");
-                childp.stdout.pipe(res);
-                childp.stdin.write(body.hits.hits[0]._source["Decisão Texto Integral"]);
-                childp.stdin.end();
+                let p = exec(`pandoc -f html -t docx -o ${path.join(tmpdir, ecli)}.docx`, (err, stdout, stderr) => {
+                    if (err) {
+                        console.log(err);
+                        res.render("document", {ecli, error: err});
+                    }
+                    else {
+                        res.download(`${ecli}.docx`, `${ecli}.docx`, { root: tmpdir });
+                    }
+                });
+                p.stdin.write(body.hits.hits[docnum]._source["Decisão Texto Integral"]);
+                p.stdin.end();
             }
         }
     }).catch(err => {
