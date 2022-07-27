@@ -39,7 +39,7 @@ html(lang="en")
                 u.cursor-pointer.fw-bold.p-1.m-1(onclick="showTop(10)") 10
                 u.cursor-pointer.fw-bold.p-1.m-1(onclick="showTop(15)") 15
                 u.cursor-pointer.fw-bold.p-1.m-1(onclick="showTop(20)") 20
-        div(style="grid-area: content; overflow: auto; resize: horizontal; width: 50vw;")    
+        div(style="grid-area: content; overflow: auto; resize: horizontal; width: 50vw; scroll-behavior: smooth;")    
             table.table.table-sm.table-borderless
                 tbody#out
                     tr(data-par="1"): td O documento será mostrado aqui
