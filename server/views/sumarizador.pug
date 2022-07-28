@@ -230,7 +230,7 @@ html(lang="en")
                 outTable.innerHTML = "";
                 let template = document.createElement("template");
                 template.innerHTML = html;
-                let pars = Array.from(template.content.children);
+                let pars = Array.from(template.content.childNodes);
                 let parentSentences = document.getElementById("sentences");
                 parentSentences.innerHTML = "";
                 
@@ -271,20 +271,21 @@ html(lang="en")
                 textCell.appendChild(clone);
                 parRow.id = "par-"+(i);
                 parRow.dataset.par = i;
-
-                let scores = Array.from(clone.querySelectorAll("span[data-score]"));
-                if(scores.length > 0){
-                    let best = scores.reduce((best, score) => {
-                        if( parseFloat(score.dataset.score) > parseFloat(best.dataset.score) ){
-                            best = score;
-                        }
-                        return best;
-                    });
-                    parRow.className = best.className;
-                    addSentence(parRow);
-                }
-                else{
-                    parRow.className = "others";
+                if(clone.querySelectorAll){ // If it is a text node it will not have querySelectorAll
+                    let scores = Array.from(clone.querySelectorAll("span[data-score]"));
+                    if(scores.length > 0){
+                        let best = scores.reduce((best, score) => {
+                            if( parseFloat(score.dataset.score) > parseFloat(best.dataset.score) ){
+                                best = score;
+                            }
+                            return best;
+                        });
+                        parRow.className = best.className;
+                        addSentence(parRow);
+                    }
+                    else{
+                        parRow.className = "others";
+                    }
                 }
             }
 
