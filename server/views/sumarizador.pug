@@ -230,7 +230,7 @@ html(lang="en")
                 outTable.innerHTML = "";
                 let template = document.createElement("template");
                 template.innerHTML = html;
-                let pars = Array.from(template.content.childNodes);
+                let pars = Array.from(template.content.children);
                 let parentSentences = document.getElementById("sentences");
                 parentSentences.innerHTML = "";
                 
