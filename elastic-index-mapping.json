@@ -1,5 +1,5 @@
 {
-    "index": "jurisprudencia.2.0",
+    "index": "jurisprudencia.4.0",
     "mappings": {
         "dynamic_date_formats": ["dd/MM/yyyy"],
         "dynamic_templates": [
@@ -18,7 +18,8 @@
                     "match_mapping_type": "string",
                     "mapping": {
                       "type": "text",
-                      "term_vector": "with_positions_offsets_payloads"
+                      "term_vector": "with_positions_offsets_payloads",
+                      "copy_to": "SearchableContent"
                     }
                 }
             }
@@ -27,7 +28,8 @@
         "properties": {
             "ECLI": {
                 "type": "keyword",
-                "normalizer": "term_normalizer"
+                "normalizer": "term_normalizer",
+                "copy_to": "SearchableContent"
             },
             "Tribunal": {
                 "type": "keyword"
@@ -37,11 +39,13 @@
             },
             "Processo": {
                 "type": "keyword",
-                "normalizer": "term_normalizer"
+                "normalizer": "term_normalizer",
+                "copy_to": "SearchableContent"
             },
             "Relator": {
                 "type": "keyword",
-                "normalizer": "term_normalizer"
+                "normalizer": "term_normalizer",
+                "copy_to": "SearchableContent"
             },
             "Descritores": {
                 "type": "text",
@@ -51,23 +55,28 @@
                         "type": "keyword",
                         "normalizer": "term_normalizer"
                     }
-                }
+                },
+                "copy_to": "SearchableContent"
             },
             "Votação": {
                 "type": "keyword",
-                "normalizer": "term_normalizer"
+                "normalizer": "term_normalizer",
+                "copy_to": "SearchableContent"
             },
             "Meio Processual": {
                 "type": "keyword",
-                "normalizer": "term_normalizer"
+                "normalizer": "term_normalizer",
+                "copy_to": "SearchableContent"
             },
             "Secção": {
                 "type": "keyword",
-                "normalizer": "term_normalizer"
+                "normalizer": "term_normalizer",
+                "copy_to": "SearchableContent"
             },
             "Espécie": {
                 "type": "keyword",
-                "normalizer": "term_normalizer"
+                "normalizer": "term_normalizer",
+                "copy_to": "SearchableContent"
             },
             "Tipo": {
                 "type": "keyword",
