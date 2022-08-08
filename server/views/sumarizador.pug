@@ -93,6 +93,7 @@ html(lang="en")
             tr[data-par].no-text td{
                 display: none;
             }
+        script(src="./paragraphed-document.js")
         script.
             // Setup post events
             addEventListener("load", function(){
@@ -228,8 +229,8 @@ html(lang="en")
             function showResponse(html){
                 let outTable = document.getElementById("out");
                 outTable.innerHTML = "";
-                let template = document.createElement("template");
-                template.innerHTML = html;
+                globalThis.paragraphedDocument = new ParagraphedDocument(html);
+                let template = globalThis.paragraphedDocument.template;
                 let pars = Array.from(template.content.children);
                 let parentSentences = document.getElementById("sentences");
                 parentSentences.innerHTML = "";
@@ -287,32 +288,7 @@ html(lang="en")
                         parRow.className = "others";
                     }
                 }
-            }
-
-            function* enumerate(arr){
-                let i = 0; 
-                while( i < arr.length ){
-                    yield [i, arr[i++]];
+                else{
+                    console.error("TextNode found on root.")
                 }
-            }
-
-            function levenshteinDistance(s0, s1){
-                let d = [];
-                for(let i = 0; i <= s0.length; i++){
-                    d[i] = [];
-                    d[i][0] = i;
-                }
-                for(let j = 0; j <= s1.length; j++){
-                    d[0][j] = j;
-                }
-                for(let i = 1; i <= s0.length; i++){
-                    for(let j = 1; j <= s1.length; j++){
-                        d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (s0[i-1] === s1[j-1] ? 0 : 1));
-                    }
-                }
-                return d[s0.length][s1.length];
-            }
-
-            function logistic(x){
-                return 0.75 / (1+Math.exp(-200*(x-0.99))) + 0.25;
             }
