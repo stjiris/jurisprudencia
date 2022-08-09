@@ -83,11 +83,11 @@ let queryObject = (string) => {
     return {
         bool: {   
             should: [
-                { term: { "Processo": {value: string , boost: 20, _name: "Processo" } } },
-                { wildcard: { "Processo": {value: string + "*", boost: 15, _name: "Processo" } } },
-                { wildcard: { "Processo": {value: "*" + string, boost: 15, _name: "Processo" } } },
-                { wildcard: { "Processo": {value: "*" + string + "*" , boost: 10, _name: "Processo" } } },
-                { simple_query_string: { query: string, fields: ["SearchableContent"], boost: 1, _name: "Content" } }
+                { term: { "Processo": {value: string , boost: 50, _name: "Processo" } } },
+                { wildcard: { "Processo": {value: string + "*", boost: 30, _name: "Processo" } } },
+                { wildcard: { "Processo": {value: "*" + string, boost: 30, _name: "Processo" } } },
+                { wildcard: { "Processo": {value: "*" + string + "*" , boost: 20, _name: "Processo" } } },
+                { simple_query_string: { query: string, fields: ["SearchableContent"], _name: "Content" } }
             ]
         }
     };
@@ -305,54 +305,56 @@ app.get("/acord-only", (req, res) => {
     const sort = [];
     parseSort(req.query.sort, sort);
     let page = parseInt(req.query.page) || 0;
-    let highlight = {
-        fields: {
-            "Descritores": {
-                type: "unified",
-                highlight_query: {
-                    bool: {
-                        must: [
-                            { simple_query_string: { query: req.query.q } }
-                        ]
-                    }
+    let highlight = {}
+    if( req.query.q ){
+        highlight = {
+            fields: {
+                "Descritores": {
+                    type: "unified",
+                    highlight_query: {
+                        bool: {
+                            must: [
+                                { simple_query_string: { query: req.query.q } }
+                            ]
+                        }
+                    },
+                    pre_tags: [""],
+                    post_tags: [""],
+                    number_of_fragments: 0           
                 },
-                pre_tags: [""],
-                post_tags: [""],
-                number_of_fragments: 0           
+                "Sumário": {
+                    type: "unified",
+                    highlight_query: {
+                        bool: {
+                            must: [
+                                { simple_query_string: { query: req.query.q } }
+                            ]
+                        }
+                    },
+                    number_of_fragments: 0,
+                    pre_tags: ["<mark>"],
+                    post_tags: ["</mark>"]
+                },
+                "*Texto*": { 
+                    type: "unified",
+                    highlight_query: {
+                        bool: {
+                            must: [
+                                { simple_query_string: { query: req.query.q } }
+                            ]
+                        }
+                    },
+                    number_of_fragments: 1000,
+                    pre_tags: ["MARK_START"],
+                    post_tags: ["MARK_END"]
+                }
             },
-            "Sumário": {
-                type: "unified",
-                highlight_query: {
-                    bool: {
-                        must: [
-                            { simple_query_string: { query: req.query.q } }
-                        ]
-                    }
-                },
-                number_of_fragments: 0,
-                pre_tags: ["<mark>"],
-                post_tags: ["</mark>"]
-            },
-            "*Texto*": { 
-                type: "unified",
-                highlight_query: {
-                    bool: {
-                        must: [
-                            { simple_query_string: { query: req.query.q } }
-                        ]
-                    }
-                },
-                number_of_fragments: 1000,
-                pre_tags: ["MARK_START"],
-                post_tags: ["MARK_END"]
-            }
-        },
-        max_analyzed_offset: 1000000
-    };
+            max_analyzed_offset: 1000000
+        };
+    }
     search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true, _source:  [...Object.keys(properties), "Sumário", "*Texto*"] }).then(results => {
-        writeFileSync("out.json", JSON.stringify(results, null, 2));
         results.hits.hits.forEach( hit => {
-            if( hit.matched_queries.indexOf("Processo") > -1 ) {
+            if( hit.matched_queries && hit.matched_queries.indexOf("Processo") > -1 ) {
                 delete hit.highlight;
             };
             if( !hit.highlight ) return;
