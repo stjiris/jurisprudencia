@@ -8,6 +8,7 @@ app.set('view engine', 'pug');
 app.set('views', './views');
 
 const {mappings: {properties}} = require('../elastic-index-mapping.json');
+const { writeFileSync } = require('fs');
 const INDEXNAME = "jurisprudencia.4.0"
 
 const aggs = {}
@@ -82,11 +83,11 @@ let queryObject = (string) => {
     return {
         bool: {   
             should: [
-                { term: { "Processo": {value: string , boost: 5} } },
-                { wildcard: { "Processo": {value: string + "*", boost: 4 } } },
-                { wildcard: { "Processo": {value: "*" + string, boost: 4 } } },
-                { wildcard: { "Processo": {value: "*" + string + "*" , boost: 3 } } },
-                { simple_query_string: { query: string, fields: ["SearchableContent"], boost: 2 } }
+                { term: { "Processo": {value: string , boost: 20, _name: "Processo" } } },
+                { wildcard: { "Processo": {value: string + "*", boost: 15, _name: "Processo" } } },
+                { wildcard: { "Processo": {value: "*" + string, boost: 15, _name: "Processo" } } },
+                { wildcard: { "Processo": {value: "*" + string + "*" , boost: 10, _name: "Processo" } } },
+                { simple_query_string: { query: string, fields: ["SearchableContent"], boost: 1, _name: "Content" } }
             ]
         }
     };
@@ -349,7 +350,11 @@ app.get("/acord-only", (req, res) => {
         max_analyzed_offset: 1000000
     };
     search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true, _source:  [...Object.keys(properties), "Sumário", "*Texto*"] }).then(results => {
+        writeFileSync("out.json", JSON.stringify(results, null, 2));
         results.hits.hits.forEach( hit => {
+            if( hit.matched_queries.indexOf("Processo") > -1 ) {
+                delete hit.highlight;
+            };
             if( !hit.highlight ) return;
             let highlightedKeys = Object.keys(hit.highlight).filter(k => k.match(/Texto/));
             for( let k of highlightedKeys ){
