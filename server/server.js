@@ -8,7 +8,7 @@ app.set('view engine', 'pug');
 app.set('views', './views');
 
 const {mappings: {properties}} = require('../elastic-index-mapping.json');
-const INDEXNAME = process.env.INDEX || "jurisprudencia.2.0"
+const INDEXNAME = "jurisprudencia.4.0"
 
 const aggs = {}
 let DATA_FIELD = "";
@@ -80,9 +80,14 @@ let queryObject = (string) => {
         match_all: {}
     };
     return {
-        simple_query_string: {
-            query: string,
-            default_operator: "AND"
+        bool: {   
+            should: [
+                { term: { "Processo": {value: string , boost: 5} } },
+                { wildcard: { "Processo": {value: string + "*", boost: 4 } } },
+                { wildcard: { "Processo": {value: "*" + string, boost: 4 } } },
+                { wildcard: { "Processo": {value: "*" + string + "*" , boost: 3 } } },
+                { simple_query_string: { query: string, fields: ["SearchableContent"], boost: 2 } }
+            ]
         }
     };
 }
@@ -104,12 +109,7 @@ let search = (
     query: {
         bool: {
             must: query,
-            filter: filters.pre, // Hide documents from aggregations
-            must_not: [{
-                term: {
-                    "Origem": "csm-indexer"
-                }
-            }]
+            filter: filters.pre // Hide documents from aggregations
         }
     },
     post_filter: { // Filter after aggregations
@@ -311,7 +311,7 @@ app.get("/acord-only", (req, res) => {
                 highlight_query: {
                     bool: {
                         must: [
-                            queryObject(req.query.q)
+                            { simple_query_string: { query: req.query.q } }
                         ]
                     }
                 },
@@ -324,7 +324,7 @@ app.get("/acord-only", (req, res) => {
                 highlight_query: {
                     bool: {
                         must: [
-                            queryObject(req.query.q)
+                            { simple_query_string: { query: req.query.q } }
                         ]
                     }
                 },
@@ -337,7 +337,7 @@ app.get("/acord-only", (req, res) => {
                 highlight_query: {
                     bool: {
                         must: [
-                            queryObject(req.query.q)
+                            { simple_query_string: { query: req.query.q } }
                         ]
                     }
                 },
