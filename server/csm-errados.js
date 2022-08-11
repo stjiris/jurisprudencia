@@ -60,7 +60,7 @@ app.get("/", async (req, res) => {
         }
     }
 
-    res.write(`event: EndEvent\ndata:\n\n`);
+    res.write(`event: EndEvent\ndata: \n\n`);
 })
 
 
