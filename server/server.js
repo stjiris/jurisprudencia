@@ -14,6 +14,7 @@ const aggs = {}
 let DATA_FIELD = "";
 const DEFAULT_AGGS = {};
 const runtimeMapping = {};
+
 client.indices.getMapping({index: INDEXNAME}).then( obj => {
     let props = obj[INDEXNAME].mappings.properties;
     Object.entries(props).filter(([name, obj])=>obj.type == 'keyword').map(([name, _])=> name).forEach(name => {
@@ -524,28 +525,10 @@ app.get("/indices", (req, res) => {
 app.get("/:ecli(ECLI:*)", (req, res) => {
     let ecli = req.params.ecli;
     search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: [DATA_FIELD]}).then((body) => {
-        if( body.hits.total.value == 0 ){
-            res.render("document", {ecli});
-        }
-        else if( body.hits.total.value == 1 ) {
-            res.render("document", {ecli, source: body.hits.hits[0]._source, fields: body.hits.hits[0].fields, aggs});
-        }
-        else{
-            let docnum = req.query.docnum;
-            if( !docnum ){
-                let html = ''
-                for( let i = 0; i < body.hits.hits.length; i++ ){
-                    html += `<li><a href=?docnum=${i}>Abrir documento ${i}</a></li>`
-                }
-                res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
-            }
-            else{
-                res.render("document", {ecli, source: body.hits.hits[docnum]._source, fields: body.hits.hits[docnum].fields, aggs});
-            }
-        }
+        res.render("documents", {ecli, Processo: body.hits.hits[0]._source["Processo"], documents: body.hits.hits});
     }).catch(err => {
         console.log(req.originalUrl, err);
-        res.render("document", {ecli, error: err});
+        res.render("documents", {ecli, error: err});
     });
 });
 

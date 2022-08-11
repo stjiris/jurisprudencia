@@ -1,0 +1,33 @@
+extends head.pug 
+block head 
+    title Processo #{Processo}
+    link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous")
+
+block printpageinfo
+    h6 Processo #{Processo}
+
+block headerinput
+    h4(style="color: var(--color-white);").fancy-font Processo #{Processo}
+
+block allmain
+    table.table
+        thead
+            tr
+                th Documento
+                for doc in documents
+                    th #{doc.fields[DATA_FIELD]}
+        -let merge = {};
+        for doc in documents
+            for key in Object.keys(doc._source)
+                if !(key in merge)
+                    -merge[key] = [doc._source[key]]
+                else if(merge[key][0] != doc._source[key])
+                    -merge[key].push(doc._source[key])
+                else
+                    -merge[key].push("")
+        tbody
+            for key in Object.keys(merge)
+                tr
+                    td #{key}
+                    for value in merge[key]
+                        td !{value}
