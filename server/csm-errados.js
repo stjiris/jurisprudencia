@@ -34,7 +34,13 @@ app.get("/", async (req, res) => {
         query: UNMATCH_QUERY,
         fields: ["Data"]
     })) {
-        let original = ECLI.fromString(_source._UNMATCHING_ECLI)
+        let original = new ECLI();
+        try{
+            original = ECLI.fromString(_source._UNMATCHING_ECLI.toUpperCase())
+        }
+        catch(e){
+            console.log(e)
+        }
         let generated = ECLI.fromString(_source.ECLI)
         let distance = {}
         let t=0;
