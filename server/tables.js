@@ -1,6 +1,7 @@
 const {Router, query} = require("express");
 const indexer = require("../indexer");
-const INDEXNAME = process.env.INDEX || "jurisprudencia.2.0"
+const INDEXNAME = process.env.INDEX || "jurisprudencia.2.0";
+const DATAFIELD = INDEXNAME == "jurisprudencia.2.0" ? "Datas" : "Data";
 
 const app = Router();
 module.exports = app;
@@ -27,7 +28,7 @@ function defineTable(name, cb){
 defineTable("ano-origem", ()=>agg({
     Ano: {
         date_histogram: {
-            field: "Datas",
+            field: DATAFIELD,
             interval: "year",
             min_doc_count: 0,
             format: "yyyy"
@@ -52,7 +53,7 @@ defineTable("ano-origem", ()=>agg({
 defineTable("ano-tribunal", ()=>agg({
     Ano: {
         date_histogram: {
-            field: "Datas",
+            field: DATAFIELD,
             interval: "year",
             min_doc_count: 0,
             format: "yyyy"
