@@ -1,13 +1,12 @@
 const {Router, query} = require("express");
 const indexer = require("../indexer");
-
-const INDEX = process.env.INDEX || "jurisprudencia.2.0"
+const INDEXNAME = process.env.INDEX || "jurisprudencia.2.0"
 
 const app = Router();
 module.exports = app;
 
 const agg = (obj) => indexer._client.search({
-    index: INDEX,
+    index: INDEXNAME,
     size: 0,
     aggs: obj
 }).then((res) => res.aggregations);
@@ -71,14 +70,12 @@ defineTable("ano-tribunal", ()=>agg({
 }).then(aggs => {
     let tribunais = aggs.Ano.buckets[0].Tribunal.buckets.map(bucket => bucket.key).sort((b1,b2) => b1.localeCompare(b2));
     let header = ["Ano\\Tribunal", "Total", ...tribunais];
-    let values =
-const INDEXNA = process.env.INDEX || "jurisprudencia.2.0"
-    
-return {header, values};
+    let values = aggs.Ano.buckets.map(b => [b.key_as_string, b.doc_count, ...(b.Tribunal.buckets.length > 0 ? b.Tribunal.buckets.sort((b1,b2) => b1.key.localeCompare(b2.key)) : tribunais.map(() => ({doc_count:0}))).map(b => b.doc_count)]);
+    return {header, values};
 }));
 
 defineTable("ecli-errado", () => indexer._client.search({
-    index: INDEX,
+    index: INDEXNAME,
     query: {
         bool: {
             must: [
@@ -209,14 +206,12 @@ defineTable("votacao-tribunal", ()=>agg({
     let header = ["Votação", "Total", ...tribunais];
     let values = aggs.Votação.buckets.map(b => [b.key, b.doc_count, ...(b.Tribunal.buckets.length > 0 ? b.Tribunal.buckets.sort((b1,b2) => b1.key.localeCompare(b2.key)) : tribunais.map(() => ({doc_count:0}))).map(b => b.doc_count)]);
     
-    return {header, 
-const INDEXNA = process.env.INDEX || "jurisprudencia.2.0"
-        
-
+    return {header, values};
+}));
 
 defineTable("atributos-tribunal", async ()=>{
     let tribunais = await indexer._client.search({
-        index: INDEX,
+        index: INDEXNAME,
         size: 0,
         aggs: {
             Tribunais: {
@@ -224,22 +219,16 @@ defineTable("atributos-tribunal", async ()=>{
                     field: "Tribunal",
                     size: 150
                 }
-const INDEXNAME = process.INDEX || "jurisprudencia.2.0"
-                
-
-const INDEXNA = process.env.INDEX || "jurisprudencia.2.0"
-            
-
+            }
+        }
     }).then(r => r.aggregations);
     let attributes = Object.keys((await indexer._client.indices.getMapping({
-        index: INDEX
-const INDEXNA = process.env.INDEX || "jurisprudencia.2.0"
-        
-INDEX].mappings.properties);
+        index: INDEXNAME
+    }))[INDEXNAME].mappings.properties);
 
     let aggs = await indexer._client.search({
         size: 0,
-        index: INDEX,
+        index: INDEXNAME,
         aggs: {
             Atributos: {
                 filters: {
