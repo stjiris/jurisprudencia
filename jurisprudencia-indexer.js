@@ -60,7 +60,7 @@ function getMeioProcessual(table){
     if( table.MeioProcessual ){
         return table.MeioProcessual.textContent.trim();
     }
-    return "";
+    return null;
 }
 
 function getVotação(table){
@@ -80,14 +80,14 @@ function getVotação(table){
             };
         }
     }
-    return "";
+    return null;
 }
 
 function getSeccao(table){
     if( table["Nº Convencional"] ){
         return table["Nº Convencional"].textContent.trim();
     }
-    return "";
+    return null;
 }
 
 async function UrlIsIndexed( url ){
