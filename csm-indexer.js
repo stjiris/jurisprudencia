@@ -1,4 +1,4 @@
-const getUrl = (off=0, pp=100) => `https://jurisprudencia.csm.org.pt/items/loadItems?sorts%5BdataAcordao%5D=1&perPage=${pp}&offset=${off}`
+const getUrl = (off=0, pp=100) => `https://jurisprudencia.csm.org.pt/items/loadItems?sorts%5BdataAcordao%5D=1&perPage=${pp}&offset=${off}&queries%5Bcourts%5D%5B%5D=1`
 const ECLI = require('./util/ecli');
 const { init, index, exists, mapping } = require('./indexer');
 const fetch = require('./util/fetch');
