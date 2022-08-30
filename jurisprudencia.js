@@ -65,6 +65,10 @@ const Properties = module.exports.Properties = {
         type: 'keyword',
         normalizer: 'term_normalizer'
     },
+    "Decisão": {
+        type: 'keyword',
+        normalizer: 'term_normalizer'
+    },
     "Sumário": {
         type: 'text',
         term_vector: 'with_positions_offsets_payloads'

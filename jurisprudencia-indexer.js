@@ -38,6 +38,7 @@ forEachDgsiLink(async url => {
         "Meio Processual": getMeioProcessual(table),
         "Votação": getVotação(table),
         "Secção": getSeccao(table),
+        "Decisão": strip_attrs(table["Decisão"]?.innerHTML || ""),
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
         "URL": url
