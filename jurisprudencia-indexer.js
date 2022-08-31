@@ -67,6 +67,7 @@ function getMeioProcessual(table){
 function getVotação(table){
     if( table.Votação ){
         let text = table.Votação.textContent.trim();
+        if( text.match(/^-+$/) ) return null;
         if( text.match(/unanimidade/i) ){
             return {
                 "Forma": "Unanimidade"
