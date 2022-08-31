@@ -79,6 +79,9 @@ const Properties = module.exports.Properties = {
     },
     "URL": {
         type: 'keyword',
+    },
+    "UUID": {
+        type: 'keyword'
     }
 }
 

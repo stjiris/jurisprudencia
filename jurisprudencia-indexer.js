@@ -6,6 +6,7 @@ const DGSI_PATTERN = /http:\/\/www\.dgsi\.pt\/jstj\.nsf\/(?<hashsjt>.*)\/(?<hash
 const jurisprudencia = require('./jurisprudencia');
 const fetch = require('./util/fetch');
 const { strip_attrs } = require('./util/html');
+const crypto = require("crypto");
 
 forEachDgsiLink(async url => {
     if( await UrlIsIndexed(url) ){
@@ -41,7 +42,8 @@ forEachDgsiLink(async url => {
         "Decisão": strip_attrs(table["Decisão"]?.innerHTML || ""),
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
-        "URL": url
+        "URL": url,
+        "UUID": calculateUUID(original),
     }
     await client.index({
         index: jurisprudencia.Index,
@@ -90,6 +92,13 @@ function getSeccao(table){
         return table["Nº Convencional"].textContent.trim();
     }
     return null;
+}
+
+function calculateUUID(table){
+    let str = JSON.stringify(table, Object.keys(table).sort());
+    let hash = crypto.createHash("sha1");
+    hash.write(str);
+    return hash.digest().toString("base64url");
 }
 
 async function UrlIsIndexed( url ){
