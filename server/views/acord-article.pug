@@ -98,25 +98,19 @@ for doc in hits
                         i.bi.bi-square.me-1
                     else
                         i.bi.bi-square-fill.me-1
-                a(href=`./${doc._source.ECLI}`, target="_blank")
-                    | !{doc._source.ECLI}
+                a(href=`./${doc._source.UUID}`, target="_blank")
+                    | !{doc._source.Processo}
         .col-12.d-flex.flex-wrap
             div.mx-1
-                b Tribunal:&nbsp;
-                span(style="color: var(--tribunal-color);") #{doc._source.Tribunal}&nbsp;
                 if doc._source.Secção
                     span (#{Str(doc._source.Secção)})
             div.mx-1
                 b Relator:&nbsp;
                 span #{Str(doc._source.Relator)}
             div.mx-1
-                b Data(s):&nbsp;
+                b Data:&nbsp;
                 span #{doc.fields[DATA_FIELD]}
         .col-12.d-flex.flex-wrap
-            if doc._source.Espécie
-                div.mx-1
-                    b Espécie:&nbsp;
-                    span #{Str(doc._source.Espécie)}
             if doc._source["Meio Processual"]
                 div.mx-1
                     b Meio Processual:&nbsp;
@@ -125,7 +119,7 @@ for doc in hits
             .col-12
                 div.mx-1
                     b Votação:&nbsp;
-                    span #{Str(doc._source.Votação)}
+                    span #{Str(doc._source.Votação.Forma)}
         if doc._source.Decisão
             .col-12
                 div.mx-1.d-flex

@@ -7,71 +7,66 @@ const path = require('path');
 app.set('view engine', 'pug');
 app.set('views', './views');
 
-const {mappings: {properties}} = require('../elastic-index-mapping.json');
-const INDEXNAME = process.env.INDEX || "jurisprudencia.2.0"
-
-const aggs = {}
-let DATA_FIELD = "";
-const DEFAULT_AGGS = {};
-const runtimeMapping = {};
-client.indices.getMapping({index: INDEXNAME}).then( obj => {
-    let props = obj[INDEXNAME].mappings.properties;
-    Object.entries(props).filter(([name, obj])=>obj.type == 'keyword').map(([name, _])=> name).forEach(name => {
-        aggs[name] = {
-            terms: {
-                field: name,
-                size: 65536,
-                order: {
-                    _term: "asc"
-                }
-            }
-        }
-    })
-    DATA_FIELD = Object.entries(props).filter(([name, obj]) => obj.type == 'date' && obj.copy_to)[0][1].copy_to[0] 
-    
-    aggs["MinAno"] = {
+const {Index: INDEXNAME, Properties: properties} = require('../jurisprudencia');
+const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword').map( ([name, _]) => name);
+let DATA_FIELD = "Data";
+const aggs = {
+    MinAno: {
         min: {
             field: DATA_FIELD,
             format: 'yyyy'
         }
-    };
-    aggs["MaxAno"] = {
+    },
+    MaxAno: {
         max: {
             field: DATA_FIELD,
             format: 'yyyy'
         }
-    };
-    aggs["Descritores"] = {
+    },
+}
+filterableProps.forEach(name => {
+    aggs[name] = {
         terms: {
-            field: "Descritores.keyword",
+            field: name,
             size: 65536,
             order: {
                 _term: "asc"
             }
         }
     }
-    aggs["Tribunal"].terms.min_doc_count = 0;
-    aggs["Código Tribunal"].terms.min_doc_count = 0;
-    DEFAULT_AGGS.Tribunal = {...aggs.Tribunal, aggs: {Codigo: {terms: {field: 'Código Tribunal', size: 1}}}}
-    DEFAULT_AGGS.MaxAno = aggs.MaxAno
-    DEFAULT_AGGS.MinAno = aggs.MinAno
-
-    runtimeMapping.runtime_mappings = {
-        LastDate: {
-            type: "date",
-            format: "yyyy",
-            script: `
-                def lastDate = doc['${DATA_FIELD}'][0];
-                for( item in doc['${DATA_FIELD}'] ){
-                    if( item.getMillis() > lastDate.getMillis() ){
-                        lastDate = item;
-                    }
-                }
-                emit(lastDate.getMillis());
-            `
-        }
-    };
 });
+aggs["Descritores"] = {
+    terms: {
+        field: "Descritores.keyword",
+        size: 65536,
+        order: {
+            _term: "asc"
+        }
+    }
+}
+aggs["Votação"] = {
+    terms: {
+        field: "Votação.Forma.keyword",
+        size: 65536,
+        order: {
+            _term: "asc"
+        }
+    }
+}
+aggs["Meio Processual"] = {
+    terms: {
+        field: "Meio Processual.keyword",
+        size: 65536,
+        order: {
+            _term: "asc"
+        }
+    }
+}
+
+const DEFAULT_AGGS = {
+    MaxAno : aggs.MaxAno,
+    MinAno : aggs.MinAno
+};
 
 const RESULTS_PER_PAGE = 50;
 
@@ -81,15 +76,14 @@ let queryObject = (string) => {
     };
     return {
         simple_query_string: {
-            query: string,
-            default_operator: "AND"
+            query: string
         }
     };
 }
 
 const tmp = app.render.bind(app);
 app.render = (name, obj, next) => {
-    tmp(name, { properties, requestStart: new Date(), ...obj, DATA_FIELD }, next);
+    tmp(name, { properties: filterableProps, requestStart: new Date(), ...obj, DATA_FIELD }, next);
 }
 
 let search = (

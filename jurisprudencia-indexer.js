@@ -39,7 +39,7 @@ forEachDgsiLink(async url => {
         "Meio Processual": getMeioProcessual(table),
         "Votação": getVotação(table),
         "Secção": getSeccao(table),
-        "Decisão": strip_attrs(table["Decisão"]?.innerHTML || ""),
+        "Decisão": getDecisao(table),
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
         "URL": url,
@@ -62,6 +62,13 @@ function getDescritores(table){
 function getMeioProcessual(table){
     if( table.MeioProcessual ){
         return table.MeioProcessual.textContent.trim();
+    }
+    return null;
+}
+
+function getDecisao(table){
+    if( table["Decisão"] ){
+        return table["Decisão"].textContent.trim();
     }
     return null;
 }
