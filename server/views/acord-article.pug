@@ -98,7 +98,7 @@ for doc in hits
                         i.bi.bi-square.me-1
                     else
                         i.bi.bi-square-fill.me-1
-                a(href=`./${doc._source.UUID}`, target="_blank")
+                a(href=`./acord-${doc._source.UUID}`, target="_blank")
                     | !{doc._source.Processo}
         .col-12.d-flex.flex-wrap
             div.mx-1

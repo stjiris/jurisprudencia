@@ -378,33 +378,24 @@ app.get("/acord-only", (req, res) => {
 });
 
 const statsAggs = {
-    Tribunal: aggs.Tribunal,
     MinAno: {
         min: {
-            field: "LastDate",
+            field: "Data",
             format: "yyyy"
         }
     },
     MaxAno: {
         max: {
-            field: "LastDate",
+            field: "Data",
             format: "yyyy"
         }
     },
     Anos: {
-        terms: {
-            field: 'Tribunal',
-            size: 20
-        },
-        aggs: {
-            Anos: {
-                date_histogram: {
-                    field: "LastDate",
-                    interval: 'year',
-                    format: 'yyyy',
-                    min_doc_count: 0
-                }
-            }
+        date_histogram: {
+            field: "Data",
+            interval: 'year',
+            format: 'yyyy',
+            min_doc_count: 0
         }
     },
     Origens: {
@@ -449,7 +440,7 @@ app.get("/estatisticas", (req, res) => {
 app.get("/allStats", (req, res) => {
     const sfilters = {pre: [], after: []};
     populateFilters(sfilters, req.query, []);
-    search(queryObject(req.query.q), sfilters, 0, statsAggs, 0, runtimeMapping ).then(body => {
+    search(queryObject(req.query.q), sfilters, 0, statsAggs, 0 ).then(body => {
         res.json(body.aggregations);
     }).catch(err => {
         console.log(req.originalUrl, JSON.stringify(err.body))
@@ -459,7 +450,6 @@ app.get("/allStats", (req, res) => {
 
 function listAggregation(term){
     return {
-        Tribunal: aggs.Tribunal,
         MinAno: aggs.MinAno,
         MaxAno: aggs.MaxAno,
         [term]: {
@@ -468,17 +458,6 @@ function listAggregation(term){
                 size: 65536/5,
                 order: {
                     _term: "asc",
-                }
-            },
-            aggs: {
-                Tribunal: {
-                    terms: {
-                        field: 'Tribunal',
-                        size: 25,
-                        order: {
-                            _term: "asc"
-                        }
-                    }
                 }
             }
         }
@@ -491,7 +470,7 @@ function groupByLetter(aggregations){
         let letter = (agg.key.replace(/[^a-zA-Z]/g, "#")[0] || "N.A.").toUpperCase();
         if( !letters[letter] ) letters[letter] = [];
         let tribunais = agg.Tribunal.buckets.map( o => o.key );
-        letters[letter].push({value: agg.key, Tribunais: tribunais});
+        letters[letter].push({value: agg.key});
     }
     return letters
 }
@@ -510,14 +489,14 @@ app.get("/indices", (req, res) => {
     });
 });
 
-app.get("/:ecli(ECLI:*)", (req, res) => {
-    let ecli = req.params.ecli;
-    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: [DATA_FIELD]}).then((body) => {
+app.get("/acord-:proc(*)", (req, res) => {
+    let proc = req.params.proc;
+    search({term: {UUID: proc}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: [DATA_FIELD]}).then((body) => {
         if( body.hits.total.value == 0 ){
-            res.render("document", {ecli});
+            res.render("document", {proc});
         }
         else if( body.hits.total.value == 1 ) {
-            res.render("document", {ecli, source: body.hits.hits[0]._source, fields: body.hits.hits[0].fields, aggs});
+            res.render("document", {proc, source: body.hits.hits[0]._source, fields: body.hits.hits[0].fields, aggs});
         }
         else{
             let docnum = req.query.docnum;
@@ -526,15 +505,15 @@ app.get("/:ecli(ECLI:*)", (req, res) => {
                 for( let i = 0; i < body.hits.hits.length; i++ ){
                     html += `<li><a href=?docnum=${i}>Abrir documento ${i}</a></li>`
                 }
-                res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
+                res.render("document", {proc, error: `<ul><p>More than one document found.</p>${html}</ul>`});
             }
             else{
-                res.render("document", {ecli, source: body.hits.hits[docnum]._source, fields: body.hits.hits[docnum].fields, aggs});
+                res.render("document", {proc, source: body.hits.hits[docnum]._source, fields: body.hits.hits[docnum].fields, aggs});
             }
         }
     }).catch(err => {
         console.log(req.originalUrl, err);
-        res.render("document", {ecli, error: err});
+        res.render("document", {proc, error: err});
     });
 });
 
