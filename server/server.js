@@ -86,7 +86,7 @@ let queryObject = (string) => {
 let searchedArray = (string) => client.indices.analyze({
     index: "jurisprudencia.5.0",
     text: string
-}).then( r => r.tokens.map( o => o.token) )
+}).then( r => r.tokens.map( o => o.token) ).catch( e => [])
 
 const tmp = app.render.bind(app);
 app.render = (name, obj, next) => {
