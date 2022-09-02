@@ -83,9 +83,10 @@ let queryObject = (string) => {
     }];
 }
 
-let searchedArray = (string) => {
-    return string.toLowerCase().split(" ").map( o => o.trim() ).filter( o => o.length > 3 );
-}
+let searchedArray = (string) => client.indices.analyze({
+    index: "jurisprudencia.5.0",
+    text: string
+}).then( r => r.tokens.map( o => o.token) )
 
 const tmp = app.render.bind(app);
 app.render = (name, obj, next) => {
@@ -267,7 +268,7 @@ app.get("/", (req, res) => {
     const sort = [];
     const sortV = parseSort(req.query.sort, sort);
     let page = parseInt(req.query.page) || 0;
-    search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, 0, { sort }).then(results => {
+    search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, 0, { sort }).then(async results => {
         res.render("search", {
             q: req.query.q, querystring: queryString(req.originalUrl),
             sort: sortV,          
@@ -278,9 +279,9 @@ app.get("/", (req, res) => {
             page: page,
             pages: Math.ceil(results.hits.total.value/RESULTS_PER_PAGE),
             open: Object.keys(filtersUsed).length > 0,
-            searchedArray: searchedArray(req.query.q)
+            searchedArray: await searchedArray(req.query.q)
         });
-    }).catch(e => {
+    }).catch(async e => {
         console.log(e);
         res.render("search", {
             q: req.query.q, querystring: queryString(req.originalUrl),
@@ -293,9 +294,9 @@ app.get("/", (req, res) => {
             pages: 0,
             open: true,
             error: e,
-            searchedArray: searchedArray(req.query.q)
+            searchedArray: await searchedArray(req.query.q)
         });
-    });
+    })
 })
 
 // returns only acordãos
@@ -343,10 +344,11 @@ app.get("/acord-only", (req, res) => {
         },
         max_analyzed_offset: 1000000
     };
-    search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true, _source:  [...Object.keys(properties), "Sumário", "Texto"] }).then(results => {
-        let colorFromText = (txt) => `var(--highlight-${searchedArray(req.query.q).indexOf(txt.toLocaleLowerCase().trim())}, var(--primary-gold))`;
-        results.hits.hits.forEach( hit => {
-            if( !hit.highlight ) return;
+    search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true, _source:  [...Object.keys(properties), "Sumário", "Texto"] }).then( async results => {
+        searchArray = await searchedArray(req.query.q)
+        let colorFromText = (txt) => `var(--highlight-${searchArray.indexOf(txt.toLocaleLowerCase().trim())}, var(--primary-gold))`;
+        results.hits.hits.map( hit => {
+            if( !hit.highlight ) return
             if( hit.highlight.Texto ){
                 for(let i = 0; i < hit.highlight.Texto.length; i++){
                     let text = hit.highlight.Texto[i];
