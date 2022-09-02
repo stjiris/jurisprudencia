@@ -50,9 +50,10 @@ html(lang="en")
                                         .d-flex.align-items-center.justify-content-between
                                             h4.d-inline.m-0
                                                 | Filtros
-                                            h6: a(href=`?q=`).text-danger.text-decoration-none
-                                                i.bi-eraser-fill
-                                                | Limpar
+                                            if Object.keys(filters).length > 0
+                                                h6: a(href=`?q=`).text-danger.text-decoration-none
+                                                    i.bi-eraser-fill
+                                                    | Limpar
                                         mixin usedFilters(key)
                                             -let cache = []
                                             if key in filters
@@ -70,8 +71,7 @@ html(lang="en")
                                                 input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`${key}`,disabled)
                                                 +usedFilters(key)
                                         .d-flex.flex-column.my-1
-                                            input.form-control.form-control-sm.rounded-0(type="text", name="q", placeholder=`Texto Livre`, value="")
-                                            +usedFilters("q")
+                                            input.form-control.form-control-sm.rounded-0(type="text", name="q", placeholder=`Texto Livre`, value=q||"")
                                         .d-flex.flex-column.my-1
                                             .input-group.input-group-sm
                                                 .input-group-prepend.flex-grow-1

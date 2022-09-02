@@ -4,16 +4,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
 @import url('./theme-colors.css');
 
+html{
+    background: var(--primary-gold);
+}
 body {
     font: 13px/1.5 'Noto Sans Serif', sans-serif;
     color: var(--primary-black);
+    background: white;
+}
+
+a {
+    color: var(--primary-red);
 }
 
 .fancy-font {
     font-family: 'Cinzel', serif;
 }
 
-header, footer{
+
+
+header{
     background-color: white;
     color: var(--primary-red)
 }
@@ -28,6 +38,10 @@ header .nav-link.active, header .nav-link.active:hover{
 }
 header .nav-link:hover{
     color: var(--primary-gold);
+}
+
+footer {
+    background: var(--primary-gold);
 }
 
 form label{

@@ -1,4 +1,12 @@
 style.
+    :root{
+        --highlight-0: hsl(0, 55%, 50%);
+        --highlight-1: hsl(60, 55%, 50%);
+        --highlight-2: hsl(120, 55%, 50%);
+        --highlight-3: hsl(180, 55%, 50%);
+        --highlight-4: hsl(240, 55%, 50%);
+        --highlight-5: hsl(300, 55%, 50%);
+    }
     .highlight {
         display: inline-flex;
         margin-left: auto;
@@ -54,9 +62,9 @@ style.
         position: absolute;
         bottom: 5px;
         font-size: 0.7rem;
-        color: var(--color-black);
-        background: var(--color-white);
-        border: 1px solid;
+        color: var(--primary-black);
+        background: var(--primary-gold);
+        border: 1px solid var(--primary-black);
         padding: 0.5rem;
         z-index: 1;
         right: 0;
@@ -75,8 +83,8 @@ style.
     }
 
     .pesquisa-sep {
-        background: var(--tribunal-color);
-        color: var(--color-white);
+        background: var(--primary-red);
+        color: white;
         font-size: smaller;
         display: inline;
         font-weight: normal;
@@ -90,7 +98,7 @@ style.
 for doc in hits
     -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     -let relevanciaColor = (per) => per < 0.2 ? '#E3D5A1' : per < 0.4 ? '#CEB65E' : per < 0.6 ? '#B49936' : per < 0.8 ? '#8C752C' : '#6C5A22';
-    article.row(data-tribunal=doc._source.Tribunal).border-top
+    article.row.border-top.result
         .col-12.pt-1.d-flex
             small.relevancia(style=`color: ${relevanciaColor(doc._score/max_score)}`)
                 each bin in [0.2,0.4,0.6,0.8,1]
@@ -146,7 +154,7 @@ for doc in hits
                             .highlight-bar(data-key="Sumário")
                                 each hit in doc.highlight.SumárioMarks
                                     .highlight-bar-hit-parent
-                                        .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%`)
+                                        .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%; background: ${hit.color};`)
                                         .highlight-bar-hit-content.d-none !{hit.text}
                 if doc.highlight && doc.highlight.Sumário
                     div.col-12.p-2.border.normalize-sumario-weight !{doc.highlight.Sumário}
@@ -166,7 +174,7 @@ for doc in hits
                                 .highlight-bar(data-key=key)
                                     each hit in doc.highlight[key]
                                         .highlight-bar-hit-parent
-                                            .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%`)
+                                            .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%; background: ${hit.color};`)
                                             .highlight-bar-hit-content.d-none !{hit.text}
 
                     div.col-12.p-2.border

@@ -34,8 +34,11 @@ block main
             .col-0.col-lg-4.d-none.d-lg-block
                 h4.d-inline
                     i.bi-archive 
-                    | !{body.hits.total.value} Acórdãos 
-            .col-12.col-lg-8.text-end.d-flex.justify-content-end
+                    | !{body.hits.total.value} Acórdãos
+            .col-12.col-lg-8.text-end.d-flex.justify-content-end.align-items-center
+                div
+                    for term, i in searchedArray
+                        span.badge.bg-white.text-dark.m-1(style=`border: 3px solid var(--highlight-${i}, var(--primary-gold))`) !{term}
                 h6.m-auto.me-2 Ordenar:
                 select(name="sort")#sort-select
                     option(value="score",selected=sort=="score"): u Relevância
@@ -145,7 +148,7 @@ block main
         }
 
 
-        article::before {
+        article.result::before {
             content: '';
             background: var(--primary-red);
             top: 10px;
@@ -154,7 +157,7 @@ block main
             border-radius: 10px;
             bottom: 10px;
         }
-        article::after {
+        article.result::after {
             /*content: "";*/
             position: absolute; 
             top: 50%;

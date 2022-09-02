@@ -8,7 +8,7 @@ app.set('view engine', 'pug');
 app.set('views', './views');
 
 const {Index: INDEXNAME, Properties: properties} = require('../jurisprudencia');
-const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword' || obj.fielddata).map( ([name, _]) => name).filter( o => o != "URL" && o != "UUID")
+const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword' || obj.fielddata).map( ([name, _]) => name).filter( o => o != "URL" && o != "UUID").concat("Votação")
 let DATA_FIELD = "Data";
 const aggs = {
     MinAno: {
@@ -46,7 +46,7 @@ aggs["Descritores"] = {
 }
 aggs["Votação"] = {
     terms: {
-        field: "Votação.Forma.keyword",
+        field: "Votação.Forma",
         size: 65536,
         order: {
             _term: "asc"
@@ -81,6 +81,10 @@ let queryObject = (string) => {
             query: Array.isArray(string) ? string.join(" ") : string
         }
     }];
+}
+
+let searchedArray = (string) => {
+    return string.toLowerCase().split(" ").map( o => o.trim() ).filter( o => o.length > 3 );
 }
 
 const tmp = app.render.bind(app);
@@ -127,12 +131,6 @@ const padZero = (num, size=4) => {
 
 const populateFilters = (filters, body={}, afters=["MinAno","MaxAno"]) => { // filters={pre: [], after: []}
     const filtersUsed = {}
-    if( Array.isArray(body.q) ){
-        filtersUsed["q"] = body.q.filter(o => o.length > 0);
-    }
-    else if(body.q){
-        filtersUsed["q"] = [body.q].filter(o => o.length > 0);
-    }
     for( let key in aggs ){
         let aggName = key;
         let aggObj = aggs[key];
@@ -279,7 +277,8 @@ app.get("/", (req, res) => {
             filters: filtersUsed,
             page: page,
             pages: Math.ceil(results.hits.total.value/RESULTS_PER_PAGE),
-            open: Object.keys(filtersUsed).length > 0
+            open: Object.keys(filtersUsed).length > 0,
+            searchedArray: searchedArray(req.query.q)
         });
     }).catch(e => {
         console.log(e);
@@ -293,7 +292,8 @@ app.get("/", (req, res) => {
             page: page,
             pages: 0,
             open: true,
-            error: e
+            error: e,
+            searchedArray: searchedArray(req.query.q)
         });
     });
 })
@@ -319,7 +319,7 @@ app.get("/acord-only", (req, res) => {
                 number_of_fragments: 0           
             },
             "Sumário": {
-                type: "unified",
+                type: "fvh",
                 highlight_query: {
                     bool: {
                         must: queryObject(req.query.q)
@@ -329,8 +329,8 @@ app.get("/acord-only", (req, res) => {
                 pre_tags: ["<mark>"],
                 post_tags: ["</mark>"]
             },
-            "*Texto*": { 
-                type: "unified",
+            "Texto": { 
+                type: "fvh",
                 highlight_query: {
                     bool: {
                         must: queryObject(req.query.q)
@@ -343,29 +343,33 @@ app.get("/acord-only", (req, res) => {
         },
         max_analyzed_offset: 1000000
     };
-    search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true, _source:  [...Object.keys(properties), "Sumário", "*Texto*"] }).then(results => {
+    search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true, _source:  [...Object.keys(properties), "Sumário", "Texto"] }).then(results => {
+        let colorFromText = (txt) => `var(--highlight-${searchedArray(req.query.q).indexOf(txt.toLocaleLowerCase().trim())}, var(--primary-gold))`;
         results.hits.hits.forEach( hit => {
             if( !hit.highlight ) return;
-            let highlightedKeys = Object.keys(hit.highlight).filter(k => k.match(/Texto/));
-            for( let k of highlightedKeys ){
-                for(let i = 0; i < hit.highlight[k].length; i++){
-                    let text = hit.highlight[k][i];
-                    hit.highlight[k][i] = {
+            if( hit.highlight.Texto ){
+                for(let i = 0; i < hit.highlight.Texto.length; i++){
+                    let text = hit.highlight.Texto[i];
+                    let mat = text.match(/MARK_START(?<mat>.*?)MARK_END/).groups?.mat || "";
+                    hit.highlight.Texto[i] = {
                         text: text.replace(/<[^>]+>/g, "").replace(/MARK_START/g, "<mark>").replace(/MARK_END/g, "</mark>").replace(/<\/?\w*$/, ""),
-                        offset: hit._source[k].indexOf(text.substring(0, text.indexOf("MARK_START"))),
-                        size: hit._source[k].length
+                        offset: hit._source.Texto.indexOf(text.substring(0, text.indexOf("MARK_START"))),
+                        size: hit._source.Texto.length,
+                        color: colorFromText(mat)
                     }
                 }
-                delete hit._source[k];
+                delete hit._source.Texto;
             }
             if( hit.highlight.Sumário ){
-                let it = hit.highlight.Sumário[0].matchAll(/[^>]{0,100}<mark>\w+<\/mark>[^<]{0,100}/g)
+                let it = hit.highlight.Sumário[0].matchAll(/[^>]{0,100}<mark>(?<mat>\w+)<\/mark>[^<]{0,100}/g)
                 hit.highlight.SumárioMarks = [];
                 for( let m of it ){
+                    let mat = m.groups?.mat || "";
                     hit.highlight.SumárioMarks.push({
                         text: m[0],
                         offset: m.index,
-                        size: hit._source.Sumário.length
+                        size: hit._source.Sumário.length,
+                        color: colorFromText(mat)
                     });
                 }
             }
