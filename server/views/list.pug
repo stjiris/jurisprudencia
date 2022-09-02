@@ -14,7 +14,7 @@ prepend form
         h3 Indíce
             select.form-select(name="term")
                 for op of fields 
-                    option(selected=op.key==term) !{op.key}
+                    option(selected=op==term) !{op}
 
 block main
     if aggs[term].sum_other_doc_count > 0
@@ -27,9 +27,9 @@ block main
                     li Existem !{aggs[term].sum_other_doc_count} outros valores não listados.
     .row.p-2
         .col-12.d-none.d-lg-block.col-lg-4: h4 !{term}
-        .col-12.d-none.d-lg-block.col-lg-8: h4 Tribunal(is)
+        .col-12.d-none.d-lg-block.col-lg-8: h4 Quantidade
     .row.p-2
-        //pre: code !{JSON.stringify(aggs, null, 2)}
+        //pre: code !{JSON.stringify(letters, null, 2)}
         -let available = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(l => l in letters)
         for l of available
             -let letter = letters[l]
@@ -45,10 +45,9 @@ block main
                                     span.p-1.m-1 !{a}
                     for obj in letter
                         .row.col-12.my-2.pb-2.align-items-center.term
-                            .col-4: a(href=`./?${term}=${obj.value}`) !{obj.value}
+                            .col-4: a(href=`./?${term}=${obj.key}`) !{obj.key}
                             .col-8.d-flex.flex-column
-                                for tribunal in obj.Tribunais
-                                    span(data-tribunal=tribunal) !{tribunal}
+                                span !{obj.doc_count}
     style.
 
     //- for aggRelator in aggs.Relator.buckets.sort(({key:a}, {key:b}) => a.localeCompare(b))

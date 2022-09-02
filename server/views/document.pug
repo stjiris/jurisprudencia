@@ -6,43 +6,8 @@ block head
 block printpageinfo
     h6 !{proc}
 
-block headerinput
-    h4(style="color: var(--color-white);").fancy-font !{proc}
 
-block form
-    -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-    -let using = []
-    if source
-        div: h4.trib-spacer.pb-2 &nbsp;
-        mixin metadata(key, show)
-            -using.push(key)
-            if source[key]
-                tr
-                    td
-                        if show
-                            b #{key}:&nbsp;
-                    td
-                        a(href=`./?${key}=${source[key]}`) !{Str(JSON.stringify(source[key]))}
-        table.table.table-sm
-            for key in Object.keys(source)
-                if key == "Processo" || key == "URL" || key == "Descritores"
-                else if key in aggs
-                    +metadata(key, true)
-            for key of Object.keys(source)
-                if key.startsWith("Data")
-                    tr
-                        td: b #{key}:&nbsp;
-                        td: span.text-muted #{source[key]}
-            tr
-                td: b Descritores:
-                td
-                    for d in (source.Descritores||[])
-                        p.m-0: a(href=`./?Descritores=${d}`) !{Str(d)}
-            tr
-                td
-                td: b: a(href=source["URL"]).d-flex.align-items-center Original
-
-block main
+block allmain
     if !source
         .alert.alert-info(role="alert")
             h4.alert-heading Sem resultados...
@@ -52,25 +17,18 @@ block main
             ol
                 li O recurso não foi encontrado ou ainda não foi publicado neste arquivo
     else
-        div(data-tribunal=source.Tribunal)
-            h4.col-12.pb-2.trib-spacer Processo !{source.Processo}
-                small
-                    a(href=`./docx/${source.UUID}`)
-                        i.bi.bi-file-earmark-word
         table.table.table-sm
             tbody 
+                for key of Object.keys(source.Original)
+                    tr
+                        td !{key}
+                        td !{source.Original[key]}
+        table.table.table-sm
                 for key of Object.keys(source)
-                    if !(key in aggs) && !key.startsWith("Data")
-                        if source[key].length < 240
-                            tr(data-tribunal=source.Tribunal).align-top
-                                th !{key}
-                                td !{source[key]}
-        for key of Object.keys(source)
-            if !(key in aggs) && !key.startsWith("Data")
-                if source[key].length >= 240
-                    .pt-2
-                        h5.p-2.trib-spacer(data-tribunal=source["Tribunal"]) !{key}:&nbsp;
-                        div !{source[key]}
+                    if key != "Original" && key != "Texto" && key != "Sumário"
+                        tr
+                            td !{key}
+                            td !{JSON.stringify(source[key])}
 
     style.
         .trib-spacer{

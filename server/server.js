@@ -8,7 +8,7 @@ app.set('view engine', 'pug');
 app.set('views', './views');
 
 const {Index: INDEXNAME, Properties: properties} = require('../jurisprudencia');
-const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword').map( ([name, _]) => name);
+const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword' || obj.fielddata).map( ([name, _]) => name).filter( o => o != "URL" && o != "UUID")
 let DATA_FIELD = "Data";
 const aggs = {
     MinAno: {
@@ -71,14 +71,16 @@ const DEFAULT_AGGS = {
 const RESULTS_PER_PAGE = 50;
 
 let queryObject = (string) => {
-    if( !string ) return {
-        match_all: {}
-    };
-    return {
+    if( !string ){
+        return {
+            match_all: {}
+        };
+    }
+    return [{
         simple_query_string: {
-            query: string
+            query: Array.isArray(string) ? string.join(" ") : string
         }
-    };
+    }];
 }
 
 const tmp = app.render.bind(app);
@@ -110,7 +112,7 @@ let search = (
     size: rpp,
     from: page*rpp,
     track_total_hits: true,
-    _source: [...Object.keys(properties), "Sumário"],
+    _source: filterableProps.concat("Sumário"),
     fields: [DATA_FIELD],
     ...extras
 });
@@ -123,8 +125,14 @@ const padZero = (num, size=4) => {
     return s;
 }
 
-const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]) => { // filters={pre: [], after: []}
+const populateFilters = (filters, body={}, afters=["MinAno","MaxAno"]) => { // filters={pre: [], after: []}
     const filtersUsed = {}
+    if( Array.isArray(body.q) ){
+        filtersUsed["q"] = body.q.filter(o => o.length > 0);
+    }
+    else if(body.q){
+        filtersUsed["q"] = [body.q].filter(o => o.length > 0);
+    }
     for( let key in aggs ){
         let aggName = key;
         let aggObj = aggs[key];
@@ -147,10 +155,14 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
             });
         }
     }
+
+    let dateWhen = "pre";
+    if( afters.indexOf("MinAno") >= 0 || afters.indexOf("MaxAno") >= 0 ) dateWhen = "after";
     if( body.MinAno && body.MaxAno ){
+
         filtersUsed.MinAno = body.MinAno;
         filtersUsed.MaxAno = body.MaxAno;
-        filters.pre.push({
+        filters[dateWhen].push({
             range: {
                 [DATA_FIELD]: {
                     gte: padZero(body.MinAno),
@@ -162,7 +174,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
     }
     else if( body.MinAno ){
         filtersUsed.MinAno = body.MinAno;
-        filters.pre.push({
+        filters[dateWhen].push({
             range: {
                 [DATA_FIELD]: {
                     gte: padZero(body.MinAno),
@@ -173,7 +185,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
     }
     else if( body.MaxAno ){
         filtersUsed.MaxAno = body.MaxAno;
-        filters.pre.push({
+        filters[dateWhen].push({
             range: {
                 [DATA_FIELD]: {
                     lt: padZero((parseInt(body.MaxAno) || new Date().getFullYear())+1),
@@ -299,9 +311,7 @@ app.get("/acord-only", (req, res) => {
                 type: "unified",
                 highlight_query: {
                     bool: {
-                        must: [
-                            queryObject(req.query.q)
-                        ]
+                        must: queryObject(req.query.q)
                     }
                 },
                 pre_tags: [""],
@@ -312,9 +322,7 @@ app.get("/acord-only", (req, res) => {
                 type: "unified",
                 highlight_query: {
                     bool: {
-                        must: [
-                            queryObject(req.query.q)
-                        ]
+                        must: queryObject(req.query.q)
                     }
                 },
                 number_of_fragments: 0,
@@ -325,9 +333,7 @@ app.get("/acord-only", (req, res) => {
                 type: "unified",
                 highlight_query: {
                     bool: {
-                        must: [
-                            queryObject(req.query.q)
-                        ]
+                        must: queryObject(req.query.q)
                     }
                 },
                 number_of_fragments: 1000,
@@ -469,8 +475,7 @@ function groupByLetter(aggregations){
     for( let agg of aggregations ){
         let letter = (agg.key.replace(/[^a-zA-Z]/g, "#")[0] || "N.A.").toUpperCase();
         if( !letters[letter] ) letters[letter] = [];
-        let tribunais = agg.Tribunal.buckets.map( o => o.key );
-        letters[letter].push({value: agg.key});
+        letters[letter].push(agg);
     }
     return letters
 }
@@ -480,12 +485,12 @@ app.get("/indices", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
 
-    const fields = client.indices.getMapping({index: INDEXNAME}).then(body => Object.entries(body[INDEXNAME].mappings.properties).filter(o => o[1].fielddata || o[1].type == "keyword").map(o => ({key: o[0]})));
-    search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then(async body => {
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: Object.keys(filters).length > 0, fields: await fields});
-    }).catch(async err => {
+    const fields = filterableProps;
+    search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then( body => {
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: Object.keys(filters).length > 0, fields: fields});
+    }).catch( err => {
         console.log(req.originalUrl, err)
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), error: err, aggs: {}, letters: {}, filters: {}, term: term, fields: await fields});
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), error: err, aggs: {}, letters: {}, filters: {}, term: term, fields: fields});
     });
 });
 
@@ -527,14 +532,14 @@ function sendDocxOfHtml(res, html, name){
     docx.stdout.pipe(res);
 }
 
-app.get("/docx/:ecli(ECLI:*)", (req, res) => {
-    let ecli = req.params.ecli;
-    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Decisão Texto Integral'], fields: []}).then((body) => {
+app.get("/docx/acord-:proc(*)", (req, res) => {
+    let proc = req.params.proc;
+    search({term: {UUID: proc}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Texto'], fields: []}).then((body) => {
         if( body.hits.total.value == 0 ){
-            res.render("document", {ecli});
+            res.render("document", {proc});
         }
         else if( body.hits.total.value == 1 ) {
-            sendDocxOfHtml(res, body.hits.hits[0]._source["Decisão Texto Integral"], ecli);
+            sendDocxOfHtml(res, body.hits.hits[0]._source["Texto"], proc);
         }
         else{
             let docnum = req.query.docnum;
@@ -543,15 +548,15 @@ app.get("/docx/:ecli(ECLI:*)", (req, res) => {
                 for( let i = 0; i < body.hits.hits.length; i++ ){
                     html += `<li><a href=?docnum=${i}>Abrir documento ${i}</a></li>`
                 }
-                res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
+                res.render("document", {proc, error: `<ul><p>More than one document found.</p>${html}</ul>`});
             }
             else{
-                sendDocxOfHtml(res, body.hits.hits[docnum]._source["Decisão Texto Integral"], ecli);
+                sendDocxOfHtml(res, body.hits.hits[docnum]._source["Texto"], proc);
             }
         }
     }).catch(err => {
         console.log(req.originalUrl, err);
-        res.render("document", {ecli, error: err});
+        res.render("document", {proc, error: err});
     });
 });
 

@@ -60,8 +60,8 @@ function getDescritores(table){
 }
 
 function getMeioProcessual(table){
-    if( table.MeioProcessual ){
-        return table.MeioProcessual.textContent.trim();
+    if( table["Meio Processual"] ){
+        return table["Meio Processual"].textContent.trim();
     }
     return null;
 }

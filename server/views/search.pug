@@ -116,24 +116,23 @@ block main
         });
     style.
         @media print{
-            article[data-tribunal] {
+            article {
                 max-height: none !important;
                 width: 100%;
                 display: block;
             }
 
-            article[data-tribunal]::after{
+            article::after{
                 top:100% !important;
             }
 
             article{
                 break-inside: avoid !important;
             }
-            nav{ display: none; }
             .border{ border: none !important; }
         }
 
-        article[data-tribunal] {
+        article {
             position: relative;
             /*max-height: 300px;*/
             overflow: hidden;
@@ -145,20 +144,17 @@ block main
             font-size: 0.65rem;
         }
 
-        /*article[data-tribunal]:focus-within, article[data-tribunal]:hover {
-            max-height: 1000px;
-        }*/
 
-        article[data-tribunal]::before {
+        article::before {
             content: '';
-            background: var(--tribunal-color);
+            background: var(--primary-red);
             top: 10px;
             width: 5px;
             position: absolute;
             border-radius: 10px;
             bottom: 10px;
         }
-        article[data-tribunal]::after {
+        article::after {
             /*content: "";*/
             position: absolute; 
             top: 50%;
@@ -169,6 +165,6 @@ block main
             transition: 0.5s 0.3s;
         }
 
-        article[data-tribunal]:focus-within::after, article[data-tribunal]:hover::after{
+        article:focus-within::after, article:hover::after{
             box-shadow: inset white 0 0px 0px;
         }
