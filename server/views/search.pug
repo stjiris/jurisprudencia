@@ -1,6 +1,7 @@
 extends head 
 block head
     title Pesquisa
+    link(rel="stylesheet", href="./highlight-style.css")
 
 prepend header
     -currentPage = "search"
@@ -38,9 +39,6 @@ block main
                 option(value="score",selected=sort=="score") Relevância
                 option(value="asc",selected=sort=="asc") Data Ascendente
                 option(value="des",selected=sort=="des") Data Descendente
-            b 
-                i.bi-archive 
-                | !{body.hits.total.value} Processos        
             div.d-inline.float-end
                 if searchedArray.length > 0
                     | Termos da pesquisa destacados:&nbsp;

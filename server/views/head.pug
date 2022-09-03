@@ -43,12 +43,15 @@ html(lang="en")
                 block allmain
                     .row
                         .col-12.col-sm-4.col-md-3.col-xl-2.d-print-none.infofilters
-                            form(method="get")#filter-form.position-sticky(style="top:0;")
+                            form(method="get",style="top:0;")#filter-form.position-sticky
                                 block form
                                     .d-block
                                         .d-flex.align-items-center.justify-content-between
-                                            b.d-inline.m-0
-                                                | Pesquisa
+                                            block form-title
+                                                if body 
+                                                    b.d-inline.m-0                          
+                                                        i.bi-archive 
+                                                        | !{body.hits.total.value} Processos        
                                             if Object.keys(filters).length > 0 || q
                                                 a(href=`?q=`).text-danger.text-decoration-none
                                                     i.bi-eraser-fill
@@ -71,6 +74,11 @@ html(lang="en")
                                                 +usedFilters(key)
                                         .d-flex.flex-column.my-1
                                             input.form-control.form-control-sm.rounded-0(type="search", name="q", placeholder=`Texto Livre`, value=q||"")
+                                        +filterlist("Tipo de Processo")
+                                        +filterlist("Número de Processo")
+                                        +filterlist("Secção")
+                                        +filterlist("Meio Processual")
+                                        +filterlist("Relator")
                                         .d-flex.my-1
                                             .input-group.input-group-sm
                                                 .input-group-prepend.flex-shrink
@@ -80,7 +88,10 @@ html(lang="en")
                                                 .input-group-prepend.flex-shrink
                                                     label.input-group-text.rounded-0.p-1(for="data_fim") Até:
                                                 input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MaxAno", min=aggsGlobal.MinAno.value_as_string, max=aggsGlobal.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder=aggsGlobal.MaxAno.value_as_string)#data_fim
-                                        for p of properties
+                                        +filterlist("Votação")
+                                        +filterlist("Decisão")
+                                        +filterlist("Descritores")
+                                        //for p of properties
                                             +filterlist(p)
                                         +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)
                                         .d-flex.flex-column.my-1.border.pb-1

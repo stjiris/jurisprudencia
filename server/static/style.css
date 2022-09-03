@@ -4,9 +4,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
 @import url('./theme-colors.css');
 
-html{
-    background: var(--primary-gold);
-}
 body {
     font: 13px/1.5 'Noto Sans Serif', sans-serif;
     color: var(--primary-black);

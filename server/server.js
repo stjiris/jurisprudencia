@@ -283,7 +283,6 @@ app.get("/", (req, res) => {
         sortV = parseSort("des", sort);
         sortE = false;
     }
-    console.log(!req.query.q , !req.query.sort , Object.keys(filtersUsed).length == 0)
     let page = parseInt(req.query.page) || 0;
     search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, 0, { sort }).then(async results => {
         res.render("search", {
@@ -461,10 +460,10 @@ app.get("/estatisticas", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query);
     search(queryObject(req.query.q), sfilters, 0, DEFAULT_AGGS, 0, {}).then(body => {
-        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
+        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), body: body, aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
     }).catch(e => {
         console.log(e);
-        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: {}, filters: {}, open: true, error: e});
+        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, aggs: {}, filters: {}, open: true, error: e});
     });
 });
 
@@ -514,10 +513,10 @@ app.get("/indices", (req, res) => {
 
     const fields = filterableProps;
     search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then( body => {
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, term: term, open: Object.keys(filters).length > 0, fields: fields});
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: body, aggs: body.aggregations, filters: filters, term: term, open: Object.keys(filters).length > 0, fields: fields});
     }).catch( err => {
         console.log(req.originalUrl, err)
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), error: err, aggs: {}, letters: {}, filters: {}, term: term, fields: fields});
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: err, aggs: {}, letters: {}, filters: {}, term: term, fields: fields});
     });
 });
 
