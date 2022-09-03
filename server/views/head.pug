@@ -43,9 +43,8 @@ html(lang="en")
                 block allmain
                     .row
                         .col-12.col-sm-4.col-md-3.col-xl-2.d-print-none.infofilters
-                            form(method="get")#filter-form
+                            form(method="get")#filter-form.position-sticky(style="top:0;")
                                 block form
-                                    button.btn.color-link(type="submit", hidden)
                                     .d-block
                                         .d-flex.align-items-center.justify-content-between
                                             b.d-inline.m-0
@@ -71,16 +70,16 @@ html(lang="en")
                                                 input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`${key}`,disabled)
                                                 +usedFilters(key)
                                         .d-flex.flex-column.my-1
-                                            input.form-control.form-control-sm.rounded-0(type="text", name="q", placeholder=`Texto Livre`, value=q||"")
+                                            input.form-control.form-control-sm.rounded-0(type="search", name="q", placeholder=`Texto Livre`, value=q||"")
                                         .d-flex.my-1
                                             .input-group.input-group-sm
                                                 .input-group-prepend.flex-shrink
                                                     label.input-group-text.rounded-0.p-1(for="data_inicio") De:
-                                                input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="Ano")#data_inicio
+                                                input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MinAno", min=aggsGlobal.MinAno.value_as_string, max=aggsGlobal.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder=aggsGlobal.MinAno.value_as_string)#data_inicio
                                             .input-group.input-group-sm
                                                 .input-group-prepend.flex-shrink
                                                     label.input-group-text.rounded-0.p-1(for="data_fim") Até:
-                                                input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MaxAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder="Ano")#data_fim
+                                                input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MaxAno", min=aggsGlobal.MinAno.value_as_string, max=aggsGlobal.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder=aggsGlobal.MaxAno.value_as_string)#data_fim
                                         for p of properties
                                             +filterlist(p)
                                         +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)
@@ -92,14 +91,6 @@ html(lang="en")
                                                 input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode ter o campo`, disabled)
                                                 +usedFilters("notHasField")
                         .col-12.col-sm-8.col-md-9.col-xl-10#main: block main
-        footer.d-print-none.mt-2
-            .container.row.align-items-center.m-auto.p-4
-                a(href="#top").col-12.col-lg-6.align-items-center.d-flex.flex-wrap.py-2
-                    i.bi.bi-chevron-up.mr-2
-                    | Voltar ao topo
-            small#time-info.text-white
-                p.m-0 Página carregada em: !{new Date() - requestStart}ms
-                p.m-0 Dados carregados em: <span id="data-time-info">0</span>ms
                     
         script.
             window.addEventListener('DOMContentLoaded', function(){

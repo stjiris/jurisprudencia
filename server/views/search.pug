@@ -17,7 +17,10 @@ block printpageinfo
 
 
 append form
-    input(type="hidden", name="sort", value=sort)#input-sort
+    input(type="hidden", name="sort", value=sortEnabled ? sort : "")#input-sort
+    a(href="#top")
+        i.bi.bi-chevron-up.mr-2
+        | Voltar ao topo
 
 block main
     if body.hits.total.value == 0
@@ -31,7 +34,7 @@ block main
                 li Verifique o termo pesquisado
     else
         article
-            b: select(name="sort").border-0.me-2#sort-select
+            b: select(name="sort").me-2#sort-select
                 option(value="score",selected=sort=="score") Relevância
                 option(value="asc",selected=sort=="asc") Data Ascendente
                 option(value="des",selected=sort=="des") Data Descendente
@@ -59,10 +62,9 @@ block main
                                     document.querySelector("#looking").insertAdjacentHTML("beforebegin", html);
                                     page++;
                                     end = new Date().getTime();
-                                    document.getElementById("data-time-info").innerHTML = `${end-start}`;
                                 } else {
                                     observer.disconnect();
-                                    document.querySelector("#looking").querySelector("h3").textContent = "Não há mais acórdãos...";
+                                    document.querySelector("#looking").querySelector("h3").textContent = "Não há mais processos...";
                                 }
                                 observer.disconnect();
                                 entry.target.remove();

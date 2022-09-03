@@ -90,16 +90,6 @@ let queryObject = (string) => {
     }];
 }
 
-let searchedArray = (string) => client.indices.analyze({
-    index: "jurisprudencia.5.0",
-    text: string
-}).then( r => r.tokens.map( o => o.token) ).catch( e => [])
-
-const tmp = app.render.bind(app);
-app.render = (name, obj, next) => {
-    tmp(name, { properties: filterableProps, requestStart: new Date(), ...obj, DATA_FIELD }, next);
-}
-
 let search = (
     query, // query string, ideally given by queryObject()
     filters={pre: [], after: []}, // filters to be applied, pre for before the query, after for after the query (affects aggregations)
@@ -268,17 +258,38 @@ function parseSort(value, array){
     return sortV;
 }
 
+let searchedArray = (string) => client.indices.analyze({
+    index: "jurisprudencia.5.0",
+    text: string
+}).then( r => r.tokens.map( o => o.token) ).catch( e => [])
+
+let allSearchAggPromise = search(queryObject(""), {pre:[],after:[]}, 0, DEFAULT_AGGS, 0).then( r => r.aggregations)
+
+const tmp = app.render.bind(app);
+app.render = async (name, obj, next) => {
+    let aggsGlobal = await allSearchAggPromise;
+    tmp(name, { aggsGlobal, properties: filterableProps, requestStart: new Date(), ...obj, DATA_FIELD }, next);
+}
+
 // Returns page with filters
 app.get("/", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filtersUsed = populateFilters(sfilters, req.query);
-    const sort = [];
-    const sortV = parseSort(req.query.sort, sort);
+    let sort = [];
+    let sortV = parseSort(req.query.sort, sort);
+    let sortE = true;
+    if( !req.query.q && !req.query.sort && Object.keys(filtersUsed).length == 0 ){
+        sort = [];
+        sortV = parseSort("des", sort);
+        sortE = false;
+    }
+    console.log(!req.query.q , !req.query.sort , Object.keys(filtersUsed).length == 0)
     let page = parseInt(req.query.page) || 0;
     search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, 0, { sort }).then(async results => {
         res.render("search", {
             q: req.query.q, querystring: queryString(req.originalUrl),
-            sort: sortV,          
+            sort: sortV,
+            sortEnabled: sortE,
             body: results,
             hits: results.hits.hits,
             aggs: results.aggregations,
@@ -293,6 +304,7 @@ app.get("/", (req, res) => {
         res.render("search", {
             q: req.query.q, querystring: queryString(req.originalUrl),
             sort: sortV,
+            sortEnabled: sortE,
             body: {},
             hits: [],
             aggs: {},
@@ -399,19 +411,19 @@ app.get("/acord-only", (req, res) => {
 const statsAggs = {
     MinAno: {
         min: {
-            field: "Data",
+            field: DATA_FIELD,
             format: "yyyy"
         }
     },
     MaxAno: {
         max: {
-            field: "Data",
+            field: DATA_FIELD,
             format: "yyyy"
         }
     },
     Anos: {
         date_histogram: {
-            field: "Data",
+            field: DATA_FIELD,
             interval: 'year',
             format: 'yyyy',
             min_doc_count: 0
