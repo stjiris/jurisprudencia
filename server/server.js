@@ -143,8 +143,8 @@ const populateFilters = (filters, body={}, afters=["MinAno","MaxAno"]) => { // f
             filters[when].push({
                 bool: {
                     should: filtersUsed[aggName].map( o => ({
-                        wildcard: {
-                            [aggObj[aggField].field]: { value: `*${o}*` }
+                        term: {
+                            [aggObj[aggField].field]: { value: `${o}` }
                         }
                     }))
                 }
@@ -263,7 +263,19 @@ let searchedArray = (string) => client.indices.analyze({
     text: string
 }).then( r => r.tokens.map( o => o.token) ).catch( e => [])
 
-let allSearchAggPromise = search(queryObject(""), {pre:[],after:[]}, 0, DEFAULT_AGGS, 0).then( r => r.aggregations)
+let allSearchAggPromise = search(queryObject(""), {pre:[],after:[]}, 0, DEFAULT_AGGS, 0).catch( e => {
+    console.log("Server couldn't reach elastic search. Using assumed values.")
+    return {
+        aggregations: {
+            MinAno: {
+                value_as_string: "1931"
+            },
+            MaxAno: {
+                value_as_string: new Date().getFullYear().toString()
+            }
+        }
+    }
+}).then( r => r.aggregations )
 
 const tmp = app.render.bind(app);
 app.render = async (name, obj, next) => {

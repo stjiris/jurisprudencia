@@ -9,15 +9,13 @@ for doc in hits
                         i.bi.bi-square.me-1
                     else
                         i.bi.bi-square-fill.me-1
-            span !{doc._source.Tipo} n.º&nbsp;
+            if doc._source["Meio Processual"]
+                span !{doc._source["Meio Processual"]} -
+            span &nbsp;!{doc._source.Tipo}&nbsp;
             a(href=`./acord-${doc._source.UUID}`, target="_blank")
                 | !{doc._source.Processo}
             if doc._source.Secção
-                span &nbsp;da !{Str(doc._source.Secção)}
-            if doc._source["Meio Processual"]
-                div.mx-1
-                    b Meio Processual:&nbsp;
-                    span #{Str(doc._source["Meio Processual"])}
+                span &nbsp;- !{doc._source.Secção}
         .col-12.d-flex.flex-wrap
             div.mx-1
                 b Relator:&nbsp;
