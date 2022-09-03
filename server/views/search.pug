@@ -35,11 +35,12 @@ block main
                 li Verifique o termo pesquisado
     else
         article
+            b.d-none.d-print-inline Ordenação:
             b: select(name="sort").me-2#sort-select
                 option(value="score",selected=sort=="score") Relevância
                 option(value="asc",selected=sort=="asc") Data Ascendente
                 option(value="des",selected=sort=="des") Data Descendente
-            div.d-inline.float-end
+            div.d-inline.float-end.d-print-none
                 if searchedArray.length > 0
                     | Termos da pesquisa destacados:&nbsp;
                     for term, i in searchedArray
@@ -72,7 +73,7 @@ block main
                 }, {
                     threshold: 0
                 }).observe(document.querySelector("#looking"));
-        article.row
+        article.row.d-print-none
             nav
                 ul.pagination.justify-content-center.text-center
                     li.page-item

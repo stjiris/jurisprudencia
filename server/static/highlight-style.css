@@ -97,3 +97,9 @@ details[open] .bi-caret-downright-fill::before {
 .pesquisa-sep::before {
     content: "(...)";
 }
+
+@media print {
+    .highlight{
+        display: none;
+    }
+}
