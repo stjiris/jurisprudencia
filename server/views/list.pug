@@ -33,7 +33,7 @@ block main
         tbody 
             for agg in aggs[term].buckets
                 tr
-                    td: a(href=`./?${term}=${agg.key}`) !{agg.key}
+                    td: a(href=`./?${term}=${encodeURIComponent(agg.key)}`) !{agg.key}
                     td !{agg.doc_count}
                     td !{agg.MinAno.value_as_string}
                     td !{agg.MaxAno.value_as_string}
