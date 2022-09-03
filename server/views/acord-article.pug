@@ -10,12 +10,12 @@ for doc in hits
                     else
                         i.bi.bi-square-fill.me-1
             if doc._source["Meio Processual"]
-                span !{doc._source["Meio Processual"]} -
+                span #{Str(doc._source["Meio Processual"])} -
             span &nbsp;!{doc._source.Tipo}&nbsp;
             a(href=`./acord-${doc._source.UUID}`, target="_blank")
                 | !{doc._source.Processo}
             if doc._source.Secção
-                span &nbsp;- !{doc._source.Secção}
+                span &nbsp;- #{Str(doc._source.Secção)}
         .col-12.d-flex.flex-wrap
             div.mx-1
                 b Relator:&nbsp;
