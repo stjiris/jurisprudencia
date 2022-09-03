@@ -1,7 +1,6 @@
 extends head 
 block head
     title Pesquisa
-    script(src="https://cdn.jsdelivr.net/npm/chart.js")
 
 prepend header
     -currentPage = "list"
@@ -10,11 +9,7 @@ block printpageinfo
     p Lista de !{term} da pesquisa por: "!{q || ""}"
 
 prepend form
-    .d-flex.flex-column.my-2
-        h3 Indíce
-            select.form-select(name="term")
-                for op of fields 
-                    option(selected=op==term) !{op}
+    input(type="text",name="term",hidden,value=term)#form-select-input
 
 block main
     if aggs[term].sum_other_doc_count > 0
@@ -25,13 +20,33 @@ block main
                     | Atenção:
                 ul
                     li Existem !{aggs[term].sum_other_doc_count} outros valores não listados.
-    .row.p-2
-        .col-12.d-none.d-lg-block.col-lg-4: h4 !{term}
-        .col-12.d-none.d-lg-block.col-lg-8: h4 Quantidade
-    .row.p-2
-        //pre: code !{JSON.stringify(letters, null, 2)}
-        -let available = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(l => l in letters)
-        for l of available
+    table.table.table-sm
+        thead 
+            tr 
+                th
+                    select#form-select(name="term")
+                        for op of fields 
+                            option(selected=op==term) !{op}
+                th Quantidade Total
+                th Primeira Data
+                th Última Data
+        tbody 
+            for agg in aggs[term].buckets
+                tr
+                    td: a(href=`./?${term}=${agg.key}`) !{agg.key}
+                    td !{agg.doc_count}
+                    td !{agg.MinAno.value_as_string}
+                    td !{agg.MaxAno.value_as_string}
+        script.
+            document.getElementById("form-select").addEventListener("change", (e) => {
+                document.getElementById("form-select-input").value = e.target.value;
+                document.getElementById("filter-form").submit();
+            })
+
+    //-.row.p-2
+        pre: code !{JSON.stringify(aggs, null, 2)}
+        //-let available = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(l => l in letters)
+        //-for l of available
             -let letter = letters[l]
             if letter
                 article.col-12.row.mb-3(id=`${l}`)

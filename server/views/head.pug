@@ -11,7 +11,7 @@ html(lang="en")
         block head
     body
         block header
-            header.mb-1.py-2.align-items-center.d-flex.flex-wrap.container
+            header.mb-1.py-2.align-items-center.d-flex.flex-wrap
                 a(href="./").align-items-center.d-flex.flex-wrap.text-decoration-none.nav-link
                     img(src="./stj-logo.png", style="max-height: 70px;")
                     div.ps-2.d-flex.flex-column.align-items-center
@@ -22,7 +22,7 @@ html(lang="en")
                     ul.container.d-flex.nav.align-items-center.justify-content-evenly.flex-wrap
                         li.nav-link.py-1.px-2.mx-1
                             input(type="submit", formaction="./", value="Documentos", form="filter-form",class=currentPage=="search"?"active":"").border-0.nav-link.fs-6.bg-transparent
-                        li.nav-link.py-1.px-2.mx-1
+                        //li.nav-link.py-1.px-2.mx-1
                             input(type="submit", formaction="./estatisticas", value="Estatísticas", form="filter-form",class=currentPage=="stats"?"active":"").border-0.nav-link.fs-6.bg-transparent
                         li.nav-link.py-1.px-2.mx-1
                             input(type="submit", formaction="./indices", value="Indíces", form="filter-form",class=currentPage=="list"?"active":"").border-0.nav-link.fs-6.bg-transparent
@@ -48,10 +48,10 @@ html(lang="en")
                                     button.btn.color-link(type="submit", hidden)
                                     .d-block
                                         .d-flex.align-items-center.justify-content-between
-                                            h4.d-inline.m-0
+                                            b.d-inline.m-0
                                                 | Pesquisa
-                                            if Object.keys(filters).length > 0
-                                                h6: a(href=`?q=`).text-danger.text-decoration-none
+                                            if Object.keys(filters).length > 0 || q
+                                                a(href=`?q=`).text-danger.text-decoration-none
                                                     i.bi-eraser-fill
                                                     | Limpar
                                         mixin usedFilters(key)
@@ -72,12 +72,15 @@ html(lang="en")
                                                 +usedFilters(key)
                                         .d-flex.flex-column.my-1
                                             input.form-control.form-control-sm.rounded-0(type="text", name="q", placeholder=`Texto Livre`, value=q||"")
-                                        .d-flex.flex-column.my-1
+                                        .d-flex.my-1
                                             .input-group.input-group-sm
-                                                .input-group-prepend.flex-grow-1
-                                                    input.form-control.form-control-sm.rounded-0(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="De (ano)")#data_inicio
-                                                .input-group-append.flex-grow-1
-                                                    input.form-control.form-control-sm.rounded-0(type="number", name="MaxAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder="Até (ano)")#data_fim
+                                                .input-group-prepend.flex-shrink
+                                                    label.input-group-text.rounded-0.p-1(for="data_inicio") De:
+                                                input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="Ano")#data_inicio
+                                            .input-group.input-group-sm
+                                                .input-group-prepend.flex-shrink
+                                                    label.input-group-text.rounded-0.p-1(for="data_fim") Até:
+                                                input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MaxAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder="Ano")#data_fim
                                         for p of properties
                                             +filterlist(p)
                                         +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)

@@ -1,6 +1,6 @@
 datalist(id=id)
     for agg in aggs 
         if agg.doc_count
-            option(value=agg.key) Número de acórdãos: !{agg.doc_count}
+            option(value=agg.key) Quantidade de processos: !{agg.doc_count}
         else
             option(value=agg.key) !{agg.key}

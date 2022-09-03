@@ -30,23 +30,22 @@ block main
                 li Verifique os filtros utilizados (tribunais, relator, descritores, data)
                 li Verifique o termo pesquisado
     else
-        article.row
-            .col-0.col-lg-4.d-none.d-lg-block
-                h4.d-inline
-                    i.bi-archive 
-                    | !{body.hits.total.value} Acórdãos
-            .col-12.col-lg-8.text-end.d-flex.justify-content-end.align-items-center
-                div
+        article
+            b: select(name="sort").border-0.me-2#sort-select
+                option(value="score",selected=sort=="score") Relevância
+                option(value="asc",selected=sort=="asc") Data Ascendente
+                option(value="des",selected=sort=="des") Data Descendente
+            b 
+                i.bi-archive 
+                | !{body.hits.total.value} Processos        
+            div.d-inline.float-end
+                if searchedArray.length > 0
+                    | Termos da pesquisa destacados:&nbsp;
                     for term, i in searchedArray
-                        span.badge.bg-white.text-dark.m-1(style=`border: 3px solid var(--highlight-${i}, var(--primary-gold))`) !{term}
-                h6.m-auto.me-2 Ordenar:
-                select(name="sort")#sort-select
-                    option(value="score",selected=sort=="score"): u Relevância
-                    option(value="asc",selected=sort=="asc"): u Data Ascendente
-                    option(value="des",selected=sort=="des"): u Data Descendente
+                        span.badge.bg-white.text-dark(style=`border: 3px solid var(--highlight-${i}, var(--primary-gold))`) !{term}
         include acord-article
         article.row(data-tribunal)#looking
-            h3 A receber acórdãos...
+            h3 A receber processos...
             script.
                 let fetching = false;
                 let page = !{page};

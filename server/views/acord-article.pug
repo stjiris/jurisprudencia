@@ -25,6 +25,10 @@ style.
         border-radius: 10px;
     }
 
+    .highlight-bar[data-key=Sumário]{
+        width: 50%;
+    }
+
     .highlight-bar-hit {
         position: absolute;
         background: var(--primary-gold);
@@ -106,12 +110,18 @@ for doc in hits
                         i.bi.bi-square.me-1
                     else
                         i.bi.bi-square-fill.me-1
-                a(href=`./acord-${doc._source.UUID}`, target="_blank")
-                    | !{doc._source.Processo}
+            a(href=`./acord-${doc._source.UUID}`, target="_blank")
+                | !{doc._source.Processo}
+            if doc._source.Secção
+                div.mx-1
+                    b Secção:&nbsp;
+                    span #{Str(doc._source.Secção)}
         .col-12.d-flex.flex-wrap
-            div.mx-1
-                if doc._source.Secção
-                    span (#{Str(doc._source.Secção)})
+            if doc._source["Meio Processual"]
+                div.mx-1
+                    b Meio Processual:&nbsp;
+                    span #{Str(doc._source["Meio Processual"])}
+        .col-12.d-flex.flex-wrap
             div.mx-1
                 b Relator:&nbsp;
                 span #{Str(doc._source.Relator)}
@@ -119,17 +129,11 @@ for doc in hits
                 b Data:&nbsp;
                 span #{doc.fields[DATA_FIELD]}
         .col-12.d-flex.flex-wrap
-            if doc._source["Meio Processual"]
-                div.mx-1
-                    b Meio Processual:&nbsp;
-                    span #{Str(doc._source["Meio Processual"])}
-        if doc._source.Votação
-            .col-12
+            if doc._source.Votação
                 div.mx-1
                     b Votação:&nbsp;
                     span #{Str(doc._source.Votação.Forma)}
-        if doc._source.Decisão
-            .col-12
+            if doc._source.Decisão
                 div.mx-1.d-flex
                     b Decisão:&nbsp;
                     div !{Str(doc._source.Decisão)}

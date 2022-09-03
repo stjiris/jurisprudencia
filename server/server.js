@@ -22,7 +22,7 @@ const aggs = {
             field: DATA_FIELD,
             format: 'yyyy'
         }
-    },
+    }
 }
 filterableProps.forEach(name => {
     aggs[name] = {
@@ -62,6 +62,13 @@ aggs["Meio Processual"] = {
         }
     }
 }
+
+aggs["Tipo de Processo"] = aggs["Tipo"];
+delete aggs["Tipo"];
+aggs["Número de Processo"] = aggs["Processo"];
+delete aggs["Processo"];
+filterableProps[filterableProps.indexOf("Tipo")] = "Tipo de Processo";
+filterableProps[filterableProps.indexOf("Processo")] = "Número de Processo";
 
 const DEFAULT_AGGS = {
     MaxAno : aggs.MaxAno,
@@ -471,19 +478,21 @@ function listAggregation(term){
                 order: {
                     _term: "asc",
                 }
+            },
+            aggs: {
+                MinAno: {
+                    min: {
+                        field: DATA_FIELD
+                    }
+                },
+                MaxAno: {
+                    max: {
+                        field: DATA_FIELD
+                    }
+                }
             }
         }
     }
-}
-
-function groupByLetter(aggregations){
-    const letters = {};
-    for( let agg of aggregations ){
-        let letter = (agg.key.replace(/[^a-zA-Z]/g, "#")[0] || "N.A.").toUpperCase();
-        if( !letters[letter] ) letters[letter] = [];
-        letters[letter].push(agg);
-    }
-    return letters
 }
 
 app.get("/indices", (req, res) => {
@@ -493,7 +502,7 @@ app.get("/indices", (req, res) => {
 
     const fields = filterableProps;
     search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then( body => {
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: Object.keys(filters).length > 0, fields: fields});
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, term: term, open: Object.keys(filters).length > 0, fields: fields});
     }).catch( err => {
         console.log(req.originalUrl, err)
         res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), error: err, aggs: {}, letters: {}, filters: {}, term: term, fields: fields});
