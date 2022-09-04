@@ -573,7 +573,6 @@ app.get("/histogram", (req, res) => {
     }
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
-    console.log(term, value)
     search(queryObject(req.query.q), sfilters, 0, histogramAggregation(term, value), 0).then( body => {
         res.json(body.aggregations);
     }).catch( err => {
