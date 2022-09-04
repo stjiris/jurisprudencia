@@ -524,10 +524,13 @@ function listAggregation(term){
 
 app.get("/indices", (req, res) => {
     const term = req.query.term || "Relator";
+    const fields = filterableProps;
+    if( fields.indexOf(term) == -1 ){
+        return res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: `O campo "${term}" não foi indexado.`, aggs: {}, letters: {}, filters: {}, term: term, fields: fields})
+    }
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
 
-    const fields = filterableProps;
     search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then( body => {
         res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: body, aggs: body.aggregations, filters: filters, term: term, open: Object.keys(filters).length > 0, fields: fields});
     }).catch( err => {
@@ -535,6 +538,49 @@ app.get("/indices", (req, res) => {
         res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: err, aggs: {}, letters: {}, filters: {}, term: term, fields: fields});
     });
 });
+
+function histogramAggregation(key, value){
+    return {
+        MinAno: aggs.MinAno,
+        MaxAno: aggs.MaxAno,
+        Term: {
+            filter: {
+                term: {
+                    [key]: value
+                }
+            },
+            aggs: {
+                MinAno: aggs.MinAno,
+                MaxAno: aggs.MaxAno,
+                Anos: {
+                    date_histogram: {
+                        "field": DATA_FIELD,
+                        "interval": "year",
+                        "format": "yyyy"
+                    }
+                }
+            }
+        }
+    }
+}
+
+app.get("/histogram", (req, res) => {
+    const term = req.query.term || "Relator";
+    const value = req.query.histogram_value;
+    const fields = filterableProps;
+    if( fields.indexOf(term) == -1 ){
+        return res.json()
+    }
+    const sfilters = {pre: [], after: []};
+    const filters = populateFilters(sfilters, req.query, []);
+    console.log(term, value)
+    search(queryObject(req.query.q), sfilters, 0, histogramAggregation(term, value), 0).then( body => {
+        res.json(body.aggregations);
+    }).catch( err => {
+        res.json()
+    })
+
+})
 
 app.get("/related-:proc(*)", (req, res) => {
     let proc = req.params.proc;

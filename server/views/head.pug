@@ -21,7 +21,7 @@ html(lang="en")
                 nav.d-print-none
                     ul.container.d-flex.nav.align-items-center.justify-content-evenly.flex-wrap
                         li.nav-link.py-1.px-2.mx-1
-                            input(type="submit", formaction="./", value="Documentos", form="filter-form",class=currentPage=="search"?"active":"").border-0.nav-link.fs-6.bg-transparent
+                            input(type="submit", formaction="./", value="Processos", form="filter-form",class=currentPage=="search"?"active":"").border-0.nav-link.fs-6.bg-transparent
                         //li.nav-link.py-1.px-2.mx-1
                             input(type="submit", formaction="./estatisticas", value="Estatísticas", form="filter-form",class=currentPage=="stats"?"active":"").border-0.nav-link.fs-6.bg-transparent
                         li.nav-link.py-1.px-2.mx-1
@@ -36,6 +36,7 @@ html(lang="en")
                     p Sem informação da página
         main.container-fluid#top
             if error 
+                form(method="get",style="top:0;")#filter-form.position-sticky
                 pre.alert.alert-danger
                     code !{JSON.stringify(error, null , 2)}
 
