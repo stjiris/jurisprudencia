@@ -41,7 +41,7 @@ block main
                     td !{agg.doc_count}
                     td !{agg.MinAno.value_as_string}
                     td !{agg.MaxAno.value_as_string}
-                    td: a(onclick="histogram(this)",data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`, href="#") Abrir
+                    td: a(onclick="histogram(this)",data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`, href="#histogram") Abrir
     script.
         document.getElementById("form-select").addEventListener("change", (e) => {
             document.getElementById("form-select-input").value = e.target.value;

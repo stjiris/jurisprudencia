@@ -546,7 +546,7 @@ function histogramAggregation(key, value){
         Term: {
             filter: {
                 term: {
-                    [aggs[term].terms.field]: value
+                    [aggs[key].terms.field]: value
                 }
             },
             aggs: {
