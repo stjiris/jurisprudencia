@@ -142,9 +142,13 @@ const populateFilters = (filters, body={}, afters=["MinAno","MaxAno"]) => { // f
             }
             filters[when].push({
                 bool: {
-                    should: filtersUsed[aggName].map( o => ({
+                    should: filtersUsed[aggName].map( o => (o.startsWith("\"") && o.endsWith("\"") ? {
                         term: {
-                            [aggObj[aggField].field]: { value: `${o}` }
+                            [aggObj[aggField].field]: { value: `${o.slice(1,-1)}` }
+                        }
+                    } : {
+                        wildcard: {
+                            [aggObj[aggField].field]: { value: `*${o}*` }
                         }
                     }))
                 }
@@ -531,6 +535,29 @@ app.get("/indices", (req, res) => {
         res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: err, aggs: {}, letters: {}, filters: {}, term: term, fields: fields});
     });
 });
+
+app.get("/related-:proc(*)", (req, res) => {
+    let proc = req.params.proc;
+    search({term: {UUID: proc}}, {pre:[], after:[]}, 0, {}, 1, {_source: ['Processo']}).then(async (body) => {
+        if( body.hits.total.value == 0 ) return [];
+        let processo = body.hits.hits[0]._source["Processo"];
+        let rs = [];
+        while( true ){
+            let cr = await search({wildcard: {Processo: `${processo}*`}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Processo', "UUID", DATA_FIELD]});
+            cr.hits.hits.forEach( hit => {
+                if( hit._source.UUID == proc || rs.find(o => o.UUID == hit._source.UUID) ) return;
+                rs.push({
+                    Processo: hit._source.Processo,
+                    UUID: hit._source.UUID,
+                    Data: hit._source[DATA_FIELD]
+                });
+            })
+            if( Math.max(processo.lastIndexOf("."), processo.lastIndexOf("-")) == -1 ) break;
+            processo = processo.slice(0,Math.max(processo.lastIndexOf("."), processo.lastIndexOf("-")))
+        }
+        return rs;
+    }).then( l => res.json(l))
+})
 
 app.get("/acord-:proc(*)", (req, res) => {
     let proc = req.params.proc;
