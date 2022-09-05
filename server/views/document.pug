@@ -74,9 +74,23 @@ block allmain
             table.table.table-sm(style="font-family:'Times New Roman'")
                 tbody 
                     for key of Object.keys(source.Original)
+                        if key != "Sumário" && key != "Decisão Texto Integral"
+                            tr
+                                td !{key}
+                                td !{source.Original[key]}
+                    if "Sumário" in source.Original
                         tr
-                            td !{key}
-                            td !{source.Original[key]}
+                            td(colspan="2")
+                                details 
+                                    summary Ver Sumário Original
+                                    div !{source.Original["Sumário"]}
+                    if "Decisão Texto Integral" in source.Original
+                        tr
+                            td(colspan="2")
+                                details 
+                                    summary Ver Decisão Texto Integral Original
+                                    div !{source.Original["Decisão Texto Integral"]}
+                            
 
     style.
         #related {
