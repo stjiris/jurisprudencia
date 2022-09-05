@@ -75,11 +75,6 @@ html(lang="en")
                                                 +usedFilters(key)
                                         .d-flex.flex-column.my-1
                                             input.form-control.form-control-sm.rounded-0(type="search", name="q", placeholder=`Texto Livre`, value=q||"")
-                                        +filterlist("Meio Processual")
-                                        +filterlist("Tipo de Processo")
-                                        +filterlist("Número de Processo")
-                                        +filterlist("Secção")
-                                        +filterlist("Relator")
                                         .d-flex.my-1
                                             .input-group.input-group-sm
                                                 .input-group-prepend.flex-shrink
@@ -89,6 +84,11 @@ html(lang="en")
                                                 .input-group-prepend.flex-shrink
                                                     label.input-group-text.rounded-0.p-1(for="data_fim") Até:
                                                 input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MaxAno", min=aggsGlobal.MinAno.value_as_string, max=aggsGlobal.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder=aggsGlobal.MaxAno.value_as_string)#data_fim
+                                        +filterlist("Meio Processual")
+                                        +filterlist("Tipo de Processo")
+                                        +filterlist("Número de Processo")
+                                        +filterlist("Secção")
+                                        +filterlist("Relator")
                                         +filterlist("Votação")
                                         +filterlist("Decisão")
                                         +filterlist("Descritores")
