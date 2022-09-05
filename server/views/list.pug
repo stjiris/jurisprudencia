@@ -30,6 +30,7 @@ block main
                     select#form-select(name="term")
                         for op of fields 
                             option(selected=op==term) !{op}
+                    a.ms-1(href=`./indices.csv?${querystring}`): i.bi.bi-filetype-csv
                 th Quantidade Total
                 th Primeira Data
                 th Última Data

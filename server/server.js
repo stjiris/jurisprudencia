@@ -539,6 +539,31 @@ app.get("/indices", (req, res) => {
     });
 });
 
+app.get("/indices.csv", (req, res) => {
+    const term = req.query.term || "Relator";
+    const fields = filterableProps;
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    if( fields.indexOf(term) == -1 ){
+        res.write(`"Erro"\n`);
+        res.write(`O campo "${term}" não foi indexado.\n`);
+        return res.end();
+    }
+    const sfilters = {pre: [], after: []};
+    const filters = populateFilters(sfilters, req.query, []);
+    res.write(`"${term}","Quantidade Total","Primeira Data","Última Data"\n`);
+    search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then( body => {
+        body.aggregations[term].buckets.forEach( bucket => {
+            res.write(`"${bucket.key}",${bucket.doc_count},"${bucket.MinAno.value_as_string}","${bucket.MaxAno.value_as_string}"\n`);
+        });
+        res.end();
+    }).catch( err => {
+        console.log(req.originalUrl, err)
+        res.write(`"Erro"\n`);
+        res.write(`"${err.message}"\n`)
+        res.end();
+    });
+})
+
 function histogramAggregation(key, value){
     return {
         MinAno: aggs.MinAno,
