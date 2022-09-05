@@ -45,7 +45,9 @@ block allmain
                 });
         +field("Secção")
         +field("Relator")
-        +field("Data")
+        h6
+            b Data:&nbsp;
+            | !{source.Data}
         if source.Votação
             h6
                 b Votação:&nbsp;
