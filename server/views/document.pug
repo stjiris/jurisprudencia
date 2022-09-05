@@ -28,6 +28,12 @@ block allmain
         h6
             b Número de Processo:&nbsp;
             span !{source.Processo}
+            span
+                | &nbsp;(
+                a(href=source.URL,target="_blank")
+                    | dgsi.pt
+                    sup: i.bi.bi-box-arrow-up-right
+                | )
             small#related
             script.
                 fetch(`./related-!{source.UUID}`).then(r => r.json() ).then(l =>{
@@ -57,56 +63,24 @@ block allmain
             h6
                 b Descritores:&nbsp;
                 | !{source.Descritores.map( d => `<a href='./?Descritores="${encodeURIComponent(d)}"'>${Str(d)}</a>`).join(' / ')}
-        a(href=source.URL,target="_blank")
-            | Link Original
-            sup: i.bi.bi-box-arrow-up-right
-
         if source.Sumário
-            h6: b Sumário:
+            h6.border-top.border-2.border-dark.mt-2: b Sumário:
             div.p-2 !{source.Sumário}
         if source.Texto
-            h6: b Texto:
+            h6.border-top.border-2.border-dark.mt-2: b Texto:
             div.p-2 !{source.Texto}
-        hr
-        table.table.table-sm.container(style="font-family:'Times New Roman'")
-            tbody 
-                for key of Object.keys(source.Original)
-                    tr
-                        td !{key}
-                        td !{source.Original[key]}
+        h6.border-top.border-2.border-dark.mt-2: b Metadados da DGSI
+        .container.border.border-dark.p-3
+            table.table.table-sm(style="font-family:'Times New Roman'")
+                tbody 
+                    for key of Object.keys(source.Original)
+                        tr
+                            td !{key}
+                            td !{source.Original[key]}
 
     style.
-        .trib-spacer{
-            position: relative;
-        }
-        .trib-spacer::before {
-            content: '';
-            background: var(--tribunal-color);
-            position: absolute;
-            border-radius: 10px;
-            bottom: 0px;
-            left: 10px;
-            right: 10px;
-            height: 5px;
-        }
-        a[data-tribunal]{
-            color: var(--tribunal-color);
-        }
-        header h6 {
-            color: var(--color-white)
-        }
-        @media print{
-            header h6 {
-                color: var(--color-black)
-            }
-            header {
-                background: var(#fff)
-            }
-            .no-print{
-                display: block;
-            }
-
-            .infofilters{
-                display: block !important;
-            }
+        #related {
+            background: var(--secondary-gold);
+            display: block;
+            font-size: 0.75rem;
         }
