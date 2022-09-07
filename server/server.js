@@ -287,7 +287,7 @@ function shouldCapitalize(word){
 }
 
 function titleCase(str){
-    return str.split(" ").map( o => shouldCapitalize(o) ? `${o[0].toUpperCase()}${o.substr(1).toLowerCase()}` : o.toLowerCase()).join(" ")
+    return str.split(" ").map( o => shouldCapitalize(o) ? `${o.substr(0,1).toUpperCase()}${o.substr(1).toLowerCase()}` : o.toLowerCase()).join(" ")
 }
 
 const tmp = app.render.bind(app);
