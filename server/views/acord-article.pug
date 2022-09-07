@@ -39,7 +39,7 @@ for doc in hits
                     if doc.highlight && doc.highlight.Descritores
                         - descritores = doc._source.Descritores.map(origin => doc.highlight.Descritores.find(highlight => highlight.includes(origin)) ? `<mark>${(origin)}</mark>` : (origin))
                     else 
-                        - descritores = doc._source.Descritores.map(Str)
+                        - descritores = doc._source.Descritores
                     span !{descritores.join(' / ')}
         if doc._source.Sumário
             details.col-12
