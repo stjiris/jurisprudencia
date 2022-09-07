@@ -97,8 +97,7 @@ module.exports.create = () => client.indices.create({
         analysis: {
             normalizer: {
                 term_normalizer: {
-                    type: 'custom',
-                    filter: ['uppercase'],
+                    type: 'custom'
                 }
             },
             analyzer: {

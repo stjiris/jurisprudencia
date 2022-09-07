@@ -71,7 +71,7 @@ html(lang="en")
                                         mixin filterlist(key)
                                             .d-flex.flex-column.my-1.border.pb-1
                                                 +await(`./datalist?id=datalist-${key}&agg=${key}&${querystring}`)
-                                                input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`${key}`,disabled)
+                                                input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`${key}`,disabled,oninput="checkDataListInput(this)")
                                                 +usedFilters(key)
                                         .d-flex.flex-column.my-1
                                             input.form-control.form-control-sm.rounded-0(type="search", name="q", placeholder=`Texto Livre`, value=q||"")
@@ -134,3 +134,13 @@ html(lang="en")
 
                 document.querySelectorAll(`input[list="${datalist.id}"]`).forEach(input => input.disabled = false);
             })
+
+            function checkDataListInput(elm){
+                let val = elm.value;
+                let dlist = elm.list;
+                let opts = dlist.childNodes;
+                if( opts.length == 1 ){
+                    elm.value = `"${f}"`
+                    elm.unfocus()
+                }
+            }
