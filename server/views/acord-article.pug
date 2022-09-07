@@ -1,5 +1,4 @@
 for doc in hits
-    -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     -let relevanciaColor = (per) => per < 0.2 ? '#E3D5A1' : per < 0.4 ? '#CEB65E' : per < 0.6 ? '#B49936' : per < 0.8 ? '#8C752C' : '#6C5A22';
     article.row.border-top.result
         .col-12.pt-1.d-flex
@@ -10,16 +9,16 @@ for doc in hits
                     else
                         i.bi.bi-square-fill.me-1
             if doc._source["Meio Processual"]
-                span #{Str(doc._source["Meio Processual"])} -
+                span #{(doc._source["Meio Processual"])} -
             span &nbsp;!{doc._source.Tipo}&nbsp;
             a(href=`./acord-${doc._source.UUID}`, target="_blank")
                 | !{doc._source.Processo}
             if doc._source.Secção
-                span &nbsp;- #{Str(doc._source.Secção)}
+                span &nbsp;- #{(doc._source.Secção)}
         .col-12.d-flex.flex-wrap
             div.mx-1
                 b Relator:&nbsp;
-                span #{Str(doc._source.Relator)}
+                span #{(doc._source.Relator)}
             div.mx-1
                 b Data:&nbsp;
                 span #{doc.fields[DATA_FIELD]}
@@ -27,18 +26,18 @@ for doc in hits
             if doc._source.Votação
                 div.mx-1
                     b Votação:&nbsp;
-                    span #{Str(doc._source.Votação.Forma)}
+                    span #{(doc._source.Votação.Forma)}
             if doc._source.Decisão
                 div.mx-1.d-flex
                     b Decisão:&nbsp;
-                    div !{Str(doc._source.Decisão)}
+                    div !{(doc._source.Decisão)}
         if Array.isArray(doc._source.Descritores)
             .col-12
                 div.mx-1
                     b Descritores:&nbsp;
                     - let descritores = []
                     if doc.highlight && doc.highlight.Descritores
-                        - descritores = doc._source.Descritores.map(origin => doc.highlight.Descritores.find(highlight => highlight.includes(origin)) ? `<mark>${Str(origin)}</mark>` : Str(origin))
+                        - descritores = doc._source.Descritores.map(origin => doc.highlight.Descritores.find(highlight => highlight.includes(origin)) ? `<mark>${(origin)}</mark>` : (origin))
                     else 
                         - descritores = doc._source.Descritores.map(Str)
                     span !{descritores.join(' / ')}

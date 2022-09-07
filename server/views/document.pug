@@ -8,7 +8,6 @@ block printpageinfo
 
 block allmain
     form#filter-form
-    -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     if !source
         .alert.alert-info(role="alert")
             h4.alert-heading Sem resultados...
@@ -22,7 +21,7 @@ block allmain
             if source[key]
                 h6
                     b !{showkey ? showkey : key}:&nbsp;
-                    a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{str ? Str(source[key]) : source[key]}
+                    a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{source[key]}
         +field("Meio Processual")
         +field("Tipo", "Tipo de Processo")
         h6
@@ -62,7 +61,7 @@ block allmain
         if source.Descritores
             h6
                 b Descritores:&nbsp;
-                | !{source.Descritores.map( d => `<a href='./?Descritores="${encodeURIComponent(d)}"'>${Str(d)}</a>`).join(' / ')}
+                | !{source.Descritores.map( d => `<a href='./?Descritores="${encodeURIComponent(d)}"'>${d}</a>`).join(' / ')}
         if source.Sumário
             h6.border-top.border-2.border-dark.mt-2: b Sumário:
             div.p-2 !{source.Sumário}

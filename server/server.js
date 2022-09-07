@@ -284,7 +284,8 @@ let allSearchAggPromise = search(queryObject(""), {pre:[],after:[]}, 0, DEFAULT_
 const tmp = app.render.bind(app);
 app.render = async (name, obj, next) => {
     let aggsGlobal = await allSearchAggPromise;
-    tmp(name, { aggsGlobal, properties: filterableProps, requestStart: new Date(), ...obj, DATA_FIELD }, next);
+    let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+    tmp(name, { aggsGlobal, Str, properties: filterableProps, requestStart: new Date(), ...obj, DATA_FIELD }, next);
 }
 
 // Returns page with filters
