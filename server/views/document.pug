@@ -21,7 +21,7 @@ block allmain
             if source[key]
                 h6
                     b !{showkey ? showkey : key}:&nbsp;
-                    a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{source[key]}
+                    a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{str ? titleCase(source[key]) : source[key]}
         +field("Meio Processual")
         +field("Tipo", "Tipo de Processo")
         h6
@@ -56,12 +56,12 @@ block allmain
         if source.Votação
             h6
                 b Votação:&nbsp;
-                a(href=`./?Votação="${encodeURIComponent(source.Votação.Forma)}"`) !{source.Votação.Forma}
+                a(href=`./?Votação="${encodeURIComponent(source.Votação.Forma)}"`) !{titleCase(source.Votação.Forma)}
         +field("Decisão")
         if source.Descritores
             h6
                 b Descritores:&nbsp;
-                | !{source.Descritores.map( d => `<a href='./?Descritores="${encodeURIComponent(d)}"'>${d}</a>`).join(' / ')}
+                | !{source.Descritores.map( d => `<a href='./?Descritores="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
         if source.Sumário
             h6.border-top.border-2.border-dark.mt-2: b Sumário:
             div.p-2 !{source.Sumário}

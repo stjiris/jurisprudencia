@@ -9,16 +9,16 @@ for doc in hits
                     else
                         i.bi.bi-square-fill.me-1
             if doc._source["Meio Processual"]
-                span #{(doc._source["Meio Processual"])} -
+                span #{titleCase(doc._source["Meio Processual"])} -
             span &nbsp;!{doc._source.Tipo}&nbsp;
             a(href=`./acord-${doc._source.UUID}`, target="_blank")
                 | !{doc._source.Processo}
             if doc._source.Secção
-                span &nbsp;- #{(doc._source.Secção)}
+                span &nbsp;- #{titleCase(doc._source.Secção)}
         .col-12.d-flex.flex-wrap
             div.mx-1
                 b Relator:&nbsp;
-                span #{(doc._source.Relator)}
+                span #{titleCase(doc._source.Relator)}
             div.mx-1
                 b Data:&nbsp;
                 span #{doc.fields[DATA_FIELD]}
@@ -26,20 +26,20 @@ for doc in hits
             if doc._source.Votação
                 div.mx-1
                     b Votação:&nbsp;
-                    span #{(doc._source.Votação.Forma)}
+                    span #{titleCase(doc._source.Votação.Forma)}
             if doc._source.Decisão
                 div.mx-1.d-flex
                     b Decisão:&nbsp;
-                    div !{(doc._source.Decisão)}
+                    div !{titleCase(doc._source.Decisão)}
         if Array.isArray(doc._source.Descritores)
             .col-12
                 div.mx-1
                     b Descritores:&nbsp;
                     - let descritores = []
                     if doc.highlight && doc.highlight.Descritores
-                        - descritores = doc._source.Descritores.map(origin => doc.highlight.Descritores.find(highlight => highlight.includes(origin)) ? `<mark>${(origin)}</mark>` : (origin))
+                        - descritores = doc._source.Descritores.map(origin => doc.highlight.Descritores.find(highlight => highlight.includes(origin)) ? `<mark>${titleCase(origin)}</mark>` : titleCase(origin))
                     else 
-                        - descritores = doc._source.Descritores
+                        - descritores = doc._source.Descritores.map(titleCase)
                     span !{descritores.join(' / ')}
         if doc._source.Sumário
             details.col-12

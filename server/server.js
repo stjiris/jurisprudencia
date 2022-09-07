@@ -281,11 +281,20 @@ let allSearchAggPromise = search(queryObject(""), {pre:[],after:[]}, 0, DEFAULT_
     }
 }).then( r => r.aggregations )
 
+function shouldCapitalize(word){
+    let exceptions = ["e","o","a","os","as","de","da","do","das","dos","à","no","na","nos","nas","em","por","com","ao","aos"]
+    return exceptions.indexOf(word.toLowerCase()) == -1
+}
+
+function titleCase(str){
+    return str.split(" ").map( o => shouldCapitalize(o) ? `${o[0].toUpperCase()}${o.substr(1).toLowerCase()}` : o.toLowerCase()).join(" ")
+}
+
 const tmp = app.render.bind(app);
 app.render = async (name, obj, next) => {
     let aggsGlobal = await allSearchAggPromise;
     let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-    tmp(name, { aggsGlobal, Str, properties: filterableProps, requestStart: new Date(), ...obj, DATA_FIELD }, next);
+    tmp(name, { aggsGlobal, titleCase, properties: filterableProps, requestStart: new Date(), ...obj, DATA_FIELD }, next);
 }
 
 // Returns page with filters
