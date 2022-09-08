@@ -8,7 +8,7 @@ app.set('view engine', 'pug');
 app.set('views', './views');
 
 const {Index: INDEXNAME, Properties: properties} = require('../jurisprudencia');
-const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword' || obj.fielddata).map( ([name, _]) => name).filter( o => o != "URL" && o != "UUID").concat("Votação")
+const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword' || (obj.fields && obj.fields.keyword)).map( ([name, _]) => name).filter( o => o != "URL" && o != "UUID").concat("Votação")
 let DATA_FIELD = "Data";
 const aggs = {
     MinAno: {
@@ -25,9 +25,10 @@ const aggs = {
     }
 }
 filterableProps.forEach(name => {
+    let key = properties[name].fields ? name + ".keyword" : name
     aggs[name] = {
         terms: {
-            field: name,
+            field: key,
             size: 65536,
             order: {
                 _term: "asc"
@@ -35,27 +36,9 @@ filterableProps.forEach(name => {
         }
     }
 });
-aggs["Descritores"] = {
-    terms: {
-        field: "Descritores.keyword",
-        size: 65536,
-        order: {
-            _term: "asc"
-        }
-    }
-}
 aggs["Votação"] = {
     terms: {
-        field: "Votação.Forma",
-        size: 65536,
-        order: {
-            _term: "asc"
-        }
-    }
-}
-aggs["Meio Processual"] = {
-    terms: {
-        field: "Meio Processual.keyword",
+        field: "Votação.Forma.keyword",
         size: 65536,
         order: {
             _term: "asc"
@@ -510,7 +493,7 @@ function listAggregation(term){
         MaxAno: aggs.MaxAno,
         [term]: {
             terms: {
-                field: aggs[term].terms.field,  
+                field: aggs[term].terms.field.replace("keyword","raw"),
                 size: 65536/5,
                 order: {
                     _term: "asc",
@@ -715,28 +698,19 @@ app.get("/datalist", (req, res) => {
         });
         return;
     }
-    if( aggKey == "Datafield" ){
-        client.indices.getMapping({index: INDEXNAME}).then(body => {
-            res.render("datalist", {aggs: Object.entries(body[INDEXNAME].mappings.properties).filter(o => o[1].fielddata || o[1].type == "keyword").map(o => ({key: o[0]})), id: id});
-        });
-        return;
-    }
     if( !agg ) {
         res.render("datalist", {aggs: [], error: "Aggregation not found", id: req.query.id});
         return;
     }
     let finalAgg = {
         terms: {
-            field: agg.terms.field,
+            field: agg.terms.field.replace("keyword","raw"),
             size: agg.terms.size
         }
     }
     const sfilters = {pre: [], after: []};
     populateFilters(sfilters, req.query, [aggKey]);
-    search(queryObject(req.query.q), sfilters, 0, { [aggKey]: finalAgg}, 10).then(async body => {
-        if( body.aggregations[aggKey].buckets.length < 10 ){
-            body = await search(queryObject(req.query.q), sfilters, 0, { [aggKey]: agg }, 0);
-        }
+    search(queryObject(req.query.q), sfilters, 0, { [aggKey]: finalAgg}, 10).then(body => {
         res.render("datalist", {aggs: body.aggregations[aggKey].buckets, id: id});
     }).catch(err => {
         console.log(req.originalUrl, err.body.error);
