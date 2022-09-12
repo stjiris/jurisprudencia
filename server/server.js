@@ -537,22 +537,22 @@ app.get("/indices.csv", (req, res) => {
     const fields = filterableProps;
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     if( fields.indexOf(term) == -1 ){
-        res.write(`"Erro"\n`);
-        res.write(`O campo "${term}" não foi indexado.\n`);
+        res.write(`"Erro"\r\n`);
+        res.write(`O campo "${term}" não foi indexado.\r\n`);
         return res.end();
     }
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
-    res.write(`"${term}","Quantidade Total","Primeira Data","Última Data"\n`);
+    res.write(`"${term}"\t"Quantidade Total"\t"Primeira Data"\t"Última Data"\r\n`);
     search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then( body => {
         body.aggregations[term].buckets.forEach( bucket => {
-            res.write(`"${bucket.key}",${bucket.doc_count},"${bucket.MinAno.value_as_string}","${bucket.MaxAno.value_as_string}"\n`);
+            res.write(`"${bucket.key}"\t${bucket.doc_count}\t"${bucket.MinAno.value_as_string}"\t"${bucket.MaxAno.value_as_string}"\r\n`);
         });
         res.end();
     }).catch( err => {
         console.log(req.originalUrl, err)
-        res.write(`"Erro"\n`);
-        res.write(`"${err.message}"\n`)
+        res.write(`"Erro"\r\n`);
+        res.write(`"${err.message}"\r\n`)
         res.end();
     });
 })
