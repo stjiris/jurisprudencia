@@ -68,7 +68,9 @@ let queryObject = (string) => {
     }
     return [{
         simple_query_string: {
-            query: Array.isArray(string) ? string.join(" ") : string
+            query: Array.isArray(string) ? string.join(" ") : string,
+            fields: ["*"],
+            default_operator: 'OR'
         }
     }];
 }
