@@ -1,7 +1,7 @@
 const es = require('@elastic/elasticsearch')
 const client = new es.Client({ node: 'http://localhost:9200' });
 
-const Index = module.exports.Index = "jurisprudencia.5.0";
+const Index = module.exports.Index = "jurisprudencia.6.0";
 const Properties = module.exports.Properties = {
     "Original": {
         type: 'object',
@@ -120,7 +120,16 @@ const Properties = module.exports.Properties = {
     },
     "UUID": {
         type: 'keyword'
-    }
+    },
+    "HASH":{
+        type: "object",
+        properties: {
+            "Original": { type: "keyword" },
+            "Metadados": { type: "keyword" },
+            "Texto": { type: "keyword" },
+            "Sumário" : { type: "keyword" }
+        }
+    } 
 }
 
 module.exports.delete = () => client.indices.delete({ index: Index });
@@ -142,7 +151,7 @@ module.exports.create = () => client.indices.create({
             analyzer: {
                 default: {
                     char_filter: ['html_strip'],
-                    filter: ['trim', 'lowercase', 'asciifolding', "stopwords_pt"],
+                    filter: ['trim', 'lowercase', 'stopwords_pt', 'asciifolding'],
                     tokenizer: 'classic',
                 }
             },

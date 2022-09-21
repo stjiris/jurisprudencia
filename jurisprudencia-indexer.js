@@ -7,12 +7,33 @@ const jurisprudencia = require('./jurisprudencia');
 const fetch = require('./util/fetch');
 const { strip_attrs } = require('./util/html');
 const crypto = require("crypto");
+const { writeFileSync } = require('fs');
+
+let report = {
+    /* Timing report */
+    timeStartAt: new Date(),
+    timeEndAt: new Date(),
+    /* Indexing report */
+    indexTotalCount: 0,
+    indexNewCount: 0,
+    indexUpdatedCount: 0,
+    indexNotUpdatedCount: 0,
+    indexConflitsFound: [],
+    /* Requests report */
+    fetchTotalCount: 0,
+    fetchTotalBytes: 0,
+    fetchTotalTime: 0,
+    fetchAvgTime: 0,
+    fetchAvgBytes: 0
+}
+
+require('./util/fetch').watchFetchStats( pageDownloadedStats => {
+    report.fetchTotalCount++;
+    report.fetchTotalBytes+=pageDownloadedStats.bytes;
+    report.fetchTotalTime+=pageDownloadedStats.end - pageDownloadedStats.start;
+})
 
 forEachDgsiLink(async url => {
-    if( await UrlIsIndexed(url) ){
-        console.log(`${url} already indexed`)
-        return;
-    }
     let table = await url2table(url);
     let original = {}
     let tipo = "Acordão";
@@ -25,8 +46,12 @@ forEachDgsiLink(async url => {
             original[key] = table[key].innerHTML;
         }
         if( key.match(/Data d. (.*)/) ){
-            tipo = key.match(/Data d. (.*)/)[1];
-            data = table[key].textContent.trim().replace(/-/g, '/');
+            if( tipo == "Acórdão"){
+                // From experiments, Data do Acórdão appears first. Only Data da Decisão Sumária and Data da Decisão Singular might appear with Data do Acórdão.
+                // However, in case this order changes, let's prevent variable tipo from changing after it ins't Acórdão. 
+                tipo = key.match(/Data d. (.*)/)[1].trim();
+                data = table[key].textContent.trim().replace(/-/g, '/');
+            }
         }
     });
     let object = {
@@ -42,13 +67,23 @@ forEachDgsiLink(async url => {
         "Decisão": getDecisao(table),
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
-        "URL": url,
-        "UUID": calculateUUID(original),
+        "URL": url
     }
-    await client.index({
-        index: jurisprudencia.Index,
-        body: object
-    });
+    object["HASH"] = {
+        "Original": calculateUUID(object, ["Original"]),
+        "Metadados": calculateUUID(object, ["Tipo","Processo","Data","Relator","Descritores","Meio Processual", "Votação", "Secção", "Decisão"]),
+        "Sumário": calculateUUID(object, ["Sumário"]),
+        "Texto": calculateUUID(object, ["Texto"]),
+    }
+    object["UUID"] = calculateUUID(object["HASH"], ["Sumário","Texto"]);
+
+    await reportIndex(object);
+}).then( _ => {
+    report.timeEndAt = new Date();
+    report.fetchAvgBytes = report.fetchTotalBytes / report.fetchTotalCount;
+    report.fetchAvgTime = report.fetchTotalTime / report.fetchTotalCount;
+
+    writeFileSync(`indexer-report-${new Date()}.json`, JSON.stringify(report, null, "  "));
 })
 
 function getDescritores(table){
@@ -101,14 +136,65 @@ function getSeccao(table){
     return null;
 }
 
-function calculateUUID(table){
-    let str = JSON.stringify(table, Object.keys(table).sort());
+function calculateUUID(table, keys=[]){
+    let str = JSON.stringify(table, keys);
     let hash = crypto.createHash("sha1");
     hash.write(str);
     return hash.digest().toString("base64url");
 }
 
-async function UrlIsIndexed( url ){
+async function reportIndex(obj){
+    report.indexTotalCount++;
+    let r = await client.search({
+        index: jurisprudencia.Index,
+        query: {
+            term: {
+                URL: obj.URL
+            }
+        },
+        _source: ["HASH"]
+    });
+    if(r.hits.total.value == 0 ){
+        report.indexNewCount++;
+        await client.index({
+            index: jurisprudencia.Index,
+            body: obj
+        });
+        return;
+    }
+    let newhashes = obj.HASH;
+    let savedhashes = r.hits.hits[0]._source.HASH;
+    if( newhashes.Texto != savedhashes.Texto ){
+        report.indexConflitsFound.push({
+            url: obj.URL,
+            message: "Texto foi atualizado. Atualização ignorada."
+        });
+        report.indexNotUpdatedCount++;
+        return;
+    }
+    else if( newhashes["Sumário"] != savedhashes["Sumário"] ){
+        report.indexConflitsFound.push({
+            url: obj.URL,
+            message: "Sumário foi atualizado. UUID atuzalizado."
+        });
+        report.indexUpdatedCount++;
+        await client.update({
+            id: r.hits.hits[0]._id,
+            index: jurisprudencia.Index,
+            _source: obj
+        });
+    }
+    else if( newhashes.Metadados != savedhashes.Metadados ){
+        report.indexUpdatedCount++;
+        await client.update({
+            id: r.hits.hits[0]._id,
+            index: jurisprudencia.Index,
+            _source: obj
+        })
+    }
+}
+
+async function urlIsIndexed( url ){
     let res = await client.search({
         index : jurisprudencia.Index,
         query: {
