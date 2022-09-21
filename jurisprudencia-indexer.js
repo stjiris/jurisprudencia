@@ -36,6 +36,7 @@ require('./util/fetch').watchFetchStats( pageDownloadedStats => {
 forEachDgsiLink(async url => {
     let table = await url2table(url);
     let original = {}
+    let keyData = "Data do Acordão";
     let tipo = "Acordão";
     let data = "01/01/1900";
     Object.keys( table ).forEach( key => {
@@ -50,10 +51,11 @@ forEachDgsiLink(async url => {
                 // From experiments, Data do Acórdão appears first. Only Data da Decisão Sumária and Data da Decisão Singular might appear with Data do Acórdão.
                 // However, in case this order changes, let's prevent variable tipo from changing after it ins't Acórdão. 
                 tipo = key.match(/Data d. (.*)/)[1].trim();
-                data = table[key].textContent.trim().replace(/-/g, '/');
+                keyData = key;
             }
         }
     });
+    data = table[keyData].textContent.trim().replace(/-/g, '/');
     let object = {
         "Original": original,
         "Tipo": tipo,
