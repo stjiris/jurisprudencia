@@ -47,7 +47,7 @@ forEachDgsiLink(async url => {
             original[key] = table[key].innerHTML;
         }
         if( key.match(/Data d. (.*)/) ){
-            if( tipo == "Acórdão"){
+            if( tipo == "Acordão"){
                 // From experiments, Data do Acórdão appears first. Only Data da Decisão Sumária and Data da Decisão Singular might appear with Data do Acórdão.
                 // However, in case this order changes, let's prevent variable tipo from changing after it ins't Acórdão. 
                 tipo = key.match(/Data d. (.*)/)[1].trim();
@@ -86,6 +86,9 @@ forEachDgsiLink(async url => {
     report.fetchAvgTime = report.fetchTotalTime / report.fetchTotalCount;
 
     writeFileSync(`indexer-report-${new Date()}.json`, JSON.stringify(report, null, "  "));
+}).catch(e => {
+    console.log(e);
+    writeFileSync(`indexer-report-error-${new Date()}.json`, JSON.stringify({report: report, error: e}, null, "  "));
 })
 
 function getDescritores(table){
