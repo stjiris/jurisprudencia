@@ -1,7 +1,7 @@
 extends head 
 block head
     title Pesquisa
-    script(src="https://cdn.jsdelivr.net/npm/chart.js")
+    script(src="https://cdn.plot.ly/plotly-2.12.1.min.js")
 
 prepend header
     -currentPage = "list"
@@ -10,11 +10,7 @@ block printpageinfo
     p Lista de !{term} da pesquisa por: "!{q || ""}"
 
 prepend form
-    .d-flex.flex-column.my-2
-        h3 Indíce
-            select.form-select(name="term")
-                for op of fields 
-                    option(selected=op.key==term) !{op.key}
+    input(type="text",name="term",hidden,value=term)#form-select-input
 
 block main
     if aggs[term].sum_other_doc_count > 0
@@ -25,13 +21,53 @@ block main
                     | Atenção:
                 ul
                     li Existem !{aggs[term].sum_other_doc_count} outros valores não listados.
-    .row.p-2
-        .col-12.d-none.d-lg-block.col-lg-4: h4 !{term}
-        .col-12.d-none.d-lg-block.col-lg-8: h4 Tribunal(is)
-    .row.p-2
-        //pre: code !{JSON.stringify(aggs, null, 2)}
-        -let available = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(l => l in letters)
-        for l of available
+    //#histogram.position-sticky(style="top: 0; height: 250px; width: 100%")
+        | Clicar no histograma de um valor para o ver
+    table.table.table-sm
+        thead 
+            tr 
+                th
+                    select#form-select(name="term")
+                        for op of fields 
+                            option(selected=op==term) !{op}
+                    a.ms-1(href=`./indices.csv?${querystring}`): i.bi.bi-filetype-csv
+                th Quantidade Total
+                th Primeira Data
+                th Última Data
+                //th Histograma
+        tbody 
+            for agg in aggs[term].buckets
+                tr
+                    td: a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
+                    td !{agg.doc_count}
+                    td !{agg.MinAno.value_as_string}
+                    td !{agg.MaxAno.value_as_string}
+                    //td: a(onclick="histogram(this)",data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`, href="#histogram") Abrir
+    script.
+        document.getElementById("form-select").addEventListener("change", (e) => {
+            document.getElementById("form-select-input").value = e.target.value;
+            document.getElementById("filter-form").submit();
+        })
+
+        function histogram(elm){
+            document.getElementById("histogram").innerHTML = "A carregar dados";
+            fetch(elm.dataset.query).then( r => r.json() ).then( aggs => {
+                document.getElementById("histogram").innerHTML = "";
+                Plotly.newPlot("histogram", [{
+                    x: aggs.Term.Anos.buckets.map(b => b.key_as_string),
+                    y: aggs.Term.Anos.buckets.map(b => b.doc_count),
+                    type: "bar"
+                }]);
+            }).catch(e => {
+                console.log(e)
+            })
+            
+        }
+
+    //-.row.p-2
+        pre: code !{JSON.stringify(aggs, null, 2)}
+        //-let available = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(l => l in letters)
+        //-for l of available
             -let letter = letters[l]
             if letter
                 article.col-12.row.mb-3(id=`${l}`)
@@ -45,12 +81,9 @@ block main
                                     span.p-1.m-1 !{a}
                     for obj in letter
                         .row.col-12.my-2.pb-2.align-items-center.term
-                            .col-4: a(href=`./?${term}=${obj.value}`) !{obj.value}
+                            .col-4: a(href=`./?${term}=${obj.key}`) !{obj.key}
                             .col-8.d-flex.flex-column
-                                for tribunal in obj.Tribunais
-                                    span(data-tribunal=tribunal) !{tribunal}
-    style.
-
+                                span !{obj.doc_count}
     //- for aggRelator in aggs.Relator.buckets.sort(({key:a}, {key:b}) => a.localeCompare(b))
         -let currLeter = aggRelator.key[0].replace(/[^a-zA-Z]/g, "#").toUpperCase()
         if (firstLeter != currLeter)

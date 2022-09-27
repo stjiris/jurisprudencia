@@ -1,54 +1,7 @@
 :root{
-    --color-dark: #250503;
-    --color-gold: #ebbf1e;
-    --color-gray: #7a7a7a;
-    --color-white: #fafafa;
-    --color-red: #ff1f1f;
-    --color-admin: #0e1a72;
-    
-    --tribunal-STA: #e5b404;
-    --tribunal-STJ: #4363d8;
-    --tribunal-TRP: #f58231;
-    --tribunal-TRL: #ab7be2;
-    --tribunal-TCO: #800000;
-    --tribunal-TCA: #000075;
-    --tribunal-TCN: #000075;
-    --tribunal-TRC: #7e7e7e;
-    --tribunal-TRE: #e6194B;
-    --tribunal-TRG: #469990;
-    --tribunal-CON: #42d4f4;
-}
-
-[data-tribunal="Supremo Tribunal Administrativo"], [data-tribunal="STA"]{
-    --tribunal-color: var(--tribunal-STA);
-}
-[data-tribunal="Supremo Tribunal de Justiça"], [data-tribunal="STJ"]{
-    --tribunal-color: var(--tribunal-STJ);
-}
-[data-tribunal="Tribunal da Relação do Porto"], [data-tribunal="TRP"]{
-    --tribunal-color: var(--tribunal-TRP);
-}
-[data-tribunal="Tribunal da Relação de Lisboa"], [data-tribunal="TRL"]{
-    --tribunal-color: var(--tribunal-TRL);
-}
-[data-tribunal="Tribunal Constitucional"], [data-tribunal="TCO"], [data-tribunal="Acórdãos do Tribunal Constitucional"] {
-    --tribunal-color: var(--tribunal-TCO);
-}
-[data-tribunal="Tribunal Central Administrativo Sul"], [data-tribunal="TCA"]{
-    --tribunal-color: var(--tribunal-TCA);
-}
-[data-tribunal="Tribunal Central Administrativo Norte"], [data-tribunal="TCN"]{
-    --tribunal-color: var(--tribunal-TCN);
-}
-[data-tribunal="Tribunal da Relação de Coimbra"], [data-tribunal="TRC"]{
-    --tribunal-color: var(--tribunal-TRC);
-}
-[data-tribunal="Tribunal da Relação de Évora"], [data-tribunal="TRE"]{
-    --tribunal-color: var(--tribunal-TRE);
-}
-[data-tribunal="Tribunal da Relação de Guimarães"], [data-tribunal="TRG"]{
-    --tribunal-color: var(--tribunal-TRG);
-}
-[data-tribunal="Tribunal dos Conflitos"], [data-tribunal="CON"], [data-tribunal="Tribunal de Conflitos"]{
-    --tribunal-color: var(--tribunal-CON);
+    --primary-red: #BA1514;
+    --primary-black: #250503;
+    --primary-gold: #C2A340;
+    --secondary-gold: #F4ECCE;
+    --secondary-gray: #796C53;
 }
