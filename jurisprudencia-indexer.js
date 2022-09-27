@@ -31,7 +31,20 @@ require('./util/fetch').watchFetchStats( pageDownloadedStats => {
     report.fetchTotalCount++;
     report.fetchTotalBytes+=pageDownloadedStats.bytes;
     report.fetchTotalTime+=pageDownloadedStats.end - pageDownloadedStats.start;
-})
+});
+
+process.on('SIGINT', function() { // doesn't work on winds
+    console.log("Caught interrupt signal. Saving current report status.");
+    saveReport();
+    process.exit();
+});
+
+function saveReport(){
+    report.timeEndAt = new Date();
+    report.fetchAvgBytes = report.fetchTotalBytes / report.fetchTotalCount;
+    report.fetchAvgTime = report.fetchTotalTime / report.fetchTotalCount;
+    writeFileSync(`indexer-report-${new Date()}.json`, JSON.stringify(report, null, "  "));
+}
 
 forEachDgsiLink(async url => {
     let table = await url2table(url);
@@ -81,14 +94,10 @@ forEachDgsiLink(async url => {
 
     await reportIndex(object);
 }).then( _ => {
-    report.timeEndAt = new Date();
-    report.fetchAvgBytes = report.fetchTotalBytes / report.fetchTotalCount;
-    report.fetchAvgTime = report.fetchTotalTime / report.fetchTotalCount;
-
-    writeFileSync(`indexer-report-${new Date()}.json`, JSON.stringify(report, null, "  "));
+    saveReport();
 }).catch(e => {
     console.log(e);
-    writeFileSync(`indexer-report-error-${new Date()}.json`, JSON.stringify({report: report, error: e}, null, "  "));
+    saveReport();
 })
 
 function getDescritores(table){
