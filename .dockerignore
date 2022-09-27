@@ -1,0 +1,13 @@
+**/*.pyc
+**/__pycache__
+.env
+.envs/
+env/
+Dockerfile*
+docker-compose*
+.dockerignore
+.git/
+.gitignore
+README.md
+LICENSE
+.idea

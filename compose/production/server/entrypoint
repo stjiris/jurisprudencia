@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+
+/bin/wait-for-it.sh elasticsearch:9200 --timeout=300
+
+if [ $? -eq 0 ]; then
+   exec "$@"
+else
+   echo "Elasticsearch is not responding!"
+fi
+
+
+exec "$@"

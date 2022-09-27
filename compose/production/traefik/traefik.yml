@@ -1,0 +1,85 @@
+log:
+  level: INFO
+
+entryPoints:
+  web:
+    # http
+    address: ":80"
+
+  web-secure:
+    # https
+    address: ":443"
+
+  elasticsearch:
+    address: ":9200"
+
+certificatesResolvers:
+  letsencrypt:
+    # https://docs.traefik.io/master/https/acme/#lets-encrypt
+    acme:
+      email: "flavio.f.martins@tecnico.ulisboa.pt"
+      storage: /etc/traefik/acme/acme.json
+      # https://docs.traefik.io/master/https/acme/#httpchallenge
+      httpChallenge:
+        entryPoint: web
+
+http:
+  routers:
+    web-router:
+      rule: "Host(`pe.inesc-id.pt`) || Host(`www.pe.inesc-id.pt`)"
+
+      entryPoints:
+        - web
+      middlewares:
+        - redirect
+        - csrf
+      service: server
+
+    web-secure-router:
+      rule: "Host(`pe.inesc-id.pt`) || Host(`www.pe.inesc-id.pt`)"
+
+      entryPoints:
+        - web-secure
+      middlewares:
+        - csrf
+      service: server
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
+
+    elasticsearch-secure-router:
+      rule: "Host(`pe.inesc-id.pt`) || Host(`elasticsearch.pe.inesc-id.pt`)"
+      entryPoints:
+        - elasticsearch
+      service: elasticsearch
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
+
+  middlewares:
+    redirect:
+      # https://docs.traefik.io/master/middlewares/redirectscheme/
+      redirectScheme:
+        scheme: https
+        permanent: true
+    csrf:
+      # https://docs.traefik.io/master/middlewares/headers/#hostsproxyheaders
+      headers:
+        hostsProxyHeaders: ["X-CSRFToken"]
+
+  services:
+    server:
+      loadBalancer:
+        servers:
+          - url: http://server:9100
+
+    elasticsearch:
+      loadBalancer:
+        servers:
+          - url: http://elasticsearch:9200
+
+providers:
+  # https://docs.traefik.io/master/providers/file/
+  file:
+    filename: /etc/traefik/traefik.yml
+    watch: true

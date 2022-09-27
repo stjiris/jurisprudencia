@@ -1,5 +1,5 @@
 const { Client } = require('@elastic/elasticsearch');
-const client = new Client({ node: 'http://localhost:9200' });
+const client = new Client({ node: process.env.ES_URL });
 
 const mapping = require('./elastic-index-mapping.json');
 const fixKnownErrors = require('./fix-known-errors');
