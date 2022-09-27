@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const {Client} = require('@elastic/elasticsearch');
-const client = new Client({node: 'http://localhost:9200'});
+const client = new Client({node: process.env.ES_URL || 'http://localhost:9200'});
 const path = require('path');
 
 app.set('view engine', 'pug');
@@ -418,6 +418,7 @@ app.get("/acord-only", (req, res) => {
     });
 });
 
+/* TODO: redo statistics
 const statsAggs = {
     MinAno: {
         min: {
@@ -487,7 +488,7 @@ app.get("/allStats", (req, res) => {
         console.log(req.originalUrl, JSON.stringify(err.body))
         res.json({});
     });
-});
+});*/
 
 function listAggregation(term){
     return {
@@ -720,21 +721,5 @@ app.get("/datalist", (req, res) => {
     });
 });
 
-app.use('/csm-errados', (req, res) => {
-    res.render("csm-errados");
-});
-
-app.use('/procurar-seccoes', (req, res) => {
-    res.render("procurar-seccoes");
-});
-
-app.use('/test-anonimizador', (_, res) => res.render("anonimizador"));
-app.use('/test-sumarizador', (_, res) => res.render("sumarizador"));
-
-app.use('/tabelas', require('./tables'));
-app.use('/tinymce', express.static(path.join(require.resolve('tinymce'),'..')));
-app.use('/stats-sse', require('./csm-errados'));
-app.use('/seccoes-sse', require('./procurar-seccoes'));
 app.use(express.static(path.join(__dirname, "static")));
-
 app.listen(parseInt(process.env.PORT) || 9100)

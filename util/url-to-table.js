@@ -1,4 +1,4 @@
-let fetch = require("./util/fetch");
+let fetch = require("./fetch");
 
 let getHTMLPage = (url) => fetch.dom(url);
 
