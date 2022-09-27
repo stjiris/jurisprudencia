@@ -1,5 +1,5 @@
 const es = require('@elastic/elasticsearch')
-const client = new es.Client({ node: 'http://localhost:9200' });
+const client = new es.Client({ node: process.env.ES_URL });
 
 const Index = module.exports.Index = "jurisprudencia.5.0";
 const Properties = module.exports.Properties = {

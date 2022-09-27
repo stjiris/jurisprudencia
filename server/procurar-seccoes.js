@@ -1,6 +1,6 @@
 const { Client } = require("@elastic/elasticsearch");
 const client = new Client({
-    node: "http://localhost:9200"
+    node: process.env.ES_URL
 });
 const {Router} = require("express")
 const {scroll, mapping} = require("../indexer");

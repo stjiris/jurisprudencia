@@ -1,0 +1,51 @@
+version: '3'
+
+volumes:
+  production_elasticsearch_data: {}
+  production_traefik: {}
+
+services:
+  server: &server
+    build:
+      context: .
+      dockerfile: ./compose/production/server/Dockerfile
+    image: ecli_indexer_production_server
+    depends_on:
+      - elasticsearch
+    env_file:
+      - ./.envs/.production/.server
+    ports:
+      - "9100:9100"
+    command: /start
+    restart: always
+
+  elasticsearch:
+    build:
+      context: .
+      dockerfile: ./compose/production/elasticsearch/Dockerfile
+    image: ecli_indexer_production_elasticsearch
+    env_file:
+      - ./.envs/.production/.elasticsearch
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - production_elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+
+  traefik:
+    build:
+      context: .
+      dockerfile: ./compose/production/traefik/Dockerfile
+    image: ecli_indexer_production_traefik
+    depends_on:
+      - server
+      - elasticsearch
+    volumes:
+      - production_traefik:/etc/traefik/acme:z
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+      - "0.0.0.0:9200:9200"

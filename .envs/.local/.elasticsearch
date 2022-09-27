@@ -1,0 +1,7 @@
+node.name=elasticsearch
+cluster.name=single-node
+discovery.type=single-node
+bootstrap.memory_lock=true
+xpack.security.enabled=false
+ES_PORT=9200
+ES_JAVA_OPTS=-Xms1g -Xmx1g

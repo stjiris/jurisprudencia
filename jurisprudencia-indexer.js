@@ -1,6 +1,6 @@
 const url2table = require('./url-to-table');
 const es = require('@elastic/elasticsearch')
-const client = new es.Client({ node: 'http://localhost:9200' });
+const client = new es.Client({ node: process.env.ES_URL });
 const DGSI_LINK = "http://www.dgsi.pt/jstj.nsf?OpenDatabase";
 const DGSI_PATTERN = /http:\/\/www\.dgsi\.pt\/jstj\.nsf\/(?<hashsjt>.*)\/(?<hashid>.*)\?OpenDocument/;
 const jurisprudencia = require('./jurisprudencia');

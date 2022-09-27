@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const {Client} = require('@elastic/elasticsearch');
-const client = new Client({node: 'http://localhost:9200'});
+const client = new Client({node: process.env.ES_URL});
 const path = require('path');
 
 app.set('view engine', 'pug');
