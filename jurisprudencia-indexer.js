@@ -43,7 +43,7 @@ function saveReport(){
     report.timeEndAt = new Date();
     report.fetchAvgBytes = report.fetchTotalBytes / report.fetchTotalCount;
     report.fetchAvgTime = report.fetchTotalTime / report.fetchTotalCount;
-    writeFileSync(`indexer-report-${new Date()}.json`, JSON.stringify(report, null, "  "));
+    writeFileSync(`indexer-report-${Date.now()}.json`, JSON.stringify(report, null, "  "));
 }
 
 forEachDgsiLink(async url => {
@@ -97,6 +97,7 @@ forEachDgsiLink(async url => {
     saveReport();
 }).catch(e => {
     console.log(e);
+    report.error = e;
     saveReport();
 })
 
