@@ -23,23 +23,6 @@ block main
             | <b>Nota:</b> no caso de filtrar por um ano em particular, o gráfico poderá incluir outros anos.
             | Isto significa que alguma das datas associadas com o acórdão pertencem a esse ano, o acórdão aparece no gráfico com a maior data associada.
         script.
-            const name2code = {
-                "Supremo Tribunal de Justiça": "STJ",
-                "Tribunal da Relação de Coimbra": "TRC",
-                "Tribunal da Relação de Évora": "TRE",
-                "Tribunal da Relação de Guimarães": "TRG",
-                "Tribunal da Relação de Lisboa": "TRL",
-                "Tribunal da Relação do Porto": "TRP",
-                "Tribunal da Propriedade Intelectual": "TPI",
-                "Tribunal da Concorrência, Regulação e Supervisão": "TCR",
-                "Supremo Tribunal Administrativo": "STA",
-                "Tribunal Central Administrativo Sul": "TCA",
-                "Tribunal Central Administrativo Norte": "TCN",
-                "Tribunal de Conflitos": "CON",
-                "Acórdãos do Tribunal Constitucional": "TCO",
-                "Tribunal Constitucional": "TCO",
-                "Tribunal dos Conflitos": "CON"
-            }
             let _timeInfoStart = new Date();
             fetch("./allStats?!{querystring}").then(r => r.json()).then(aggs => {
                 document.getElementById("loading").remove()
@@ -47,14 +30,14 @@ block main
                 const minYear = parseInt(aggs.MinAno.value_as_string);
                 
                 Plotly.newPlot("tribs", [{
-                    x: aggs.Anos.buckets.map(b => name2code[b.key]),
+                    x: aggs.Anos.buckets.map(b => "Supremo Tribunal de Justiça"),
                     y: aggs.Anos.buckets.map(b => b.doc_count),
                     type: "bar",
                     marker: {
                         color: aggs.Anos.buckets.map(b => tribColor(b.key))
                     }
                 }], {
-                    title: "Acórdãos por Tribunal",
+                    title: "Acórdãos do Supremo Tribunal de Justiça",
                     xaxis: {
                         title: "Número de acórdãos",
                         

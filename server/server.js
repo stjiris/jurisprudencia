@@ -1,95 +1,78 @@
 const express = require('express');
 const app = express();
 const {Client} = require('@elastic/elasticsearch');
-const client = new Client({node: process.env.ES_URL});
+const client = new Client({node: process.env.ES_URL || 'http://localhost:9200'});
 const path = require('path');
 
 app.set('view engine', 'pug');
 app.set('views', './views');
 
-const {mappings: {properties}} = require('../elastic-index-mapping.json');
-const INDEXNAME = process.env.INDEX || "jurisprudencia.2.0"
-
-const aggs = {}
-let DATA_FIELD = "";
-const DEFAULT_AGGS = {};
-const runtimeMapping = {};
-client.indices.getMapping({index: INDEXNAME}).then( obj => {
-    let props = obj[INDEXNAME].mappings.properties;
-    Object.entries(props).filter(([name, obj])=>obj.type == 'keyword').map(([name, _])=> name).forEach(name => {
-        aggs[name] = {
-            terms: {
-                field: name,
-                size: 65536,
-                order: {
-                    _term: "asc"
-                }
-            }
-        }
-    })
-    DATA_FIELD = Object.entries(props).filter(([name, obj]) => obj.type == 'date' && obj.copy_to)[0][1].copy_to[0] 
-    
-    aggs["MinAno"] = {
+const {Index: INDEXNAME, Properties: properties} = require('../jurisprudencia');
+const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword' || (obj.fields && obj.fields.keyword)).map( ([name, _]) => name).filter( o => o != "URL" && o != "UUID").concat("Votação")
+let DATA_FIELD = "Data";
+const aggs = {
+    MinAno: {
         min: {
             field: DATA_FIELD,
             format: 'yyyy'
         }
-    };
-    aggs["MaxAno"] = {
+    },
+    MaxAno: {
         max: {
             field: DATA_FIELD,
             format: 'yyyy'
         }
-    };
-    aggs["Descritores"] = {
+    }
+}
+filterableProps.forEach(name => {
+    let key = properties[name].fields ? name + ".keyword" : name
+    aggs[name] = {
         terms: {
-            field: "Descritores.keyword",
+            field: key,
             size: 65536,
             order: {
                 _term: "asc"
             }
         }
     }
-    aggs["Tribunal"].terms.min_doc_count = 0;
-    aggs["Código Tribunal"].terms.min_doc_count = 0;
-    DEFAULT_AGGS.Tribunal = {...aggs.Tribunal, aggs: {Codigo: {terms: {field: 'Código Tribunal', size: 1}}}}
-    DEFAULT_AGGS.MaxAno = aggs.MaxAno
-    DEFAULT_AGGS.MinAno = aggs.MinAno
-
-    runtimeMapping.runtime_mappings = {
-        LastDate: {
-            type: "date",
-            format: "yyyy",
-            script: `
-                def lastDate = doc['${DATA_FIELD}'][0];
-                for( item in doc['${DATA_FIELD}'] ){
-                    if( item.getMillis() > lastDate.getMillis() ){
-                        lastDate = item;
-                    }
-                }
-                emit(lastDate.getMillis());
-            `
-        }
-    };
 });
+aggs["Votação"] = {
+    terms: {
+        field: "Votação.Forma.keyword",
+        size: 65536,
+        order: {
+            _term: "asc"
+        }
+    }
+}
+
+aggs["Tipo de Processo"] = aggs["Tipo"];
+delete aggs["Tipo"];
+aggs["Número de Processo"] = aggs["Processo"];
+delete aggs["Processo"];
+filterableProps[filterableProps.indexOf("Tipo")] = "Tipo de Processo";
+filterableProps[filterableProps.indexOf("Processo")] = "Número de Processo";
+
+const DEFAULT_AGGS = {
+    MaxAno : aggs.MaxAno,
+    MinAno : aggs.MinAno
+};
 
 const RESULTS_PER_PAGE = 50;
 
 let queryObject = (string) => {
-    if( !string ) return {
-        match_all: {}
-    };
-    return {
+    if( !string ){
+        return {
+            match_all: {}
+        };
+    }
+    return [{
         simple_query_string: {
-            query: string,
-            default_operator: "AND"
+            query: Array.isArray(string) ? string.join(" ") : string,
+            fields: ["*"],
+            default_operator: 'OR'
         }
-    };
-}
-
-const tmp = app.render.bind(app);
-app.render = (name, obj, next) => {
-    tmp(name, { properties, requestStart: new Date(), ...obj, DATA_FIELD }, next);
+    }];
 }
 
 let search = (
@@ -116,7 +99,7 @@ let search = (
     size: rpp,
     from: page*rpp,
     track_total_hits: true,
-    _source: [...Object.keys(properties), "Sumário"],
+    _source: filterableProps.concat("Sumário"),
     fields: [DATA_FIELD],
     ...extras
 });
@@ -129,7 +112,7 @@ const padZero = (num, size=4) => {
     return s;
 }
 
-const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]) => { // filters={pre: [], after: []}
+const populateFilters = (filters, body={}, afters=["MinAno","MaxAno"]) => { // filters={pre: [], after: []}
     const filtersUsed = {}
     for( let key in aggs ){
         let aggName = key;
@@ -144,7 +127,11 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
             }
             filters[when].push({
                 bool: {
-                    should: filtersUsed[aggName].map( o => ({
+                    should: filtersUsed[aggName].map( o => (o.startsWith("\"") && o.endsWith("\"") ? {
+                        term: {
+                            [aggObj[aggField].field]: { value: `${o.slice(1,-1)}` }
+                        }
+                    } : {
                         wildcard: {
                             [aggObj[aggField].field]: { value: `*${o}*` }
                         }
@@ -153,10 +140,14 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
             });
         }
     }
+
+    let dateWhen = "pre";
+    if( afters.indexOf("MinAno") >= 0 || afters.indexOf("MaxAno") >= 0 ) dateWhen = "after";
     if( body.MinAno && body.MaxAno ){
+
         filtersUsed.MinAno = body.MinAno;
         filtersUsed.MaxAno = body.MaxAno;
-        filters.pre.push({
+        filters[dateWhen].push({
             range: {
                 [DATA_FIELD]: {
                     gte: padZero(body.MinAno),
@@ -168,7 +159,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
     }
     else if( body.MinAno ){
         filtersUsed.MinAno = body.MinAno;
-        filters.pre.push({
+        filters[dateWhen].push({
             range: {
                 [DATA_FIELD]: {
                     gte: padZero(body.MinAno),
@@ -179,7 +170,7 @@ const populateFilters = (filters, body={}, afters=["Tribunal","MinAno","MaxAno"]
     }
     else if( body.MaxAno ){
         filtersUsed.MaxAno = body.MaxAno;
-        filters.pre.push({
+        filters[dateWhen].push({
             range: {
                 [DATA_FIELD]: {
                     lt: padZero((parseInt(body.MaxAno) || new Date().getFullYear())+1),
@@ -256,30 +247,74 @@ function parseSort(value, array){
     return sortV;
 }
 
+let searchedArray = (string) => client.indices.analyze({
+    index: "jurisprudencia.5.0",
+    text: string
+}).then( r => r.tokens.map( o => o.token) ).catch( e => [])
+
+let allSearchAggPromise = search(queryObject(""), {pre:[],after:[]}, 0, DEFAULT_AGGS, 0).catch( e => {
+    console.log("Server couldn't reach elastic search. Using assumed values.")
+    return {
+        aggregations: {
+            MinAno: {
+                value_as_string: "1931"
+            },
+            MaxAno: {
+                value_as_string: new Date().getFullYear().toString()
+            }
+        }
+    }
+}).then( r => r.aggregations )
+
+function shouldCapitalize(word){
+    let exceptions = ["e","o","a","os","as","de","da","do","das","dos","à","no","na","nos","nas","em","por","com","ao","aos"]
+    return exceptions.indexOf(word.toLowerCase()) == -1
+}
+
+function titleCase(str){
+    return str.split(" ").map( o => shouldCapitalize(o) ? `${o.substr(0,1).toUpperCase()}${o.substr(1).toLowerCase()}` : o.toLowerCase()).join(" ")
+}
+
+const tmp = app.render.bind(app);
+app.render = async (name, obj, next) => {
+    let aggsGlobal = await allSearchAggPromise;
+    let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+    tmp(name, { aggsGlobal, titleCase, properties: filterableProps, requestStart: new Date(), ...obj, DATA_FIELD }, next);
+}
+
 // Returns page with filters
 app.get("/", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filtersUsed = populateFilters(sfilters, req.query);
-    const sort = [];
-    const sortV = parseSort(req.query.sort, sort);
+    let sort = [];
+    let sortV = parseSort(req.query.sort, sort);
+    let sortE = true;
+    if( !req.query.q && !req.query.sort && Object.keys(filtersUsed).length == 0 ){
+        sort = [];
+        sortV = parseSort("des", sort);
+        sortE = false;
+    }
     let page = parseInt(req.query.page) || 0;
-    search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, 0, { sort }).then(results => {
+    search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, 0, { sort }).then(async results => {
         res.render("search", {
             q: req.query.q, querystring: queryString(req.originalUrl),
-            sort: sortV,          
+            sort: sortV,
+            sortEnabled: sortE,
             body: results,
             hits: results.hits.hits,
             aggs: results.aggregations,
             filters: filtersUsed,
             page: page,
             pages: Math.ceil(results.hits.total.value/RESULTS_PER_PAGE),
-            open: Object.keys(filtersUsed).length > 0
+            open: Object.keys(filtersUsed).length > 0,
+            searchedArray: await searchedArray(req.query.q)
         });
-    }).catch(e => {
+    }).catch(async e => {
         console.log(e);
         res.render("search", {
             q: req.query.q, querystring: queryString(req.originalUrl),
             sort: sortV,
+            sortEnabled: sortE,
             body: {},
             hits: [],
             aggs: {},
@@ -287,9 +322,10 @@ app.get("/", (req, res) => {
             page: page,
             pages: 0,
             open: true,
-            error: e
+            error: e,
+            searchedArray: await searchedArray(req.query.q)
         });
-    });
+    })
 })
 
 // returns only acordãos
@@ -305,9 +341,7 @@ app.get("/acord-only", (req, res) => {
                 type: "unified",
                 highlight_query: {
                     bool: {
-                        must: [
-                            queryObject(req.query.q)
-                        ]
+                        must: queryObject(req.query.q)
                     }
                 },
                 pre_tags: [""],
@@ -315,25 +349,21 @@ app.get("/acord-only", (req, res) => {
                 number_of_fragments: 0           
             },
             "Sumário": {
-                type: "unified",
+                type: "fvh",
                 highlight_query: {
                     bool: {
-                        must: [
-                            queryObject(req.query.q)
-                        ]
+                        must: queryObject(req.query.q)
                     }
                 },
                 number_of_fragments: 0,
                 pre_tags: ["<mark>"],
                 post_tags: ["</mark>"]
             },
-            "*Texto*": { 
-                type: "unified",
+            "Texto": { 
+                type: "fvh",
                 highlight_query: {
                     bool: {
-                        must: [
-                            queryObject(req.query.q)
-                        ]
+                        must: queryObject(req.query.q)
                     }
                 },
                 number_of_fragments: 1000,
@@ -343,29 +373,34 @@ app.get("/acord-only", (req, res) => {
         },
         max_analyzed_offset: 1000000
     };
-    search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true, _source:  [...Object.keys(properties), "Sumário", "*Texto*"] }).then(results => {
-        results.hits.hits.forEach( hit => {
-            if( !hit.highlight ) return;
-            let highlightedKeys = Object.keys(hit.highlight).filter(k => k.match(/Texto/));
-            for( let k of highlightedKeys ){
-                for(let i = 0; i < hit.highlight[k].length; i++){
-                    let text = hit.highlight[k][i];
-                    hit.highlight[k][i] = {
+    search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true, _source:  [...Object.keys(properties), "Sumário", "Texto"] }).then( async results => {
+        searchArray = await searchedArray(req.query.q)
+        let colorFromText = (txt) => `var(--highlight-${searchArray.indexOf(txt.toLocaleLowerCase().trim())}, var(--primary-gold))`;
+        results.hits.hits.map( hit => {
+            if( !hit.highlight ) return
+            if( hit.highlight.Texto ){
+                for(let i = 0; i < hit.highlight.Texto.length; i++){
+                    let text = hit.highlight.Texto[i];
+                    let mat = text.match(/MARK_START(?<mat>.*?)MARK_END/).groups?.mat || "";
+                    hit.highlight.Texto[i] = {
                         text: text.replace(/<[^>]+>/g, "").replace(/MARK_START/g, "<mark>").replace(/MARK_END/g, "</mark>").replace(/<\/?\w*$/, ""),
-                        offset: hit._source[k].indexOf(text.substring(0, text.indexOf("MARK_START"))),
-                        size: hit._source[k].length
+                        offset: hit._source.Texto.indexOf(text.substring(0, text.indexOf("MARK_START"))),
+                        size: hit._source.Texto.length,
+                        color: colorFromText(mat)
                     }
                 }
-                delete hit._source[k];
+                delete hit._source.Texto;
             }
             if( hit.highlight.Sumário ){
-                let it = hit.highlight.Sumário[0].matchAll(/[^>]{0,100}<mark>\w+<\/mark>[^<]{0,100}/g)
+                let it = hit.highlight.Sumário[0].matchAll(/[^>]{0,100}<mark>(?<mat>\w+)<\/mark>[^<]{0,100}/g)
                 hit.highlight.SumárioMarks = [];
                 for( let m of it ){
+                    let mat = m.groups?.mat || "";
                     hit.highlight.SumárioMarks.push({
                         text: m[0],
                         offset: m.index,
-                        size: hit._source.Sumário.length
+                        size: hit._source.Sumário.length,
+                        color: colorFromText(mat)
                     });
                 }
             }
@@ -383,34 +418,26 @@ app.get("/acord-only", (req, res) => {
     });
 });
 
+/* TODO: redo statistics
 const statsAggs = {
-    Tribunal: aggs.Tribunal,
     MinAno: {
         min: {
-            field: "LastDate",
+            field: DATA_FIELD,
             format: "yyyy"
         }
     },
     MaxAno: {
         max: {
-            field: "LastDate",
+            field: DATA_FIELD,
             format: "yyyy"
         }
     },
     Anos: {
-        terms: {
-            field: 'Tribunal',
-            size: 20
-        },
-        aggs: {
-            Anos: {
-                date_histogram: {
-                    field: "LastDate",
-                    interval: 'year',
-                    format: 'yyyy',
-                    min_doc_count: 0
-                }
-            }
+        date_histogram: {
+            field: DATA_FIELD,
+            interval: 'year',
+            format: 'yyyy',
+            min_doc_count: 0
         }
     },
     Origens: {
@@ -445,45 +472,45 @@ app.get("/estatisticas", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query);
     search(queryObject(req.query.q), sfilters, 0, DEFAULT_AGGS, 0, {}).then(body => {
-        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
+        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), body: body, aggs: body.aggregations, filters: filters, open: Object.keys(filters).length > 0});
     }).catch(e => {
         console.log(e);
-        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: {}, filters: {}, open: true, error: e});
+        res.render("stats", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, aggs: {}, filters: {}, open: true, error: e});
     });
 });
 
 app.get("/allStats", (req, res) => {
     const sfilters = {pre: [], after: []};
     populateFilters(sfilters, req.query, []);
-    search(queryObject(req.query.q), sfilters, 0, statsAggs, 0, runtimeMapping ).then(body => {
+    search(queryObject(req.query.q), sfilters, 0, statsAggs, 0 ).then(body => {
         res.json(body.aggregations);
     }).catch(err => {
         console.log(req.originalUrl, JSON.stringify(err.body))
         res.json({});
     });
-});
+});*/
 
 function listAggregation(term){
     return {
-        Tribunal: aggs.Tribunal,
         MinAno: aggs.MinAno,
         MaxAno: aggs.MaxAno,
         [term]: {
             terms: {
-                field: aggs[term].terms.field,  
+                field: aggs[term].terms.field.replace("keyword","raw"),
                 size: 65536/5,
                 order: {
                     _term: "asc",
                 }
             },
             aggs: {
-                Tribunal: {
-                    terms: {
-                        field: 'Tribunal',
-                        size: 25,
-                        order: {
-                            _term: "asc"
-                        }
+                MinAno: {
+                    min: {
+                        field: DATA_FIELD
+                    }
+                },
+                MaxAno: {
+                    max: {
+                        field: DATA_FIELD
                     }
                 }
             }
@@ -491,39 +518,121 @@ function listAggregation(term){
     }
 }
 
-function groupByLetter(aggregations){
-    const letters = {};
-    for( let agg of aggregations ){
-        let letter = (agg.key.replace(/[^a-zA-Z]/g, "#")[0] || "N.A.").toUpperCase();
-        if( !letters[letter] ) letters[letter] = [];
-        let tribunais = agg.Tribunal.buckets.map( o => o.key );
-        letters[letter].push({value: agg.key, Tribunais: tribunais});
-    }
-    return letters
-}
-
 app.get("/indices", (req, res) => {
     const term = req.query.term || "Relator";
+    const fields = filterableProps;
+    if( fields.indexOf(term) == -1 ){
+        return res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: `O campo "${term}" não foi indexado.`, aggs: {}, letters: {}, filters: {}, term: term, fields: fields})
+    }
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
 
-    const fields = client.indices.getMapping({index: INDEXNAME}).then(body => Object.entries(body[INDEXNAME].mappings.properties).filter(o => o[1].fielddata || o[1].type == "keyword").map(o => ({key: o[0]})));
-    search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then(async body => {
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), aggs: body.aggregations, letters: groupByLetter(body.aggregations[term].buckets), filters: filters, term: term, open: Object.keys(filters).length > 0, fields: await fields});
-    }).catch(async err => {
+    search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then( body => {
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: body, aggs: body.aggregations, filters: filters, term: term, open: Object.keys(filters).length > 0, fields: fields});
+    }).catch( err => {
         console.log(req.originalUrl, err)
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), error: err, aggs: {}, letters: {}, filters: {}, term: term, fields: await fields});
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: err, aggs: {}, letters: {}, filters: {}, term: term, fields: fields});
     });
 });
 
-app.get("/:ecli(ECLI:*)", (req, res) => {
-    let ecli = req.params.ecli;
-    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: [DATA_FIELD]}).then((body) => {
+app.get("/indices.csv", (req, res) => {
+    const term = req.query.term || "Relator";
+    const fields = filterableProps;
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    if( fields.indexOf(term) == -1 ){
+        res.write(`"Erro"\r\n`);
+        res.write(`O campo "${term}" não foi indexado.\r\n`);
+        return res.end();
+    }
+    const sfilters = {pre: [], after: []};
+    const filters = populateFilters(sfilters, req.query, []);
+    res.write(`"${term}"\t"Quantidade Total"\t"Primeira Data"\t"Última Data"\r\n`);
+    search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then( body => {
+        body.aggregations[term].buckets.forEach( bucket => {
+            res.write(`"${bucket.key}"\t${bucket.doc_count}\t"${bucket.MinAno.value_as_string}"\t"${bucket.MaxAno.value_as_string}"\r\n`);
+        });
+        res.end();
+    }).catch( err => {
+        console.log(req.originalUrl, err)
+        res.write(`"Erro"\r\n`);
+        res.write(`"${err.message}"\r\n`)
+        res.end();
+    });
+})
+
+function histogramAggregation(key, value){
+    return {
+        MinAno: aggs.MinAno,
+        MaxAno: aggs.MaxAno,
+        Term: {
+            filter: {
+                term: {
+                    [aggs[key].terms.field]: value
+                }
+            },
+            aggs: {
+                MinAno: aggs.MinAno,
+                MaxAno: aggs.MaxAno,
+                Anos: {
+                    date_histogram: {
+                        "field": DATA_FIELD,
+                        "interval": "year",
+                        "format": "yyyy"
+                    }
+                }
+            }
+        }
+    }
+}
+
+app.get("/histogram", (req, res) => {
+    const term = req.query.term || "Relator";
+    const value = req.query.histogram_value;
+    const fields = filterableProps;
+    if( fields.indexOf(term) == -1 ){
+        return res.json()
+    }
+    const sfilters = {pre: [], after: []};
+    const filters = populateFilters(sfilters, req.query, []);
+    search(queryObject(req.query.q), sfilters, 0, histogramAggregation(term, value), 0).then( body => {
+        res.json(body.aggregations);
+    }).catch( err => {
+        res.json()
+    })
+
+})
+
+app.get("/related-:proc(*)", (req, res) => {
+    let proc = req.params.proc;
+    search({term: {UUID: proc}}, {pre:[], after:[]}, 0, {}, 1, {_source: ['Processo']}).then(async (body) => {
+        if( body.hits.total.value == 0 ) return [];
+        let processo = body.hits.hits[0]._source["Processo"];
+        let rs = [];
+        while( true ){
+            let cr = await search({wildcard: {Processo: `${processo}*`}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Processo', "UUID", DATA_FIELD]});
+            cr.hits.hits.forEach( hit => {
+                if( hit._source.UUID == proc || rs.find(o => o.UUID == hit._source.UUID) ) return;
+                rs.push({
+                    Processo: hit._source.Processo,
+                    UUID: hit._source.UUID,
+                    Data: hit._source[DATA_FIELD]
+                });
+            })
+            if( Math.max(processo.lastIndexOf("."), processo.lastIndexOf("-")) == -1 ) break;
+            processo = processo.slice(0,Math.max(processo.lastIndexOf("."), processo.lastIndexOf("-")))
+        }
+        return rs;
+    }).then( l => res.json(l))
+})
+
+app.get("/acord-:proc(*)", (req, res) => {
+    let proc = req.params.proc;
+    search({term: {UUID: proc}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: [DATA_FIELD]}).then((body) => {
         if( body.hits.total.value == 0 ){
-            res.render("document", {ecli});
+            res.render("document", {proc});
         }
         else if( body.hits.total.value == 1 ) {
-            res.render("document", {ecli, source: body.hits.hits[0]._source, fields: body.hits.hits[0].fields, aggs});
+            res.render("document", {proc, source: body.hits.hits[0]._source, fields: body.hits.hits[0].fields, aggs});
         }
         else{
             let docnum = req.query.docnum;
@@ -532,15 +641,15 @@ app.get("/:ecli(ECLI:*)", (req, res) => {
                 for( let i = 0; i < body.hits.hits.length; i++ ){
                     html += `<li><a href=?docnum=${i}>Abrir documento ${i}</a></li>`
                 }
-                res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
+                res.render("document", {proc, error: `<ul><p>More than one document found.</p>${html}</ul>`});
             }
             else{
-                res.render("document", {ecli, source: body.hits.hits[docnum]._source, fields: body.hits.hits[docnum].fields, aggs});
+                res.render("document", {proc, source: body.hits.hits[docnum]._source, fields: body.hits.hits[docnum].fields, aggs});
             }
         }
     }).catch(err => {
         console.log(req.originalUrl, err);
-        res.render("document", {ecli, error: err});
+        res.render("document", {proc, error: err});
     });
 });
 
@@ -554,14 +663,14 @@ function sendDocxOfHtml(res, html, name){
     docx.stdout.pipe(res);
 }
 
-app.get("/docx/:ecli(ECLI:*)", (req, res) => {
-    let ecli = req.params.ecli;
-    search({term: {ECLI: ecli}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Decisão Texto Integral'], fields: []}).then((body) => {
+app.get("/docx/acord-:proc(*)", (req, res) => {
+    let proc = req.params.proc;
+    search({term: {UUID: proc}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Texto'], fields: []}).then((body) => {
         if( body.hits.total.value == 0 ){
-            res.render("document", {ecli});
+            res.render("document", {proc});
         }
         else if( body.hits.total.value == 1 ) {
-            sendDocxOfHtml(res, body.hits.hits[0]._source["Decisão Texto Integral"], ecli);
+            sendDocxOfHtml(res, body.hits.hits[0]._source["Texto"], proc);
         }
         else{
             let docnum = req.query.docnum;
@@ -570,15 +679,15 @@ app.get("/docx/:ecli(ECLI:*)", (req, res) => {
                 for( let i = 0; i < body.hits.hits.length; i++ ){
                     html += `<li><a href=?docnum=${i}>Abrir documento ${i}</a></li>`
                 }
-                res.render("document", {ecli, error: `<ul><p>More than one document found.</p>${html}</ul>`});
+                res.render("document", {proc, error: `<ul><p>More than one document found.</p>${html}</ul>`});
             }
             else{
-                sendDocxOfHtml(res, body.hits.hits[docnum]._source["Decisão Texto Integral"], ecli);
+                sendDocxOfHtml(res, body.hits.hits[docnum]._source["Texto"], proc);
             }
         }
     }).catch(err => {
         console.log(req.originalUrl, err);
-        res.render("document", {ecli, error: err});
+        res.render("document", {proc, error: err});
     });
 });
 
@@ -592,28 +701,19 @@ app.get("/datalist", (req, res) => {
         });
         return;
     }
-    if( aggKey == "Datafield" ){
-        client.indices.getMapping({index: INDEXNAME}).then(body => {
-            res.render("datalist", {aggs: Object.entries(body[INDEXNAME].mappings.properties).filter(o => o[1].fielddata || o[1].type == "keyword").map(o => ({key: o[0]})), id: id});
-        });
-        return;
-    }
     if( !agg ) {
         res.render("datalist", {aggs: [], error: "Aggregation not found", id: req.query.id});
         return;
     }
     let finalAgg = {
         terms: {
-            field: agg.terms.field,
+            field: agg.terms.field.replace("keyword","raw"),
             size: agg.terms.size
         }
     }
     const sfilters = {pre: [], after: []};
     populateFilters(sfilters, req.query, [aggKey]);
-    search(queryObject(req.query.q), sfilters, 0, { [aggKey]: finalAgg}, 10).then(async body => {
-        if( body.aggregations[aggKey].buckets.length < 10 ){
-            body = await search(queryObject(req.query.q), sfilters, 0, { [aggKey]: agg }, 0);
-        }
+    search(queryObject(req.query.q), sfilters, 0, { [aggKey]: finalAgg}, 10).then(body => {
         res.render("datalist", {aggs: body.aggregations[aggKey].buckets, id: id});
     }).catch(err => {
         console.log(req.originalUrl, err.body.error);
@@ -621,21 +721,5 @@ app.get("/datalist", (req, res) => {
     });
 });
 
-app.use('/csm-errados', (req, res) => {
-    res.render("csm-errados");
-});
-
-app.use('/procurar-seccoes', (req, res) => {
-    res.render("procurar-seccoes");
-});
-
-app.use('/test-anonimizador', (_, res) => res.render("anonimizador"));
-app.use('/test-sumarizador', (_, res) => res.render("sumarizador"));
-
-app.use('/tabelas', require('./tables'));
-app.use('/tinymce', express.static(path.join(require.resolve('tinymce'),'..')));
-app.use('/stats-sse', require('./csm-errados'));
-app.use('/seccoes-sse', require('./procurar-seccoes'));
 app.use(express.static(path.join(__dirname, "static")));
-
 app.listen(parseInt(process.env.PORT) || 9100)

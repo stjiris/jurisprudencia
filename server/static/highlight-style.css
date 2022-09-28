@@ -1,0 +1,105 @@
+:root{
+    --highlight-0: hsl(0, 55%, 50%);
+    --highlight-1: hsl(60, 55%, 50%);
+    --highlight-2: hsl(120, 55%, 50%);
+    --highlight-3: hsl(180, 55%, 50%);
+    --highlight-4: hsl(240, 55%, 50%);
+    --highlight-5: hsl(300, 55%, 50%);
+}
+.highlight {
+    display: inline-flex;
+    margin-left: auto;
+    flex-grow: 1;
+}
+
+.highlight-bar {
+    width: 100%;
+    flex-shrink: 1;
+    height: 0px;
+    background-color: var(--secondary-gray);
+    border: solid var(--secondary-gray);
+    border-width: 1px 0px 1px 0px;
+    margin: 6px 0 6px;
+    position: relative;
+    border-radius: 10px;
+}
+
+.highlight-bar[data-key=Sumário]{
+    width: 50%;
+}
+
+.highlight-bar-hit {
+    position: absolute;
+    background: var(--primary-gold);
+    height: 15px;
+    top: -7.5px;
+    width: 2px;
+    transition: 200ms;
+}
+
+.highlight-bar-hit:before {
+    content: "";
+    position: absolute;
+    right: 100%;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: transparent;
+}
+.highlight-bar-hit:after {
+    content: "";
+    position: absolute;
+    left: 100%;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: transparent;
+}
+
+.highlight-bar-hit:hover {
+    filter: brightness(1.7);
+}
+
+.highlight-bar-hit:hover ~ .highlight-bar-hit-content, .highlight-bar-hit-content:hover {
+    display: block !important;
+    position: absolute;
+    bottom: 5px;
+    font-size: 0.7rem;
+    color: var(--primary-black);
+    background: var(--primary-gold);
+    border: 1px solid var(--primary-black);
+    padding: 0.5rem;
+    z-index: 1;
+    right: 0;
+    left: 0;
+}
+
+details .bi-caret-downright-fill::before{
+    content: "\f231";
+}
+details[open] .bi-caret-downright-fill::before {
+    content: "\f229";
+}
+
+.normalize-sumario-weight b{
+    font-weight: normal;
+}
+
+.pesquisa-sep {
+    background: var(--primary-red);
+    color: white;
+    font-size: smaller;
+    display: inline;
+    font-weight: normal;
+    font-style: italic;
+    margin: 0 0.4rem;
+}
+.pesquisa-sep::before {
+    content: "(...)";
+}
+
+@media print {
+    .highlight{
+        display: none;
+    }
+}

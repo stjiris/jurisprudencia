@@ -11,30 +11,31 @@ html(lang="en")
         block head
     body
         block header
-            header.mb-1
-                form.container.row.align-items-center.m-auto.p-1
-                    a(href="./").col-12.col-lg-6.align-items-center.d-flex.flex-wrap.py-2
-                        img(src="./stj-logo.png", style="max-height: 70px;")
-                        h2.ps-2.fancy-font Jurisprudência
-                    .col-12.col-lg-6.d-print-none
-                        block headerinput
-                            .input-group
-                                input.form-control(type="search", name="q", placeholder="Pesquisar...", value=q||"", style="color: var(--color-gray);")
-                                .input-group-append
-                                    button.btn.btn-gold(type="submit"): i.bi-search
-                    .col-12.col-lg-6.d-none.d-print-block
-                        block printpageinfo
-                            p Sem informação da página
-                nav.w-100.d-print-none
+            header.mb-1.py-2.align-items-center.d-flex.flex-wrap
+                a(href="./").align-items-center.d-flex.flex-wrap.text-decoration-none.nav-link
+                    img(src="./PT-logoLogo-STJ.png", style="max-height: 70px;")
+                    div.ps-2.d-flex.flex-column.align-items-center
+                        h5.m-0.fancy-font Jurisprudência
+                div.flex-fill.d-none.d-lg-block
+                nav.d-print-none
                     ul.container.d-flex.nav.align-items-center.justify-content-evenly.flex-wrap
-                        li.nav-item.py-1.px-2.mx-1
-                            input(type="submit", formaction="./", value="Documentos", form="filter-form",class=currentPage=="search"?"active":"").border-0.nav-link.fs-6.bg-transparent
-                        li.nav-item.py-1.px-2.mx-1
+                        li.nav-link.py-1.px-2.mx-1
+                            input(type="submit", formaction="./", value="Processos", form="filter-form",class=currentPage=="search"?"active":"").border-0.nav-link.fs-6.bg-transparent
+                        //li.nav-link.py-1.px-2.mx-1
                             input(type="submit", formaction="./estatisticas", value="Estatísticas", form="filter-form",class=currentPage=="stats"?"active":"").border-0.nav-link.fs-6.bg-transparent
-                        li.nav-item.py-1.px-2.mx-1
+                        li.nav-link.py-1.px-2.mx-1
                             input(type="submit", formaction="./indices", value="Indíces", form="filter-form",class=currentPage=="list"?"active":"").border-0.nav-link.fs-6.bg-transparent
+                        //
+                            li
+                                i.bi.bi-dot
+                            li.nav-link.py-1.px-2.mx-1
+                                input(type="submit", formaction="./sobre", value="Sobre", form="filter-form",class=currentPage=="about"?"active":"").border-0.nav-link.fs-6.bg-transparent
+            .col-12.col-lg-6.d-none.d-print-block
+                block printpageinfo
+                    p Sem informação da página
         main.container-fluid#top
             if error 
+                form(method="get",style="top:0;")#filter-form.position-sticky
                 pre.alert.alert-danger
                     code !{JSON.stringify(error, null , 2)}
 
@@ -42,43 +43,26 @@ html(lang="en")
                 block allmain
                     .row
                         .col-12.col-sm-4.col-md-3.col-xl-2.d-print-none.infofilters
-                            form(method="get")#filter-form
+                            form(method="get",style="top:0;")#filter-form.position-sticky
                                 block form
-                                    input(type="search", name="q", value=q, hidden)
-                                    button.btn.color-link(type="submit", hidden)
                                     .d-block
                                         .d-flex.align-items-center.justify-content-between
-                                            h4.d-inline.m-0
-                                                | Filtros
-                                            h6: a(href=`?q=${q || ""}`).text-danger.text-decoration-none
-                                                i.bi-eraser-fill
-                                                | Limpar
-                                        .d-flex.flex-column.mb-1.border
-                                            -let tribunais = []
-                                            input.form-control.form-control-sm.border-0.border-bottom.rounded-0.bg-transparent(disabled,placeholder="Tribunal")
-                                            -let key = "Tribunal"
-                                            for bucket in aggs[key].buckets
-                                                -let checked = filters[key] && filters[key].indexOf(bucket.key) > -1
-                                                if checked
-                                                    -tribunais.push(bucket.key)
-                                                .form-check.form-check-inline.my-0(data-tribunal=bucket.key,class=filters[key]?"":"not-used")
-                                                    input.form-check-input.tribunal-checkbox(type="checkbox", name=key, value=bucket.key, checked=checked, id=bucket.key.replace(/\s/g, ""), hidden)
-                                                    label.form-check-label(for=bucket.key.replace(/\s/g, "")).d-flex.justify-content-between.align-items-center.w-100
-                                                        span.d-block !{bucket.key} 
-                                                        span.d-block (!{bucket.doc_count})
-                                        .d-flex.flex-column.my-1
-                                            .input-group.input-group-sm
-                                                .input-group-prepend.flex-grow-1
-                                                    input.form-control.form-control-sm.rounded-0(type="number", name="MinAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder="De (ano)")#data_inicio
-                                                .input-group-append.flex-grow-1
-                                                    input.form-control.form-control-sm.rounded-0(type="number", name="MaxAno", min=aggs.MinAno.value_as_string, max=aggs.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder="Até (ano)")#data_fim
+                                            block form-title
+                                                if body 
+                                                    b.d-inline.m-0                          
+                                                        i.bi-archive 
+                                                        | !{body.hits.total.value} Processos        
+                                            if Object.keys(filters).length > 0 || q
+                                                a(href=`?q=`).text-danger.text-decoration-none
+                                                    i.bi-eraser-fill
+                                                    | Limpar
                                         mixin usedFilters(key)
                                             -let cache = []
                                             if key in filters
                                                 for f in filters[key]
                                                     if cache.indexOf(f) == -1
                                                         -cache.push(f)
-                                                        .form-check.form-check-inline.my-0(style="--tribunal-color: #0f0")
+                                                        .form-check.form-check-inline.my-0(style="--border-color: #0f0")
                                                             input.form-check-input(type="checkbox", name=key, value=f, checked, id=`checkbox-${f.replace(/\s/g, "")}`, hidden)
                                                             label.form-check-label(for=`checkbox-${f.replace(/\s/g, "")}`).d-flex.justify-content-between.align-items-center.w-100
                                                                 span.d-block !{f}
@@ -88,28 +72,36 @@ html(lang="en")
                                                 +await(`./datalist?id=datalist-${key}&agg=${key}&${querystring}`)
                                                 input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`${key}`,disabled)
                                                 +usedFilters(key)
-                                        for p of Object.keys(properties)
-                                            if ["Tribunal", "ECLI", "Código Tribunal", "Tipo", "Jurisprudência", "Original URL", "Origem"].indexOf(p) == -1
-                                                +filterlist(p)
+                                        .d-flex.flex-column.my-1
+                                            input.form-control.form-control-sm.rounded-0(type="search", name="q", placeholder=`Texto Livre`, value=q||"")
+                                        .d-flex.my-1
+                                            .input-group.input-group-sm
+                                                .input-group-prepend.flex-shrink
+                                                    label.input-group-text.rounded-0.p-1(for="data_inicio") De:
+                                                input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MinAno", min=aggsGlobal.MinAno.value_as_string, max=aggsGlobal.MaxAno.value_as_string, value=filters["MinAno"], step="1",placeholder=aggsGlobal.MinAno.value_as_string)#data_inicio
+                                            .input-group.input-group-sm
+                                                .input-group-prepend.flex-shrink
+                                                    label.input-group-text.rounded-0.p-1(for="data_fim") Até:
+                                                input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MaxAno", min=aggsGlobal.MinAno.value_as_string, max=aggsGlobal.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder=aggsGlobal.MaxAno.value_as_string)#data_fim
+                                        +filterlist("Meio Processual")
+                                        +filterlist("Tipo de Processo")
+                                        +filterlist("Número de Processo")
+                                        +filterlist("Secção")
+                                        +filterlist("Relator")
+                                        +filterlist("Votação")
+                                        +filterlist("Decisão")
+                                        +filterlist("Descritores")
+                                        //for p of properties
+                                            +filterlist(p)
                                         +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)
                                         .d-flex.flex-column.my-1.border.pb-1
                                             input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de ter o campo`, disabled)
                                             +usedFilters("hasField")
-                                        if "Origem" in filters
-                                            +filterlist("Origem")
                                         if "notHasField" in filters
                                             .d-flex.flex-column.my-1.border.pb-1
                                                 input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode ter o campo`, disabled)
                                                 +usedFilters("notHasField")
                         .col-12.col-sm-8.col-md-9.col-xl-10#main: block main
-        footer.d-print-none.mt-2
-            .container.row.align-items-center.m-auto.p-4
-                a(href="#top").col-12.col-lg-6.align-items-center.d-flex.flex-wrap.py-2
-                    i.bi.bi-chevron-up.mr-2
-                    | Voltar ao topo
-            small#time-info.text-white
-                p.m-0 Página carregada em: !{new Date() - requestStart}ms
-                p.m-0 Dados carregados em: <span id="data-time-info">0</span>ms
                     
         script.
             window.addEventListener('DOMContentLoaded', function(){
@@ -141,3 +133,13 @@ html(lang="en")
 
                 document.querySelectorAll(`input[list="${datalist.id}"]`).forEach(input => input.disabled = false);
             })
+
+            /*function checkDataListInput(elm){
+                let val = elm.value;
+                let dlist = elm.list;
+                let opts = dlist.childNodes;
+                if( opts.length == 1 ){
+                    elm.value = `"${f}"`
+                    elm.unfocus()
+                }
+            }*/

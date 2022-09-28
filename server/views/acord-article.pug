@@ -1,96 +1,6 @@
-style.
-    .highlight {
-        display: inline-flex;
-        margin-left: auto;
-        flex-grow: 1;
-    }
-
-    .highlight-bar {
-        width: 100%;
-        flex-shrink: 1;
-        height: 0px;
-        background-color: var(--color-gray);
-        border: solid var(--color-gray);
-        border-width: 1px 0px 1px 0px;
-        margin: 6px 0 6px;
-        position: relative;
-        border-radius: 10px;
-    }
-
-    .highlight-bar-hit {
-        position: absolute;
-        background: var(--tribunal-color);
-        height: 15px;
-        top: -7.5px;
-        width: 2px;
-        transition: 200ms;
-    }
-
-    .highlight-bar-hit:before {
-        content: "";
-        position: absolute;
-        right: 100%;
-        top: 0;
-        bottom: 0;
-        width: 5px;
-        background: transparent;
-    }
-    .highlight-bar-hit:after {
-        content: "";
-        position: absolute;
-        left: 100%;
-        top: 0;
-        bottom: 0;
-        width: 5px;
-        background: transparent;
-    }
-
-    .highlight-bar-hit:hover {
-        filter: brightness(1.7);
-    }
-
-    .highlight-bar-hit:hover ~ .highlight-bar-hit-content, .highlight-bar-hit-content:hover {
-        display: block !important;
-        position: absolute;
-        bottom: 5px;
-        font-size: 0.7rem;
-        color: var(--color-black);
-        background: var(--color-white);
-        border: 1px solid;
-        padding: 0.5rem;
-        z-index: 1;
-        right: 0;
-        left: 0;
-    }
-
-    details .bi-caret-downright-fill::before{
-        content: "\f231";
-    }
-    details[open] .bi-caret-downright-fill::before {
-        content: "\f229";
-    }
-
-    .normalize-sumario-weight b{
-        font-weight: normal;
-    }
-
-    .pesquisa-sep {
-        background: var(--tribunal-color);
-        color: var(--color-white);
-        font-size: smaller;
-        display: inline;
-        font-weight: normal;
-        font-style: italic;
-        margin: 0 0.4rem;
-    }
-    .pesquisa-sep::before {
-        content: "(...)";
-    }
-
 for doc in hits
-    -let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     -let relevanciaColor = (per) => per < 0.2 ? '#E3D5A1' : per < 0.4 ? '#CEB65E' : per < 0.6 ? '#B49936' : per < 0.8 ? '#8C752C' : '#6C5A22';
-    article.row(data-tribunal=doc._source.Tribunal).border-top
+    article.row.border-top.result
         .col-12.pt-1.d-flex
             small.relevancia(style=`color: ${relevanciaColor(doc._score/max_score)}`)
                 each bin in [0.2,0.4,0.6,0.8,1]
@@ -98,48 +8,38 @@ for doc in hits
                         i.bi.bi-square.me-1
                     else
                         i.bi.bi-square-fill.me-1
-                a(href=`./${doc._source.ECLI}`, target="_blank")
-                    | !{doc._source.ECLI}
+            if doc._source["Meio Processual"]
+                span #{titleCase(doc._source["Meio Processual"])} -
+            span &nbsp;!{doc._source.Tipo}&nbsp;
+            a(href=`./acord-${doc._source.UUID}`, target="_blank")
+                | !{doc._source.Processo}
+            if doc._source.Secção
+                span &nbsp;- #{titleCase(doc._source.Secção)}
         .col-12.d-flex.flex-wrap
-            div.mx-1
-                b Tribunal:&nbsp;
-                span(style="color: var(--tribunal-color);") #{doc._source.Tribunal}&nbsp;
-                if doc._source.Secção
-                    span (#{Str(doc._source.Secção)})
             div.mx-1
                 b Relator:&nbsp;
-                span #{Str(doc._source.Relator)}
+                span #{titleCase(doc._source.Relator)}
             div.mx-1
-                b Data(s):&nbsp;
+                b Data:&nbsp;
                 span #{doc.fields[DATA_FIELD]}
         .col-12.d-flex.flex-wrap
-            if doc._source.Espécie
-                div.mx-1
-                    b Espécie:&nbsp;
-                    span #{Str(doc._source.Espécie)}
-            if doc._source["Meio Processual"]
-                div.mx-1
-                    b Meio Processual:&nbsp;
-                    span #{Str(doc._source["Meio Processual"])}
-        if doc._source.Votação
-            .col-12
+            if doc._source.Votação
                 div.mx-1
                     b Votação:&nbsp;
-                    span #{Str(doc._source.Votação)}
-        if doc._source.Decisão
-            .col-12
+                    span #{titleCase(doc._source.Votação.Forma)}
+            if doc._source.Decisão
                 div.mx-1.d-flex
                     b Decisão:&nbsp;
-                    div !{Str(doc._source.Decisão)}
+                    div !{titleCase(doc._source.Decisão)}
         if Array.isArray(doc._source.Descritores)
             .col-12
                 div.mx-1
                     b Descritores:&nbsp;
                     - let descritores = []
                     if doc.highlight && doc.highlight.Descritores
-                        - descritores = doc._source.Descritores.map(origin => doc.highlight.Descritores.find(highlight => highlight.includes(origin)) ? `<mark>${Str(origin)}</mark>` : Str(origin))
+                        - descritores = doc._source.Descritores.map(origin => doc.highlight.Descritores.find(highlight => highlight.includes(origin)) ? `<mark>${titleCase(origin)}</mark>` : titleCase(origin))
                     else 
-                        - descritores = doc._source.Descritores.map(Str)
+                        - descritores = doc._source.Descritores.map(titleCase)
                     span !{descritores.join(' / ')}
         if doc._source.Sumário
             details.col-12
@@ -152,7 +52,7 @@ for doc in hits
                             .highlight-bar(data-key="Sumário")
                                 each hit in doc.highlight.SumárioMarks
                                     .highlight-bar-hit-parent
-                                        .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%`)
+                                        .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%; background: ${hit.color};`)
                                         .highlight-bar-hit-content.d-none !{hit.text}
                 if doc.highlight && doc.highlight.Sumário
                     div.col-12.p-2.border.normalize-sumario-weight !{doc.highlight.Sumário}
@@ -172,7 +72,7 @@ for doc in hits
                                 .highlight-bar(data-key=key)
                                     each hit in doc.highlight[key]
                                         .highlight-bar-hit-parent
-                                            .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%`)
+                                            .highlight-bar-hit(data-offset=hit.offset, data-per=hit.offset/hit.size, style=`left: ${hit.offset/hit.size*100}%; background: ${hit.color};`)
                                             .highlight-bar-hit-content.d-none !{hit.text}
 
                     div.col-12.p-2.border
