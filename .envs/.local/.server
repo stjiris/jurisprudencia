@@ -1,0 +1,3 @@
+NODE_ENV=development
+PORT=9100
+ES_URL="http://elasticsearch:9200"
