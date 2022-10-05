@@ -19,12 +19,40 @@ let report = {
     indexUpdatedCount: 0,
     indexNotUpdatedCount: 0,
     indexConflitsFound: [],
+    /* Skips */
+    indexSkipedCount: 0,
     /* Requests report */
     fetchTotalCount: 0,
     fetchTotalBytes: 0,
     fetchTotalTime: 0,
     fetchAvgTime: 0,
     fetchAvgBytes: 0
+}
+
+const FULL_UPDATE = process.argv.some(f => f === "--full" || f === "-f")
+const SOFT_UPDATE = process.argv.some(f => f === "--soft" || f === "-s")
+const HELP =  process.argv.some(f => f === "--help" || f === "-h" )
+const CHECK_KNOW_LINKS = FULL_UPDATE && !SOFT_UPDATE;
+
+if( HELP ){
+    showHelp();
+    return 1;
+}
+
+if( SOFT_UPDATE && FULL_UPDATE ){
+    console.error("ERROR: Incompatible arguments --full and --soft")
+    showHelp();
+    return 2;
+}
+
+function showHelp(){
+    console.log(`Usage: node jurisprudencia-indexer.js [OPTION]`)
+    console.log(`Web scrapper for "http://www.dgsi.pt/jstj.nsf/" that populates the index "${jurisprudencia.Index}" of a elasticsearch instance on the location defined by $ES_URL (defaults to http://localhost:9200/)${process.env.ES_URL ? " (current value: ${process.env.ES_URL})" : ""}`)
+    console.log(`Arguments:`)
+    console.log(`    --help, -h    display this help and exit`)
+    console.log(`    --full, -f    full update, checks every link for changes [default]`)
+    console.log(`    --soft, -s    soft update, checks only new links`)
+    console.log(`Note that: --full and --soft are incompatible arguments`)
 }
 
 require('./util/fetch').watchFetchStats( pageDownloadedStats => {
@@ -47,6 +75,12 @@ function saveReport(){
 }
 
 forEachDgsiLink(async url => {
+    if( !CHECK_KNOW_LINKS ){
+        if( await urlIsIndexed(url) ){
+            report.indexSkipedCount++;
+            return;
+        }
+    }
     let table = await url2table(url);
     let original = {}
     let keyData = "Data do Acordão";
