@@ -23,7 +23,6 @@ block allmain
                     b !{showkey ? showkey : key}:&nbsp;
                     a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{str ? titleCase(source[key]) : source[key]}
         +field("Meio Processual")
-        +field("Tipo", "Tipo de Processo")
         h6
             b Número de Processo:&nbsp;
             span !{source.Processo}
