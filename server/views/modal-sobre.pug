@@ -1,0 +1,34 @@
+.modal-dialog
+    .modal-content
+        .modal-header
+            div
+                h5.modal-title#modal-label Sobre a Jursiprudência
+                p.m-0 Permite explorar, pesquisar e filtrar os acórdãos publicados pelo Supremo Tribunal de Justiça na <a href="http://www.dgsi.pt/" target="_blank">DGSI.pt</a>.
+        .modal-body
+            h6 Pesquisa
+            p
+                | O campo "Texto Livre" permite ao utilizador pesquisar por um ou mais termos em todos os campos de cada acórdão.
+                | Quando algum dos termos é encontrado no sumário ou no texto a sua posição é destacada.
+                | O resultado da pesquisa é a união dos resultados de cada termo, sendo suportados alguns operadores de pesquisa<sup>1</sup>, nomeadamente:
+                ul
+                    li <code>-<i>termo</i></code> - pesquisa por resultados sem o <code><i>termo</i></code>.
+                    li <code>"<i>termo(s)</i>"</code> - pesquisa exata pelo(s) <code><i>termo(s)</i></code>.
+                    li <code><i>termo</i>*</code> - pesquisa usando o prefixo <code><i>termo</i></code>.
+                    li <code>+<i>termo</i></code> - força os resultados já obtidos a conter o <code><i>termo</i></code>.
+                    li <code>+-<i>termo</i></code> - força os resultados já obtidos a não conter o <code><i>termo</i></code>.
+            h6 Filtros 
+            p É possível filtrar por Data, dando um ano de início, um ano de fim ou ambos.
+            p 
+                | Por defeito os filtros usam uma pesquisa parcial. Para pesquisar exatamente um valor deve-se o valor entre aspas.
+                | Por exemplo, filtrar pelo descritor <a href="./?Descritores=Recurso" target="blank">Recurso</a> incluí respostas com descritores que contêm a palavra Recurso. O que não acontece procurando <a href="./?Descritores=%22Recurso%22" target="_blank">"Recurso"</a>.
+            h6 Ordenação
+            p Os resultados podem ser ordenados por data ou pela relevância que têm para a pesquisa feita.
+
+
+                
+
+        .modal-footer 
+            .flex-grow-1
+                div: small <sup>1</sup>Ver todas os operadores de pesquisa suportados <a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.4/query-dsl-simple-query-string-query.html#simple-query-string-syntax" target="_blank">aqui</a>
+                div: small <a href="https://github.com/stjiris/jurisprudencia" target="_blank" class="text-decoration-none"><i class="bi bi-github"></i> stjiris/jurisprudencia</a>
+            button.btn.btn-secondary(type="button",data-bs-dismiss="modal") Fechar

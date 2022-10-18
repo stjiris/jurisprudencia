@@ -25,11 +25,10 @@ html(lang="en")
                             input(type="submit", formaction="./estatisticas", value="Estatísticas", form="filter-form",class=currentPage=="stats"?"active":"").border-0.nav-link.fs-6.bg-transparent
                         li.nav-link.py-1.px-2.mx-1
                             input(type="submit", formaction="./indices", value="Indíces", form="filter-form",class=currentPage=="list"?"active":"").border-0.nav-link.fs-6.bg-transparent
-                        //
-                            li
-                                i.bi.bi-dot
-                            li.nav-link.py-1.px-2.mx-1
-                                input(type="submit", formaction="./sobre", value="Sobre", form="filter-form",class=currentPage=="about"?"active":"").border-0.nav-link.fs-6.bg-transparent
+                        li
+                            i.bi.bi-dot
+                        li.nav-link.py-1.px-2.mx-1
+                            a(role="button", class=currentPage=="about"?"active":"", data-bs-toggle="modal", data-bs-target="#modal-about").border-0.nav-link.fs-6.bg-transparent Sobre
             .col-12.col-lg-6.d-none.d-print-block
                 block printpageinfo
                     p Sem informação da página
@@ -95,15 +94,18 @@ html(lang="en")
                                         //for p of properties
                                             +filterlist(p)
                                         +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)
-                                        .d-flex.flex-column.my-1.border.pb-1
-                                            input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de ter o campo`, disabled)
-                                            +usedFilters("hasField")
+                                        if "hasField" in filters
+                                            .d-flex.flex-column.my-1.border.pb-1
+                                                input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name="hasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Tem de ter o campo`, disabled)
+                                                +usedFilters("hasField")
                                         if "notHasField" in filters
                                             .d-flex.flex-column.my-1.border.pb-1
                                                 input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name="notHasField", autocomplete="off", list=`datalist-Campos`, placeholder=`Não pode ter o campo`, disabled)
                                                 +usedFilters("notHasField")
                         .col-12.col-sm-8.col-md-9.col-xl-10#main: block main
-                    
+        .modal.fade#modal-about(tabindex="-1",role="dialog",aria-labelledby="modal-label",aria-hidden="true")
+            include modal-sobre
+        script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js", integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM", crossorigin="anonymous")
         script.
             window.addEventListener('DOMContentLoaded', function(){
                 let elems = Array.from(document.getElementsByClassName(`await-loading`));

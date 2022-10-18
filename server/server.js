@@ -248,7 +248,7 @@ function parseSort(value, array){
 }
 
 let searchedArray = (string) => client.indices.analyze({
-    index: "jurisprudencia.5.0",
+    index: INDEXNAME,
     text: string
 }).then( r => r.tokens.map( o => o.token) ).catch( e => [])
 
@@ -721,5 +721,5 @@ app.get("/datalist", (req, res) => {
     });
 });
 
-app.use(express.static(path.join(__dirname, "static")));
+app.use(express.static(path.join(__dirname, "static"), {extensions: ["html"]}));
 app.listen(parseInt(process.env.PORT) || 9100)
