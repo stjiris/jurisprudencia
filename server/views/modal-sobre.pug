@@ -3,12 +3,7 @@
         .modal-header
             div
                 h5.modal-title#modal-label Sobre a Jursiprudência
-                p.m-0
-                    | Permite explorar, pesquisar e filtrar os acórdãos publicados pelo Supremo Tribunal de Justiça na <a href="http://www.dgsi.pt/" target="_blank">DGSI.pt</a>.
-                    br
-                    a(href="https://docs.google.com/document/d/1WSDh_b0Y4XtMVoMuDiaVfWmFsW5ktbTaUI2CGHMdcys/edit?usp=sharing" target="_blank") Notas Jurisprudência
-                    br
-                    a(href="https://docs.google.com/document/d/1jz8CVWifPHAZS1BBm6Vi3YWVb-xS5vJk8UbblsWRz-A/edit?usp=sharing" target="_blank") Notas Pesquisa
+                p.m-0 Permite explorar, pesquisar e filtrar os acórdãos publicados pelo Supremo Tribunal de Justiça na <a href="http://www.dgsi.pt/" target="_blank">DGSI.pt</a>.
         .modal-body
             h6 Pesquisa
             p
@@ -28,12 +23,12 @@
                 | Por exemplo, filtrar pelo descritor <a href="./?Descritores=Recurso" target="blank">Recurso</a> incluí respostas com descritores que contêm a palavra Recurso. O que não acontece procurando <a href="./?Descritores=%22Recurso%22" target="_blank">"Recurso"</a>.
             h6 Ordenação
             p Os resultados podem ser ordenados por data ou pela relevância que têm para a pesquisa feita.
-
-
-                
-
         .modal-footer 
             .flex-grow-1
                 div: small <sup>1</sup>Ver todas os operadores de pesquisa suportados <a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.4/query-dsl-simple-query-string-query.html#simple-query-string-syntax" target="_blank">aqui</a>
+                div: small Documentos Google Drive:&nbsp;
+                    a(href="https://docs.google.com/document/d/1WSDh_b0Y4XtMVoMuDiaVfWmFsW5ktbTaUI2CGHMdcys/edit?usp=sharing" target="_blank") Notas Jurisprudência
+                    | &nbsp;
+                    a(href="https://docs.google.com/document/d/1jz8CVWifPHAZS1BBm6Vi3YWVb-xS5vJk8UbblsWRz-A/edit?usp=sharing" target="_blank") Notas Pesquisa
                 div: small Código disponível em: <a href="https://github.com/stjiris/jurisprudencia" target="_blank" class="text-decoration-none"><i class="bi bi-github"></i> stjiris/jurisprudencia</a>
             button.btn.btn-secondary(type="button",data-bs-dismiss="modal") Fechar
