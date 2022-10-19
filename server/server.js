@@ -607,21 +607,16 @@ app.get("/related-:proc(*)", (req, res) => {
     search({term: {UUID: proc}}, {pre:[], after:[]}, 0, {}, 1, {_source: ['Processo']}).then(async (body) => {
         if( body.hits.total.value == 0 ) return [];
         let processo = body.hits.hits[0]._source["Processo"];
-        let rs = [];
-        while( true ){
-            let cr = await search({wildcard: {Processo: `${processo}*`}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Processo', "UUID", DATA_FIELD]});
-            cr.hits.hits.forEach( hit => {
-                if( hit._source.UUID == proc || rs.find(o => o.UUID == hit._source.UUID) ) return;
-                rs.push({
-                    Processo: hit._source.Processo,
-                    UUID: hit._source.UUID,
-                    Data: hit._source[DATA_FIELD]
-                });
-            })
-            if( Math.max(processo.lastIndexOf("."), processo.lastIndexOf("-")) == -1 ) break;
-            processo = processo.slice(0,Math.max(processo.lastIndexOf("."), processo.lastIndexOf("-")))
+        let m = processo.match(/(?<base>[^/]+\/\w+\.\w+(-\w+)?)\./); 
+        if( !m ){
+            return [];
         }
-        return rs;
+        let related = await search({wildcard: {Processo: `${m.groups.base}*`}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Processo', "UUID", DATA_FIELD]});
+        return related.hits.hits.map( hit => ({
+            Processo: hit._source.Processo,
+            UUID: hit._source.UUID,
+            Data: hit._source[DATA_FIELD]
+        })).filter( hit => hit.UUID != proc);
     }).then( l => res.json(l))
 })
 
