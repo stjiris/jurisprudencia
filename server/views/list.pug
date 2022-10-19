@@ -5,6 +5,19 @@ block head
 
 prepend header
     -currentPage = "list"
+    .modal.fade#modal-histogram(tabindex="-1",role="dialog",aria-labelledby="modal-histogram-label",aria-hidden="true")
+        .modal-dialog
+            .modal-content
+                .modal-header
+                    div
+                        h3#modal-histogram-label Histograma
+                        small <span id="modal-histogram-key">Termo</span> com o valor "<span id="modal-histogram-val">Valor</span>"
+                .modal-body
+                    #histogram.w-100
+                        | Clicar no histograma de um valor para o ver
+                .modal-footer
+                    button.btn.btn-secondary(type="button",data-bs-dismiss="modal") Fechar
+
 
 block printpageinfo
     p Lista de !{term} da pesquisa por: "!{q || ""}"
@@ -21,8 +34,6 @@ block main
                     | Atenção:
                 ul
                     li Existem !{aggs[term].sum_other_doc_count} outros valores não listados.
-    //#histogram.position-sticky(style="top: 0; height: 250px; width: 100%")
-        | Clicar no histograma de um valor para o ver
     table.table.table-sm
         thead 
             tr 
@@ -34,7 +45,7 @@ block main
                 th Quantidade Total
                 th Primeira Data
                 th Última Data
-                //th Histograma
+                th Histograma
         tbody 
             for agg in aggs[term].buckets
                 tr
@@ -42,61 +53,34 @@ block main
                     td !{agg.doc_count}
                     td !{agg.MinAno.value_as_string}
                     td !{agg.MaxAno.value_as_string}
-                    //td: a(onclick="histogram(this)",data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`, href="#histogram") Abrir
+                    td: a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) Ver
+            
     script.
         document.getElementById("form-select").addEventListener("change", (e) => {
             document.getElementById("form-select-input").value = e.target.value;
             document.getElementById("filter-form").submit();
         })
 
+        document.getElementById("modal-histogram").addEventListener("show.bs.modal", (event) => {
+            let elm = event.relatedTarget;
+            document.getElementById("modal-histogram-key").innerHTML = elm.dataset.key;
+            document.getElementById("modal-histogram-val").innerHTML = elm.dataset.value;
+            document.getElementById("histogram").innerHTML = "A carregar dados...";
+            setTimeout(histogram, 250, elm);
+        })
+
         function histogram(elm){
-            document.getElementById("histogram").innerHTML = "A carregar dados";
             fetch(elm.dataset.query).then( r => r.json() ).then( aggs => {
-                document.getElementById("histogram").innerHTML = "";
-                Plotly.newPlot("histogram", [{
-                    x: aggs.Term.Anos.buckets.map(b => b.key_as_string),
-                    y: aggs.Term.Anos.buckets.map(b => b.doc_count),
-                    type: "bar"
-                }]);
+                setTimeout(_ => {
+                    document.getElementById("histogram").innerHTML = "";
+                    Plotly.newPlot("histogram", [{
+                        x: aggs.Term.Anos.buckets.map(b => b.key_as_string),
+                        y: aggs.Term.Anos.buckets.map(b => b.doc_count),
+                        type: "bar"
+                }], {xaxis: {autotypenumbers: 'strict'}}, {responsive: true});
+                }, 100)
             }).catch(e => {
                 console.log(e)
             })
             
         }
-
-    //-.row.p-2
-        pre: code !{JSON.stringify(aggs, null, 2)}
-        //-let available = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(l => l in letters)
-        //-for l of available
-            -let letter = letters[l]
-            if letter
-                article.col-12.row.mb-3(id=`${l}`)
-                    .col-12.row
-                        h5.col-1 !{l}
-                        .col-11.d-print-none
-                            for a of available
-                                if a != l
-                                    a.p-1.m-1(href=`#${a}`) !{a}
-                                else
-                                    span.p-1.m-1 !{a}
-                    for obj in letter
-                        .row.col-12.my-2.pb-2.align-items-center.term
-                            .col-4: a(href=`./?${term}=${obj.key}`) !{obj.key}
-                            .col-8.d-flex.flex-column
-                                span !{obj.doc_count}
-    //- for aggRelator in aggs.Relator.buckets.sort(({key:a}, {key:b}) => a.localeCompare(b))
-        -let currLeter = aggRelator.key[0].replace(/[^a-zA-Z]/g, "#").toUpperCase()
-        if (firstLeter != currLeter)
-            .row.p-2
-                .col-12.d-flex.flex-wrap
-                    h3(id=currLeter) !{currLeter}
-                    for l in "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
-                        a(href="#"+l, class="m-1") !{l}
-            -firstLeter = currLeter
-        .row.align-items-center
-            .col-12.col-sm-4.d-flex.flex-column
-                a(href=`/?q=Relator:"${aggRelator.key}"`, target="_blank") !{aggRelator.key}
-            .col-12.col-sm-8.d-flex.flex-column
-                for aggRelatorTribunal in aggRelator.Tribunal.buckets
-                    span.d-print-none
-                        a(href=`/?q=Tribunal:"${aggRelatorTribunal.key}"`,data-tribunal=aggRelatorTribunal.key) !{aggRelatorTribunal.key}
