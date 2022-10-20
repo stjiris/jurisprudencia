@@ -40,6 +40,7 @@ block main
                 option(value="score",selected=sort=="score") Relevância
                 option(value="asc",selected=sort=="asc") Data Ascendente
                 option(value="des",selected=sort=="des") Data Descendente
+            i.bi.bi-share(role="button",onclick=`navigator.share({url: "/go/${searchId}"})`)
             div.d-inline.float-end.d-print-none
                 if searchedArray.length > 0
                     | Termos da pesquisa destacados:&nbsp;

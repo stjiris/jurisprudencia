@@ -8,6 +8,7 @@ app.set('view engine', 'pug');
 app.set('views', './views');
 
 const {Index: INDEXNAME, Properties: properties} = require('../jurisprudencia');
+const saveSearch = require('./save-search');
 const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword' || (obj.fields && obj.fields.keyword)).map( ([name, _]) => name).filter( o => o != "URL" && o != "UUID").concat("Votação")
 let DATA_FIELD = "Data";
 const aggs = {
@@ -278,7 +279,6 @@ function titleCase(str){
 const tmp = app.render.bind(app);
 app.render = async (name, obj, next) => {
     let aggsGlobal = await allSearchAggPromise;
-    let Str = (str) => str.replace(/\S*/g, function(txt){return txt.match(/(^D.S?$)|(^EM$)/) || txt.length == 1 ? txt.toLowerCase() : txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     tmp(name, { aggsGlobal, titleCase, properties: filterableProps, requestStart: new Date(), ...obj, DATA_FIELD }, next);
 }
 
@@ -295,6 +295,10 @@ app.get("/", (req, res) => {
         sortE = false;
     }
     let page = parseInt(req.query.page) || 0;
+    let searchId = saveSearch(queryString(req.originalUrl, [])).catch(e =>{
+        console.log(e);
+        return ""
+    });
     search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, 0, { sort }).then(async results => {
         res.render("search", {
             q: req.query.q, querystring: queryString(req.originalUrl),
@@ -307,7 +311,8 @@ app.get("/", (req, res) => {
             page: page,
             pages: Math.ceil(results.hits.total.value/RESULTS_PER_PAGE),
             open: Object.keys(filtersUsed).length > 0,
-            searchedArray: await searchedArray(req.query.q)
+            searchedArray: await searchedArray(req.query.q),
+            searchId: await searchId
         });
     }).catch(async e => {
         console.log(e);
@@ -323,6 +328,7 @@ app.get("/", (req, res) => {
             pages: 0,
             open: true,
             error: e,
+            searchId: await searchId,
             searchedArray: await searchedArray(req.query.q)
         });
     })
@@ -373,6 +379,10 @@ app.get("/acord-only", (req, res) => {
         },
         max_analyzed_offset: 1000000
     };
+    let searchId = saveSearch(queryString(req.originalUrl, [])).catch(e =>{
+        console.log(e);
+        return ""
+    });
     search(queryObject(req.query.q), sfilters, page, {}, RESULTS_PER_PAGE, { sort, highlight, track_scores: true, _source:  [...Object.keys(properties), "Sumário", "Texto"] }).then( async results => {
         searchArray = await searchedArray(req.query.q)
         let colorFromText = (txt) => `var(--highlight-${searchArray.indexOf(txt.toLocaleLowerCase().trim())}, var(--primary-gold))`;
@@ -407,7 +417,8 @@ app.get("/acord-only", (req, res) => {
         })
         res.render("acord-article", {
             hits: results.hits.hits,
-            max_score: results.hits.max_score
+            max_score: results.hits.max_score,
+            searchId: await searchId
         });
     }).catch(e => {
         console.log(e);
@@ -621,6 +632,11 @@ app.get("/related-:proc(*)", (req, res) => {
 })
 
 app.get("/acord-:proc(*)", (req, res) => {
+    if( req.query.search ){
+        saveSearch.trackClickedDocument(req.query.search, req.params.proc).catch(e => {
+            console.log(e);
+        });
+    }
     let proc = req.params.proc;
     search({term: {UUID: proc}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: [DATA_FIELD]}).then((body) => {
         if( body.hits.total.value == 0 ){
@@ -715,6 +731,11 @@ app.get("/datalist", (req, res) => {
         res.render("datalist", {aggs: [], error: err, id: id});
     });
 });
+
+app.get("/go/:searchId", async(req, res) => {
+    let params = await saveSearch.getShearchParams(req.params.searchId);
+    res.redirect(`../?${params}`);
+})
 
 app.use(express.static(path.join(__dirname, "static"), {extensions: ["html"]}));
 app.listen(parseInt(process.env.PORT) || 9100)
