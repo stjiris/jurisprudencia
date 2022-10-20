@@ -28,8 +28,7 @@ client.indices.create({
     console.log(e)
 });
 
-function shakeHashWithRandomSalt(str){
-    let salt = crypto.randomBytes(10).toString('hex') // using salt to make less likely to colide
+function shakeHash(str){
     let hash = crypto.createHash("shake256", { outputLength: 14 });
     hash.write(str + salt);
     return hash.digest().toString("base64url");
@@ -40,14 +39,15 @@ module.exports = async function saveSearch(reqString){
     if( r.hits.hits.length > 0 ){
         return r.hits.hits[0]._source.searchHash;
     }
-    let hashStr = shakeHashWithRandomSalt(reqString);
+    let hashStr = shakeHash(reqString);
     r = await client.search({
         index: INDEX,
         query: { term: {searchHash: hashStr}},
         _source: false
     });
     while(r.hits.hits.length > 0){ // prevent new hashes from coliding since we are using only the first 7 bytes
-        hashStr = shakeHashWithRandomSalt(reqString);
+        let salt = crypto.randomBytes(10).toString('hex') // using salt to make less likely to colide
+        hashStr = shakeHash(hashStr + salt);
         r = await client.search({
             index: INDEX,
             query: { term: {searchHash: hashStr}},
