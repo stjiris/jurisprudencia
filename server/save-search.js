@@ -30,7 +30,7 @@ client.indices.create({
 
 function shakeHash(str){
     let hash = crypto.createHash("shake256", { outputLength: 14 });
-    hash.write(str + salt);
+    hash.write(str);
     return hash.digest().toString("base64url");
 }
 
