@@ -196,7 +196,7 @@ const Secções = [
 
 function getSecçãoÁreaTemática(table){
     if( !("Área Temática" in table)){
-        throw new Error(`Área Temática not available at ${table.Processo.textContent.trim()}`)
+        return require("./section-rules")(table.Original);
     }
     let possibleSecção = table["Área Temática"].textContent.trim();
     if( possibleSecção == "1ª Secção (Cível)" ) possibleSecção = "1.ª Secção (Cível)";
