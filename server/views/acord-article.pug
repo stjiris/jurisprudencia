@@ -13,7 +13,7 @@ for doc in hits
             a(href=`./acord-${doc._source.UUID}?search=${searchId}`, target="_blank")
                 | !{doc._source.Processo}
             if doc._source.Secção
-                span &nbsp;- #{titleCase(doc._source.Secção)}
+                span &nbsp;- #{doc._source.Secção}
         .col-12.d-flex.flex-wrap
             div.mx-1
                 b Relator:&nbsp;
