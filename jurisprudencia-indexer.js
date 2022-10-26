@@ -8,6 +8,7 @@ const fetch = require('./util/fetch');
 const { strip_attrs } = require('./util/html');
 const crypto = require("crypto");
 const { writeFileSync } = require('fs');
+const getSecçãoFromDocument = require("./section-rules")
 
 let report = {
     /* Timing report */
@@ -112,7 +113,7 @@ forEachDgsiLink(async url => {
         "Descritores": getDescritores(table),
         "Meio Processual": getMeioProcessual(table),
         "Votação": getVotação(table),
-        "Secção": getSeccao(table),
+        "Secção": getSecçãoFromDocument(original),
         "Decisão": getDecisao(table),
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
