@@ -181,36 +181,61 @@ function getDecisao(table){
 
     return table.Decisão.textContent.trim();
 }
+const SECÇÃO_KEY = "Nº CONVENCIONAL";
 
-const Secções = [
-    "1.ª Secção (Cível)",
-    "2.ª Secção (Cível)",
-    "3.ª Secção (Criminal)",
-    "4.ª Secção (Social)",
-    "5.ª Secção (Criminal)",
-    "6.ª Secção (Cível)",
-    "7.ª Secção (Cível)",
-    "Secção Contencioso",
-    "sem Secção"
-];
+const Secções = {
+    SECÇÃO_1: "1.ª Secção (Cível)",
+    SECÇÃO_2: "2.ª Secção (Cível)",
+    SECÇÃO_3: "3.ª Secção (Criminal)",
+    SECÇÃO_4: "4.ª Secção (Social)",
+    SECÇÃO_5: "5.ª Secção (Criminal)",
+    SECÇÃO_6: "6.ª Secção (Cível)",
+    SECÇÃO_7: "7.ª Secção (Cível)",
+    SECÇÃO_C: "Secção Contencioso",
+    SECÇÃO_NULL: "sem Secção"
+};
 
 function getSecçãoÁreaTemática(table){
     if( !("Área Temática" in table)){
         return require("./section-rules")(table.Original);
     }
     let possibleSecção = table["Área Temática"].textContent.trim();
-    if( possibleSecção == "1ª Secção (Cível)" ) possibleSecção = "1.ª Secção (Cível)";
-    if( possibleSecção == "2ª Secção (Cível)" ) possibleSecção = "2.ª Secção (Cível)";
-    if( possibleSecção == "3ª Secção (Cível)" ) possibleSecção = "3.ª Secção (Cível)";
-    if( possibleSecção == "4ª Secção (Cível)" ) possibleSecção = "4.ª Secção (Cível)";
-    if( possibleSecção == "5ª Secção (Cível)" ) possibleSecção = "5.ª Secção (Cível)";
-    if( possibleSecção == "6ª Secção (Cível)" ) possibleSecção = "6.ª Secção (Cível)";
-    if( possibleSecção == "7ª Secção (Cível)" ) possibleSecção = "7.ª Secção (Cível)";
+    if( possibleSecção == "1ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_1;
+    if( possibleSecção == "2ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_2;
+    if( possibleSecção == "3ª Secção (Criminal)" ) possibleSecção = Secções.SECÇÃO_3;
+    if( possibleSecção == "4ª Secção (Social)" ) possibleSecção = Secções.SECÇÃO_4;
+    if( possibleSecção == "5ª Secção (Criminal)" ) possibleSecção = Secções.SECÇÃO_5;
+    if( possibleSecção == "6ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_6;
+    if( possibleSecção == "7ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_7;
     if( Secções.indexOf(possibleSecção) == -1 ){
         throw new Error(`Secção Inválida! ${possibleSecção}`);
     }
 
     return possibleSecção;
+}
+
+
+function getSecçãoNConvencional(originalTable){
+    if( !(SECÇÃO_KEY in originalTable) ) return Secções.SECÇÃO_NULL;
+
+    let possibleSecção = new jsdom.JSDOM(originalTable[SECÇÃO_KEY]).window.document.body.textContent.trim();
+
+    if( possibleSecção.match(/Contencioso/i) ){
+        return Secções.SECÇÃO_C;
+    }
+
+    if( possibleSecção.match(/se/i) && possibleSecção.match(/^(1|2|3|4|5|6|7)/) ){
+        let number = possibleSecção[0];
+        let key = `SECÇÃO_${number}`;
+        return Secções[key]
+    }
+
+    // Ortografia - CONSTENCIOSO
+    if( possibleSecção.match(/Constencioso/i) ){
+        return Secções.SECÇÃO_C;
+    }
+
+    return getSectionFromDocumentNumber(originalTable);
 }
 
 async function reportIndex(obj){
