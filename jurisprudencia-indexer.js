@@ -231,7 +231,7 @@ async function reportIndex(obj){
         await client.update({
             id: r.hits.hits[0]._id,
             index: jurisprudencia.Index,
-            _source: obj
+            doc: obj
         });
     }
     else if( newhashes.Metadados != savedhashes.Metadados ){
@@ -239,7 +239,7 @@ async function reportIndex(obj){
         await client.update({
             id: r.hits.hits[0]._id,
             index: jurisprudencia.Index,
-            _source: obj
+            doc: obj
         })
     }
 }
