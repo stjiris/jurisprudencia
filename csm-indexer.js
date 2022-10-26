@@ -159,8 +159,21 @@ function getMeioProcessual(table){
 
 function getVotação(table){
     if( !("Votação" in table) ) return null;
-
-    throw new Error(`Votação has value! ${table["Votação"].textContent}`);
+    let text = table.Votação.textContent.trim();
+    if( text.match(/^-+$/) ) return null;
+    if( text.match(/unanimidade/i) ){
+        return {
+            "Forma": "Unanimidade"
+        };
+    }
+    else{
+        return {
+            "Forma": text,
+            "Voto Vencido": 100,
+            "Declaração de Voto": 100,
+            "Voto de Desempate": 100
+        };
+    }
 }
 
 function getDecisao(table){
