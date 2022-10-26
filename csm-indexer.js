@@ -197,7 +197,7 @@ const Secções = {
 
 function getSecçãoÁreaTemática(table){
     if( !("Área Temática" in table)){
-        return getSecçãoNConvencional(table.Original);
+        return getSecçãoNConvencional(table);
     }
     let possibleSecção = table["Área Temática"].textContent.trim();
     if( possibleSecção == "1ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_1;
@@ -218,7 +218,7 @@ function getSecçãoÁreaTemática(table){
 function getSecçãoNConvencional(originalTable){
     if( !(SECÇÃO_KEY in originalTable) ) return Secções.SECÇÃO_NULL;
 
-    let possibleSecção = new jsdom.JSDOM(originalTable[SECÇÃO_KEY]).window.document.body.textContent.trim();
+    let possibleSecção = originalTable[SECÇÃO_KEY].textContent.trim();
 
     if( possibleSecção.match(/Contencioso/i) ){
         return Secções.SECÇÃO_C;
