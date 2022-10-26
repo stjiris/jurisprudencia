@@ -197,7 +197,7 @@ const Secções = {
 
 function getSecçãoÁreaTemática(table){
     if( !("Área Temática" in table)){
-        return require("./section-rules")(table.Original);
+        return getSecçãoNConvencional(table.Original);
     }
     let possibleSecção = table["Área Temática"].textContent.trim();
     if( possibleSecção == "1ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_1;
@@ -235,7 +235,7 @@ function getSecçãoNConvencional(originalTable){
         return Secções.SECÇÃO_C;
     }
 
-    return getSectionFromDocumentNumber(originalTable);
+    return Secções.SECÇÃO_NULL;
 }
 
 async function reportIndex(obj){
