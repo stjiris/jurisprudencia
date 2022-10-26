@@ -10,7 +10,8 @@ const Secções = {
     SECÇÃO_5: "5.ª Secção (Criminal)",
     SECÇÃO_6: "6.ª Secção (Cível)",
     SECÇÃO_7: "7.ª Secção (Cível)",
-    SECÇÃO_C: "Secção Contencioso"
+    SECÇÃO_C: "Secção Contencioso",
+    SECÇÃO_NULL: "sem Secção"
 };
 
 module.exports = function getSecçãoFromDocument(originalTable){
@@ -37,11 +38,11 @@ module.exports = function getSecçãoFromDocument(originalTable){
 }
 
 function getSectionFromDocumentNumber(originalTable){
-    if( !("Nº do Documento" in originalTable) ) return null
+    if( !("Nº do Documento" in originalTable) ) return Secções.SECÇÃO_NULL;
 
     let possibleNum = new jsdom.JSDOM(originalTable["Nº do Documento"]).window.document.body.textContent.trim();
-    if( !possibleNum.match(/(SJ)?\d+(1|2|3|4|5|6|7)/) ){
-        return null
+    if( !possibleNum.match(/(SJ)?\d+(1|2|3|4|5|6|7)$/) ){
+        return Secções.SECÇÃO_NULL;
     }
 
     return Secções[`SECÇÃO_${possibleNum.slice(-1)}`];
