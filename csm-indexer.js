@@ -76,6 +76,7 @@ forEachCsmLink(async url => {
         }
     }
     console.log("url2table");
+    await fetch.sleep(11); // Sleep 11 seconds before another request
     let table = await url2table(url);
     let proc = table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, "");
     console.log("Actual processo:", proc);
@@ -300,7 +301,11 @@ async function forEachCsmLink( fn ){
     let items;
     do{
         console.log(`Last START_PAGE=${page}`)
-        items = await fetch.json(`https://jurisprudencia.csm.org.pt/items/loadItems?queries[courts][]=1&sorts[dataAcordao]=-1&perPage=${inc}&offset=${page}`);
+        items = await fetch.json(`https://jurisprudencia.csm.org.pt/items/loadItems?queries[courts][]=1&sorts[dataAcordao]=-1&perPage=${inc}&offset=${page}`, {
+            headers: {
+                'User-agent': 'DG_JUSTICE_CRAWLER'
+            }
+        });
         console.log(`Last START_PAGE=${page} found ${items.records.length}`)
         let i = 0;
         for( let item of items.records ){
@@ -309,6 +314,7 @@ async function forEachCsmLink( fn ){
             await fn( url );
         }
         page+=inc;
+        await fetch.sleep(11);
     }
     while(items.records.length > 0);
 }
