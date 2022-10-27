@@ -207,7 +207,7 @@ function getSecçãoÁreaTemática(table){
     if( possibleSecção == "5ª Secção (Criminal)" ) possibleSecção = Secções.SECÇÃO_5;
     if( possibleSecção == "6ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_6;
     if( possibleSecção == "7ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_7;
-    if( Secções.indexOf(possibleSecção) == -1 ){
+    if( Object.values(Secções).indexOf(possibleSecção) == -1 ){
         throw new Error(`Secção Inválida! ${possibleSecção}`);
     }
 
