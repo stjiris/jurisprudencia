@@ -297,7 +297,7 @@ async function forEachCsmLink( fn ){
     let items;
     do{
         console.log(`Last START_PAGE=${page}`)
-        items = await fetch.json(`https://jurisprudencia.csm.org.pt/items/loadItems?queries[courts][]")}=1&sorts[dataAcordao]=-1&perPage=${inc}&offset=${page}`);
+        items = await fetch.json(`https://jurisprudencia.csm.org.pt/items/loadItems?queries[courts][]=1&sorts[dataAcordao]=-1&perPage=${inc}&offset=${page}`);
         console.log(`Last START_PAGE=${page} found ${items.records.length}`)
         let i = 0;
         for( let item of items.records ){
