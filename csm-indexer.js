@@ -60,18 +60,20 @@ forEachCsmLink(async url => {
         return;
     }
     let ecli = url.match(/ECLI:PT:STJ:(?<year>\d+):(?<dottedproc>.*)\.\w{2}\//)
-    let possibleProc = ecli.groups.dottedproc.replace(/\./, "/").replace(/\.(\w)\./, "-$1."); //replace only FIRST .(dot) with /(slash) (regex without global flag)
-    console.log(possibleProc);
-    r = await client.search({
-        index: "jurisprudencia.6.0",
-        query: {
-            wildcard: {
-                Processo: possibleProc
+    if( ecli ){
+        let possibleProc = ecli.groups.dottedproc.replace(/\./, "/").replace(/\.(\w)\./, "-$1."); //replace only FIRST .(dot) with /(slash) (regex without global flag)
+        console.log(possibleProc);
+        r = await client.search({
+            index: "jurisprudencia.6.0",
+            query: {
+                wildcard: {
+                    Processo: possibleProc
+                }
             }
+        });
+        if( r.hits.hits.length > 0 ){
+            return;
         }
-    });
-    if( r.hits.hits.length > 0 ){
-        return;
     }
     console.log("url2table");
     let table = await url2table(url);
