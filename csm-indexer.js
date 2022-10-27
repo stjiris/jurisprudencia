@@ -76,7 +76,7 @@ forEachCsmLink(async url => {
         }
     }
     console.log("url2table");
-    await fetch.sleep(11); // Sleep 11 seconds before another request
+    await fetch.sleep(11*1000); // Sleep 11 seconds before another request
     let table = await url2table(url);
     let proc = table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, "");
     console.log("Actual processo:", proc);
@@ -310,7 +310,7 @@ async function forEachCsmLink( fn ){
             await fn( url );
         }
         page+=inc;
-        await fetch.sleep(11);
+        await fetch.sleep(11*1000*1000);
     }
     while(items.records.length > 0);
 }
