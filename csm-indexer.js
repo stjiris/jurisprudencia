@@ -77,7 +77,7 @@ forEachCsmLink(async url => {
     }
     console.log("url2table");
     let table = await url2table(url);
-    let proc = table.Processo.textContent.trim();
+    let proc = table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, "");
     console.log("Actual processo:", proc);
     r = await client.search({
         index: "jurisprudencia.6.0",
@@ -115,7 +115,7 @@ forEachCsmLink(async url => {
     let object = {
         "Original": original,
         "Tipo": tipo,
-        "Processo": table.Processo.textContent.trim(),
+        "Processo": proc,
         "Data": data,
         "Relator": table.Relator.textContent.trim(),
         "Descritores": getDescritores(table),
