@@ -202,6 +202,9 @@ function getSecçãoÁreaTemática(table){
         return getSecçãoNConvencional(table);
     }
     let possibleSecção = table["Área Temática"].textContent.trim();
+    if( possibleSecção.match(/Contencioso/i) ){
+        return Secções.SECÇÃO_C;
+    }
     if( possibleSecção == "1ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_1;
     if( possibleSecção == "2ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_2;
     if( possibleSecção == "3ª Secção (Criminal)" ) possibleSecção = Secções.SECÇÃO_3;
