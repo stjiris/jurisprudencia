@@ -112,6 +112,7 @@ forEachCsmLink(async url => {
             }
         }
     });
+    if( !table[keyData] ) keyData = "Data"
     data = table[keyData].textContent.trim().replace(/-/g, '/');
     let object = {
         "Original": original,
