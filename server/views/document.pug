@@ -29,7 +29,7 @@ block allmain
             span
                 | &nbsp;(
                 a(href=source.URL,target="_blank")
-                    | dgsi.pt
+                    | !{new URL(source.URL).host}
                     sup: i.bi.bi-box-arrow-up-right
                 | )
             small#related
