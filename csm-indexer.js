@@ -1,10 +1,12 @@
 const url2table = require('./util/url-to-table');
 const es = require('@elastic/elasticsearch')
-const client = new es.Client({ node: process.env.ES_URL || 'http://localhost:9200', tls: {checkServerIdentity: false, rejectUnauthorized: false} });
+const client = new es.Client({ node: process.env.ES_URL || 'http://localhost:9200'});
 const fetch = require('./util/fetch');
 const { strip_attrs } = require('./util/html');
 const crypto = require("crypto");
 const { writeFileSync } = require('fs');
+const getSecçãoFromOriginal = require('./section-rules')
+const Secções = getSecçãoFromOriginal.SECÇÕES;
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0; // invalid cert by csm
 
@@ -123,7 +125,7 @@ forEachCsmLink(async url => {
         "Descritores": getDescritores(table),
         "Meio Processual": getMeioProcessual(table),
         "Votação": getVotação(table),
-        "Secção": getSecçãoÁreaTemática(table),
+        "Secção": getSecçãoÁreaTemática(table, original),
         "Decisão": getDecisao(table),
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
@@ -185,48 +187,12 @@ function getDecisao(table){
 
     return table.Decisão.textContent.trim();
 }
-const SECÇÃO_KEY = "Nº CONVENCIONAL";
 
-const Secções = {
-    SECÇÃO_1: "1.ª Secção (Cível)",
-    SECÇÃO_2: "2.ª Secção (Cível)",
-    SECÇÃO_3: "3.ª Secção (Criminal)",
-    SECÇÃO_4: "4.ª Secção (Social)",
-    SECÇÃO_5: "5.ª Secção (Criminal)",
-    SECÇÃO_6: "6.ª Secção (Cível)",
-    SECÇÃO_7: "7.ª Secção (Cível)",
-    SECÇÃO_C: "Secção Contencioso",
-    SECÇÃO_NULL: "sem Secção"
-};
-
-function getSecçãoÁreaTemática(table){
+function getSecçãoÁreaTemática(table, original){
     if( !("Área Temática" in table)){
-        return getSecçãoNConvencional(table);
+        return getSecçãoFromOriginal(original)
     }
     let possibleSecção = table["Área Temática"].textContent.trim();
-    if( possibleSecção.match(/Contencioso/i) ){
-        return Secções.SECÇÃO_C;
-    }
-    if( possibleSecção == "1ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_1;
-    if( possibleSecção == "2ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_2;
-    if( possibleSecção == "3ª Secção (Criminal)" ) possibleSecção = Secções.SECÇÃO_3;
-    if( possibleSecção == "4ª Secção (Social)" ) possibleSecção = Secções.SECÇÃO_4;
-    if( possibleSecção == "5ª Secção (Criminal)" ) possibleSecção = Secções.SECÇÃO_5;
-    if( possibleSecção == "6ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_6;
-    if( possibleSecção == "7ª Secção (Cível)" ) possibleSecção = Secções.SECÇÃO_7;
-    if( Object.values(Secções).indexOf(possibleSecção) == -1 ){
-        return Secções.SECÇÃO_NULL;
-    }
-
-    return possibleSecção;
-}
-
-
-function getSecçãoNConvencional(originalTable){
-    if( !(SECÇÃO_KEY in originalTable) ) return Secções.SECÇÃO_NULL;
-
-    let possibleSecção = originalTable[SECÇÃO_KEY].textContent.trim();
-
     if( possibleSecção.match(/Contencioso/i) ){
         return Secções.SECÇÃO_C;
     }
@@ -237,12 +203,7 @@ function getSecçãoNConvencional(originalTable){
         return Secções[key]
     }
 
-    // Ortografia - CONSTENCIOSO
-    if( possibleSecção.match(/Constencioso/i) ){
-        return Secções.SECÇÃO_C;
-    }
-
-    return Secções.SECÇÃO_NULL;
+    return getSecçãoFromOriginal(original);
 }
 
 async function reportIndex(obj){

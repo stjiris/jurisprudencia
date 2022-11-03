@@ -37,6 +37,8 @@ module.exports = function getSecçãoFromDocument(originalTable){
     return getSectionFromDocumentNumber(originalTable);
 }
 
+module.exports.SECÇÕES = Secções;
+
 function getSectionFromDocumentNumber(originalTable){
     if( !("Nº do Documento" in originalTable) ) return Secções.SECÇÃO_NULL;
 
