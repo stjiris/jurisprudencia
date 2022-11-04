@@ -631,14 +631,27 @@ app.get("/related-:proc(*)", (req, res) => {
     }).then( l => res.json(l))
 })
 
-app.get("/acord-:proc(*)", (req, res) => {
+app.get("/p/:proc?/:partialuuid?/", (req, res, next) => {
     if( req.query.search ){
         saveSearch.trackClickedDocument(req.query.search, req.params.proc).catch(e => {
             console.log(e);
         });
     }
+
+    let must = [];
     let proc = req.params.proc;
-    search({term: {UUID: proc}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: [DATA_FIELD]}).then((body) => {
+    if(proc){
+        must.push({term: {Processo: proc}})
+    }
+    let puuid = req.params.partialuuid;
+    if( puuid ){
+        must.push({wildcard: {UUID: `${puuid}*`}})
+    }
+    if( must.length == 0 ){
+        return next();
+    }
+
+    search({bool: {must}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['*'], fields: [DATA_FIELD]}).then((body) => {
         if( body.hits.total.value == 0 ){
             res.render("document", {proc});
         }
@@ -649,10 +662,11 @@ app.get("/acord-:proc(*)", (req, res) => {
             let docnum = req.query.docnum;
             if( !docnum ){
                 let html = ''
-                for( let i = 0; i < body.hits.hits.length; i++ ){
-                    html += `<li><a href=?docnum=${i}>Abrir documento ${i}</a></li>`
+                let i=1;
+                for( let hit of body.hits.hits ){
+                    html += `<li><a href=./p/${encodeURIComponent(hit._source.Processo)}/${hit._source.UUID.substr(0,6)}/>Abrir documento ${i++}</a></li>`
                 }
-                res.render("document", {proc, error: `<ul><p>More than one document found.</p>${html}</ul>`});
+                res.render("document", {proc, error: `<ul><p>Encontrados multiplos documentos.</p>${html}</ul>`});
             }
             else{
                 res.render("document", {proc, source: body.hits.hits[docnum]._source, fields: body.hits.hits[docnum].fields, aggs});

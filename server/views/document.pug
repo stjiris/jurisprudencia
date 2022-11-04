@@ -1,4 +1,9 @@
 extends head.pug 
+
+block preheadcontent
+    // This is rendered at ./p/proc/uuid/ but styles/forms/images/links are for ./
+    base(href="../../../")
+
 block head 
     title Document !{proc}
     link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous")
@@ -42,7 +47,7 @@ block allmain
                     l.forEach( o => {
                         let a = document.createElement("a");
                         a.innerText = `${o.Processo}`
-                        a.href = `./acord-${o.UUID}`
+                        a.href = `./p/${encodeURIComponent(o.Processo)}/${o.UUID.substring(0,6)}/`
                         parent.appendChild(a);
                         parent.append(` (${o["!{DATA_FIELD}"]}) / `);
                     })
