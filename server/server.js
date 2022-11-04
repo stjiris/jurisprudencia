@@ -613,21 +613,19 @@ app.get("/histogram", (req, res) => {
 
 })
 
-app.get("/related-:proc(*)", (req, res) => {
+app.get("/related/:proc/:partialuuid/", (req, res) => {
     let proc = req.params.proc;
-    search({term: {UUID: proc}}, {pre:[], after:[]}, 0, {}, 1, {_source: ['Processo']}).then(async (body) => {
-        if( body.hits.total.value == 0 ) return [];
-        let processo = body.hits.hits[0]._source["Processo"];
-        let m = processo.match(/(?<base>[^/]+\/\w+\.\w+(-\w+)?)\./); 
-        if( !m ){
-            return [];
-        }
-        let related = await search({wildcard: {Processo: `${m.groups.base}*`}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Processo', "UUID", DATA_FIELD]});
+    let puuid = req.params.partialuuid;
+    let m = proc.match(/(?<base>[^/]+\/\w+\.\w+(-\w+)?)\./); 
+    if( !m ){
+        return [];
+    }
+    search({wildcard: {Processo: `${m.groups.base}*`}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Processo', "UUID", DATA_FIELD]}).then( related => {
         return related.hits.hits.map( hit => ({
             Processo: hit._source.Processo,
             UUID: hit._source.UUID,
             Data: hit._source[DATA_FIELD]
-        })).filter( hit => hit.UUID != proc);
+        })).filter( hit => hit.UUID.indexOf(puuid) != 0);
     }).then( l => res.json(l))
 })
 
@@ -670,44 +668,6 @@ app.get("/p/:proc?/:partialuuid?/", (req, res, next) => {
             }
             else{
                 res.render("document", {proc, source: body.hits.hits[docnum]._source, fields: body.hits.hits[docnum].fields, aggs});
-            }
-        }
-    }).catch(err => {
-        console.log(req.originalUrl, err);
-        res.render("document", {proc, error: err});
-    });
-});
-
-let spawn = require('child_process').spawn;
-function sendDocxOfHtml(res, html, name){
-    let docx = spawn("pandoc", ["-f", "html", "-t", "docx", "-o", "-"]);
-    docx.stdin.write(html);
-    docx.stdin.end();
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-    res.setHeader('Content-Disposition', `attachment; filename=${name}.docx`);
-    docx.stdout.pipe(res);
-}
-
-app.get("/docx/acord-:proc(*)", (req, res) => {
-    let proc = req.params.proc;
-    search({term: {UUID: proc}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Texto'], fields: []}).then((body) => {
-        if( body.hits.total.value == 0 ){
-            res.render("document", {proc});
-        }
-        else if( body.hits.total.value == 1 ) {
-            sendDocxOfHtml(res, body.hits.hits[0]._source["Texto"], proc);
-        }
-        else{
-            let docnum = req.query.docnum;
-            if( !docnum ){
-                let html = ''
-                for( let i = 0; i < body.hits.hits.length; i++ ){
-                    html += `<li><a href=?docnum=${i}>Abrir documento ${i}</a></li>`
-                }
-                res.render("document", {proc, error: `<ul><p>More than one document found.</p>${html}</ul>`});
-            }
-            else{
-                sendDocxOfHtml(res, body.hits.hits[docnum]._source["Texto"], proc);
             }
         }
     }).catch(err => {

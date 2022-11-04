@@ -39,7 +39,7 @@ block allmain
                 | )
             small#related
             script.
-                fetch(`./related-!{source.UUID}`).then(r => r.json() ).then(l =>{
+                fetch(`./related/!{encodeURIComponent(source.Processo)}/!{source.UUID}/`).then(r => r.json() ).then(l =>{
                     let parent = document.getElementById("related");
                     if( l.length > 0 ){
                         parent.innerHTML = " <b>Processos relacionados: </b>";
