@@ -601,14 +601,15 @@ app.get("/histogram", (req, res) => {
     const value = req.query.histogram_value;
     const fields = filterableProps;
     if( fields.indexOf(term) == -1 ){
-        return res.json()
+        return res.status(400).json()
     }
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
     search(queryObject(req.query.q), sfilters, 0, histogramAggregation(term, value), 0).then( body => {
         res.json(body.aggregations);
     }).catch( err => {
-        res.json()
+        console.log(req.originalUrl, err)
+        res.status(500).json()
     })
 
 })
