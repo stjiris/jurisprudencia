@@ -587,7 +587,7 @@ function histogramAggregation(key, value){
                 Anos: {
                     date_histogram: {
                         "field": DATA_FIELD,
-                        "fixed_interval": "year",
+                        "calendar_interval": "year",
                         "format": "yyyy"
                     }
                 }
