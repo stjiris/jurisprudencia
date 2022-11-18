@@ -587,7 +587,7 @@ function histogramAggregation(key, value){
                 Anos: {
                     date_histogram: {
                         "field": DATA_FIELD,
-                        "interval": "year",
+                        "fixed_interval": "year",
                         "format": "yyyy"
                     }
                 }
@@ -609,7 +609,7 @@ app.get("/histogram", (req, res) => {
         res.json(body.aggregations);
     }).catch( err => {
         console.log(req.originalUrl, err)
-        res.status(500).json()
+        res.status(500).json(err)
     })
 
 })
