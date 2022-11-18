@@ -32,7 +32,7 @@ filterableProps.forEach(name => {
             field: key,
             size: 65536,
             order: {
-                _term: "asc"
+                _key: "asc"
             }
         }
     }
@@ -42,7 +42,7 @@ aggs["Votação"] = {
         field: "Votação.Forma.keyword",
         size: 65536,
         order: {
-            _term: "asc"
+            _key: "asc"
         }
     }
 }
@@ -510,7 +510,7 @@ function listAggregation(term){
                 field: aggs[term].terms.field.replace("keyword","raw"),
                 size: 65536/5,
                 order: {
-                    _term: "asc",
+                    _key: "asc",
                 }
             },
             aggs: {
