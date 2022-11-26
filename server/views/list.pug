@@ -45,14 +45,36 @@ block main
                 th Quantidade Total
                 th Primeira Data
                 th Última Data
+                th 1.ª Secção (Cível)
+                th 2.ª Secção (Cível)
+                th 3.ª Secção (Criminal)
+                th 4.ª Secção (Social)
+                th 5.ª Secção (Criminal)
+                th 6.ª Secção (Cível)
+                th 7.ª Secção (Cível)
+                th Secção Contencioso
                 th Histograma
         tbody 
+            mixin getSecCount(bucks, key)
+                - let buck = bucks.find( o => o.key == key )
+                if buck 
+                    | !{buck.doc_count}
+                else
+                    | 0
             for agg in aggs[term].buckets
                 tr
                     td: a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
                     td !{agg.doc_count}
                     td !{agg.MinAno.value_as_string}
                     td !{agg.MaxAno.value_as_string}
+                    td: +getSecCount(agg.Secções.buckets, "1.ª Secção (Cível)")
+                    td: +getSecCount(agg.Secções.buckets, "2.ª Secção (Cível)")
+                    td: +getSecCount(agg.Secções.buckets, "3.ª Secção (Criminal)")
+                    td: +getSecCount(agg.Secções.buckets, "4.ª Secção (Social)")
+                    td: +getSecCount(agg.Secções.buckets, "5.ª Secção (Criminal)")
+                    td: +getSecCount(agg.Secções.buckets, "6.ª Secção (Cível)")
+                    td: +getSecCount(agg.Secções.buckets, "7.ª Secção (Cível)")
+                    td: +getSecCount(agg.Secções.buckets, "Secção Contencioso")
                     td: a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) Ver
             
     script.
