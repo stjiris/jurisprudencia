@@ -9,7 +9,7 @@ app.set('views', './views');
 
 const {Index: INDEXNAME, Properties: properties} = require('../jurisprudencia');
 const saveSearch = require('./save-search');
-const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword' || (obj.fields && obj.fields.keyword)).map( ([name, _]) => name).filter( o => o != "URL" && o != "UUID").concat("Votação")
+const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword' || (obj.fields && obj.fields.keyword)).map( ([name, _]) => name).filter( o => o != "URL" && o != "UUID")
 let DATA_FIELD = "Data";
 const aggs = {
     MinAno: {
@@ -37,15 +37,6 @@ filterableProps.forEach(name => {
         }
     }
 });
-aggs["Votação"] = {
-    terms: {
-        field: "Votação.Forma.keyword",
-        size: 65536,
-        order: {
-            _key: "asc"
-        }
-    }
-}
 
 aggs["Tipo de Processo"] = aggs["Tipo"];
 delete aggs["Tipo"];

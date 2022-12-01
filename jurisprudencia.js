@@ -1,7 +1,7 @@
 const es = require('@elastic/elasticsearch')
 const client = new es.Client({ node: process.env.ES_URL || 'http://localhost:9200' });
 
-const Index = module.exports.Index = "jurisprudencia.6.0";
+const Index = module.exports.Index = "jurisprudencia.7.0";
 const Properties = module.exports.Properties = {
     "Original": {
         type: 'object',
@@ -58,28 +58,15 @@ const Properties = module.exports.Properties = {
         }
     },
     "Votação": {
-        type: 'object',
-        properties: {
-            "Forma": {
-                type: 'text',
-                fields: {
-                    raw: {
-                        type: "keyword"
-                    },
-                    keyword: {
-                        type: 'keyword',
-                        normalizer: 'term_normalizer'
-                    }
-                }
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
             },
-            "Voto Vencido": {
-                type: 'float'
-            },
-            "Declaração de Voto": {
-                type: 'float'
-            },
-            "Voto de Desempate": {
-                type: 'float'
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
             }
         }
     },
@@ -129,7 +116,10 @@ const Properties = module.exports.Properties = {
             "Texto": { type: "keyword" },
             "Sumário" : { type: "keyword" }
         }
-    } 
+    },
+    "CONTENT": {
+        type: 'text'
+    }
 }
 
 module.exports.delete = () => client.indices.delete({ index: Index });

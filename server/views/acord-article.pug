@@ -25,7 +25,7 @@ for doc in hits
             if doc._source.Votação
                 div.mx-1
                     b Votação:&nbsp;
-                    span #{titleCase(doc._source.Votação.Forma)}
+                    span #{titleCase(doc._source.Votação)}
             if doc._source.Decisão
                 div.mx-1.d-flex
                     b Decisão:&nbsp;

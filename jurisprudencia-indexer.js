@@ -8,7 +8,7 @@ const fetch = require('./util/fetch');
 const { strip_attrs } = require('./util/html');
 const crypto = require("crypto");
 const { writeFileSync } = require('fs');
-const getSecçãoFromDocument = require("./section-rules")
+const getSecçãoFromDocument = require("./section-rules");
 
 let report = {
     /* Timing report */
@@ -87,6 +87,7 @@ forEachDgsiLink(async url => {
     let keyData = "Data do Acordão";
     let tipo = "Acordão";
     let data = "01/01/1900";
+    let CONTENT = [];
     Object.keys( table ).forEach( key => {
         if( key.startsWith("Data") ){
             original[key] = table[key].textContent.trim().replace(/-/g, '/')
@@ -102,6 +103,7 @@ forEachDgsiLink(async url => {
                 keyData = key;
             }
         }
+        CONTENT.push(table[key].textContent.trim())
     });
     data = table[keyData].textContent.trim().replace(/-/g, '/');
     let object = {
@@ -117,6 +119,7 @@ forEachDgsiLink(async url => {
         "Decisão": getDecisao(table),
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
+        "CONTENT": CONTENT,
         "URL": url
     }
     object["HASH"] = {
@@ -126,8 +129,11 @@ forEachDgsiLink(async url => {
         "Texto": calculateUUID(object, ["Texto"]),
     }
     object["UUID"] = calculateUUID(object["HASH"], ["Sumário","Texto"]);
-
-    await reportIndex(object);
+    await reportIndex(object).catch(e => {
+        console.log("Fail", e);
+        report.indexConflitsFound.push(e.toString());
+    });
+    
 }).then( _ => {
     saveReport();
 }).catch(e => {
@@ -163,17 +169,10 @@ function getVotação(table){
         let text = table.Votação.textContent.trim();
         if( text.match(/^-+$/) ) return null;
         if( text.match(/unanimidade/i) ){
-            return {
-                "Forma": "Unanimidade"
-            };
+            return "Unanimidade";
         }
         else{
-            return {
-                "Forma": text,
-                "Voto Vencido": 100,
-                "Declaração de Voto": 100,
-                "Voto de Desempate": 100
-            };
+            return text;
         }
     }
     return null;

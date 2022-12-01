@@ -57,10 +57,7 @@ block allmain
         h6
             b Data:&nbsp;
             | !{source.Data}
-        if source.Votação
-            h6
-                b Votação:&nbsp;
-                a(href=`./?Votação="${encodeURIComponent(source.Votação.Forma)}"`) !{titleCase(source.Votação.Forma)}
+        +field("Votação")
         +field("Decisão")
         if source.Descritores
             h6
