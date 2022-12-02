@@ -127,8 +127,9 @@ forEachDgsiLink(async url => {
         "Metadados": calculateUUID(object, ["Tipo","Processo","Data","Relator","Descritores","Meio Processual", "Votação", "Secção", "Decisão"]),
         "Sumário": calculateUUID(object, ["Sumário"]),
         "Texto": calculateUUID(object, ["Texto"]),
+        "Processo": calculateUUID(object, ["Processo"])
     }
-    object["UUID"] = calculateUUID(object["HASH"], ["Sumário","Texto"]);
+    object["UUID"] = calculateUUID(object["HASH"], ["Sumário","Texto","Processo"]);
     await reportIndex(object).catch(e => {
         console.log("Fail", e);
         report.indexConflitsFound.push(e.toString());
