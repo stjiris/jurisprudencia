@@ -114,7 +114,8 @@ const Properties = module.exports.Properties = {
             "Original": { type: "keyword" },
             "Metadados": { type: "keyword" },
             "Texto": { type: "keyword" },
-            "Sumário" : { type: "keyword" }
+            "Sumário" : { type: "keyword" },
+            "Processo" : { type: "keyword" }
         }
     },
     "CONTENT": {
