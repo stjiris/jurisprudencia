@@ -51,6 +51,22 @@ block allmain
                         tr
                             th Descritores:
                             td !{source.Descritores.map( d => `<a href='./?Descritores="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
+                    if source.ORG
+                        tr
+                            th ORG:
+                            td !{source.ORG.map( d => `<a href='./?ORG="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
+                    if source.PER
+                        tr
+                            th PER:
+                            td !{source.PER.map( d => `<a href='./?PER="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
+                    if source.LOC
+                        tr
+                            th LOC:
+                            td !{source.LOC.map( d => `<a href='./?LOC="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
+                    if source.DAT
+                        tr
+                            th DAT:
+                            td !{source.DAT.map( d => `<a href='./?DAT="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
                     //-tr
                         td: small Metadados Originais
                         td: details
