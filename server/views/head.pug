@@ -92,6 +92,11 @@ html(lang="en")
                                         +filterlist("Votação")
                                         +filterlist("Decisão")
                                         +filterlist("Descritores")
+                                        hr
+                                        +filterlist("ORG")
+                                        +filterlist("PER")
+                                        +filterlist("DAT")
+                                        +filterlist("LOC")
                                         //for p of properties
                                             +filterlist(p)
                                         +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)

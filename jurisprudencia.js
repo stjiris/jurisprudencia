@@ -1,7 +1,7 @@
 const es = require('@elastic/elasticsearch')
 const client = new es.Client({ node: process.env.ES_URL || 'http://localhost:9200' });
 
-const Index = module.exports.Index = "jurisprudencia.7.0";
+const Index = module.exports.Index = "jurisprudencia.7.0.anon";
 const Properties = module.exports.Properties = {
     "Original": {
         type: 'object',
@@ -101,6 +101,58 @@ const Properties = module.exports.Properties = {
     "Texto": {
         type: 'text',
         term_vector: 'with_positions_offsets_payloads'
+    },
+    "ORG": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "PER": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "DAT": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "LOC": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
     },
     "URL": {
         type: 'keyword',
