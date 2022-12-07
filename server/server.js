@@ -50,7 +50,7 @@ const DEFAULT_AGGS = {
     MinAno : aggs.MinAno
 };
 
-const RESULTS_PER_PAGE = 50;
+const RESULTS_PER_PAGE = 10;
 
 let queryObject = (string) => {
     if( !string ){
@@ -264,7 +264,12 @@ function shouldCapitalize(word){
 }
 
 function titleCase(str){
-    return str.split(" ").map( o => shouldCapitalize(o) ? `${o.substr(0,1).toUpperCase()}${o.substr(1).toLowerCase()}` : o.toLowerCase()).join(" ")
+    return str.replace(/\S+/g, (v) => {
+        if( shouldCapitalize(v) ){
+            return v[0].toUpperCase() + v.substr(1).toLowerCase();
+        }
+        return v.toLocaleLowerCase()
+    })
 }
 
 const tmp = app.render.bind(app);

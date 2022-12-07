@@ -12,7 +12,7 @@ html(lang="en")
         block head
     body
         block header
-            header.mb-1.py-2.align-items-center.d-flex.flex-wrap
+            header.mb-1.py-2.align-items-center.d-flex.flex-wrap.border-bottom
                 a(href="./").align-items-center.d-flex.flex-wrap.text-decoration-none.nav-link
                     img(src="./PT-logoLogo-STJ.png", style="max-height: 70px;")
                     div.ps-2.d-flex.flex-column.align-items-center
@@ -69,8 +69,8 @@ html(lang="en")
                                                                 span.d-block: i.bi-trash
                                         mixin filterlist(key)
                                             .d-flex.flex-column.my-1.border.pb-1
-                                                +await(`./datalist?id=datalist-${key}&agg=${key}&${querystring}`)
-                                                input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name=key, autocomplete="off", list=`datalist-${key}`, placeholder=`${key}`,disabled)
+                                                //- +await(`./datalist?id=datalist-${key.replace(/\s/g,'')}&agg=${key}&${querystring}`)
+                                                input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name=key, autocomplete="off", list=`datalist-${key.replace(/\s/g,'')}`, placeholder=`${key}`, onfocus=`loadDatalist(this,"./datalist?id=datalist-${key.replace(/\s/g,'')}&agg=${key}&${querystring}")`)
                                                 +usedFilters(key)
                                         .d-flex.flex-column.my-1
                                             input.form-control.form-control-sm.rounded-0(type="search", name="q", placeholder=`Texto Livre`, value=q||"")
@@ -108,6 +108,15 @@ html(lang="en")
             include modal-sobre
         script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js", integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM", crossorigin="anonymous")
         script.
+            async function loadDatalist(elem, url){
+                if( elem.dataset.loaded === "true" ) return;
+                elem.dataset.loaded = "true";
+                elem.blur();
+                let html = await fetch(url).then( r => r.text() );
+                elem.insertAdjacentHTML("beforeBegin", html);
+                elem.focus();
+            }
+
             window.addEventListener('DOMContentLoaded', function(){
                 let elems = Array.from(document.getElementsByClassName(`await-loading`));
                 elems.forEach(elem => {
@@ -119,6 +128,18 @@ html(lang="en")
                         elem.dispatchEvent(loaded);
                     });
                 });
+
+                elems = Array.from(document.getElementsByClassName('await-focus'));
+                elems.forEach(elem => {
+                    document.getElementById(elem.dataset.focusId).addEventListener("focus", async () => {
+                        fetch(elem.dataset.await).then(response => response.text()).then(text => {
+                        elem.classList.remove("await-focus");
+                        elem.innerHTML = text;
+                    });
+                    })
+                })
+
+                
 
                 // Auto-submit form
                 document.getElementById("filter-form").addEventListener("change", function(e){

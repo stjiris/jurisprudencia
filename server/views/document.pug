@@ -22,79 +22,83 @@ block allmain
             ol
                 li O recurso não foi encontrado ou ainda não foi publicado neste arquivo
     else
-        mixin field(key, showkey, str=true)
-            if source[key]
-                h6
-                    b !{showkey ? showkey : key}:&nbsp;
-                    a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{str ? titleCase(source[key]) : source[key]}
-        +field("Meio Processual")
-        h6
-            b Número de Processo:&nbsp;
-            span !{source.Processo}
-            span
-                | &nbsp;(
-                a(href=source.URL,target="_blank")
-                    | !{new URL(source.URL).host}
-                    sup: i.bi.bi-box-arrow-up-right
-                | )
-            small#related
+        .container.p-3.border.border-dark
+            table.table.table-sm
+                tbody
+                    mixin field(key, showkey, str=true)
+                        if source[key]
+                            tr
+                                th !{showkey ? showkey : key}:
+                                td: a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{str ? titleCase(source[key]) : source[key]}
+                    +field("Meio Processual")
+                    tr
+                        th Número de Processo:
+                        td !{source.Processo}
+                            | &nbsp;(
+                            a(href=source.URL,target="_blank")
+                                | !{new URL(source.URL).host}
+                                sup: i.bi.bi-box-arrow-up-right
+                            | )
+                    tr#related
+                    +field("Secção", "Secção", false)
+                    +field("Relator")
+                    tr
+                        th Data:
+                        td !{source.Data}
+                    +field("Votação")
+                    +field("Decisão")
+                    if source.Descritores
+                        tr
+                            th Descritores:
+                            td !{source.Descritores.map( d => `<a href='./?Descritores="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
+                    //-tr
+                        td: small Metadados Originais
+                        td: details
+                            summary: small Ver
+                            table.table.table-sm(style="font-family:'Times New Roman'")
+                                tbody 
+                                    for key of Object.keys(source.Original)
+                                        if key != "Sumário" && key != "Decisão Texto Integral"
+                                            tr
+                                                td !{key}
+                                                td !{source.Original[key]}
+                                    if "Sumário" in source.Original
+                                        tr
+                                            td(colspan="2")
+                                                details 
+                                                    summary Ver Sumário Original
+                                                    div !{source.Original["Sumário"]}
+                                    if "Decisão Texto Integral" in source.Original
+                                        tr
+                                            td(colspan="2")
+                                                details 
+                                                    summary Ver Decisão Texto Integral Original
+                                                    div !{source.Original["Decisão Texto Integral"]}
+                            
             script.
                 fetch(`./related/!{encodeURIComponent(source.Processo)}/!{source.UUID}/`).then(r => r.json() ).then(l =>{
                     let parent = document.getElementById("related");
                     if( l.length > 0 ){
-                        parent.innerHTML = " <b>Processos relacionados: </b>";
+                        let c = parent.insertCell(0);
+                        c.innerHTML = "<i class='bi bi-link'></i> Relacionados: ";
                     }
+                    let s = parent.insertCell(1);
                     l.forEach( o => {
                         let a = document.createElement("a");
                         a.innerText = `${o.Processo}`
                         a.href = `./p/${encodeURIComponent(o.Processo)}/${o.UUID.substring(0,6)}/`
-                        parent.appendChild(a);
-                        parent.append(` (${o["!{DATA_FIELD}"]}) / `);
+                        s.appendChild(a);
+                        s.append(` (${o["!{DATA_FIELD}"]}) / `);
                     })
                 });
-        +field("Secção", "Secção", false)
-        +field("Relator")
-        h6
-            b Data:&nbsp;
-            | !{source.Data}
-        +field("Votação")
-        +field("Decisão")
-        if source.Descritores
-            h6
-                b Descritores:&nbsp;
-                | !{source.Descritores.map( d => `<a href='./?Descritores="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
         if source.Sumário
-            h6.border-top.border-2.border-dark.mt-2: b Sumário:
+            h6.border-top.border-2.mt-2: b Sumário:
             div.p-2 !{source.Sumário}
         if source.Texto
-            h6.border-top.border-2.border-dark.mt-2: b Texto:
+            h6.border-top.border-2.mt-2: b Texto:
             div.p-2 !{source.Texto}
-        h6.border-top.border-2.border-dark.mt-2: b Metadados da DGSI
-        .container.border.border-dark.p-3
-            table.table.table-sm(style="font-family:'Times New Roman'")
-                tbody 
-                    for key of Object.keys(source.Original)
-                        if key != "Sumário" && key != "Decisão Texto Integral"
-                            tr
-                                td !{key}
-                                td !{source.Original[key]}
-                    if "Sumário" in source.Original
-                        tr
-                            td(colspan="2")
-                                details 
-                                    summary Ver Sumário Original
-                                    div !{source.Original["Sumário"]}
-                    if "Decisão Texto Integral" in source.Original
-                        tr
-                            td(colspan="2")
-                                details 
-                                    summary Ver Decisão Texto Integral Original
-                                    div !{source.Original["Decisão Texto Integral"]}
-                            
 
     style.
         #related {
             background: var(--secondary-gold);
-            display: block;
-            font-size: 0.75rem;
         }

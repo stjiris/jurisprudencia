@@ -19,9 +19,8 @@ a {
 }
 
 
-
 header{
-    background-color: white;
+    background-color: var(--secondary-gold);
     color: var(--primary-red)
 }
 
