@@ -56,19 +56,19 @@ block allmain
                             td
                             td
                     if source.ORG
-                        tr(style="background: var(--secondary-gold)")
+                        tr(style="background: #dfdfdf")
                             th Organizações:
                             td !{source.ORG.map( d => `<a href='./?ORG="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
                     if source.PER
-                        tr(style="background: var(--secondary-gold)")
+                        tr(style="background: #dfdfdf")
                             th Pessoas:
                             td !{source.PER.map( d => `<a href='./?PER="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
                     if source.LOC
-                        tr(style="background: var(--secondary-gold)")
+                        tr(style="background: #dfdfdf")
                             th Locais:
                             td !{source.LOC.map( d => `<a href='./?LOC="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
                     if source.DAT
-                        tr(style="background: var(--secondary-gold)")
+                        tr(style="background: #dfdfdf")
                             th Datas:
                             td !{source.DAT.map( d => `<a href='./?DAT="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
                     //-tr
@@ -119,5 +119,5 @@ block allmain
 
     style.
         #related {
-            background: var(--secondary-gold);
+            background: #dfdfdf;
         }
