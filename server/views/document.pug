@@ -22,8 +22,8 @@ block allmain
             ol
                 li O recurso não foi encontrado ou ainda não foi publicado neste arquivo
     else
-        .container.p-3.border.border-dark
-            table.table.table-sm
+        .border.border-dark
+            table.table.table-sm.small.m-0.p-0(style="background: #f9f9f9")
                 tbody
                     mixin field(key, showkey, str=true)
                         if source[key]
@@ -74,7 +74,6 @@ block allmain
                                                 details 
                                                     summary Ver Decisão Texto Integral Original
                                                     div !{source.Original["Decisão Texto Integral"]}
-                            
             script.
                 fetch(`./related/!{encodeURIComponent(source.Processo)}/!{source.UUID}/`).then(r => r.json() ).then(l =>{
                     let parent = document.getElementById("related");
@@ -95,7 +94,7 @@ block allmain
             h6.border-top.border-2.mt-2: b Sumário:
             div.p-2 !{source.Sumário}
         if source.Texto
-            h6.border-top.border-2.mt-2: b Texto:
+            h6.border-top.border-2.mt-2: b Decisão Texto Integral:
             div.p-2 !{source.Texto}
 
     style.
