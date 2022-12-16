@@ -42,8 +42,20 @@ aggs["Tipo de Processo"] = aggs["Tipo"];
 delete aggs["Tipo"];
 aggs["Número de Processo"] = aggs["Processo"];
 delete aggs["Processo"];
+aggs["Organizações"] = aggs["ORG"];
+delete aggs["ORG"];
+aggs["Pessoas"] = aggs["PER"];
+delete aggs["PER"];
+aggs["Locais"] = aggs["LOC"];
+delete aggs["LOC"];
+aggs["Datas"] = aggs["DAT"];
+delete aggs["DAT"];
 filterableProps[filterableProps.indexOf("Tipo")] = "Tipo de Processo";
 filterableProps[filterableProps.indexOf("Processo")] = "Número de Processo";
+filterableProps[filterableProps.indexOf("ORG")] = "Organizações";
+filterableProps[filterableProps.indexOf("PER")] = "Pessoas";
+filterableProps[filterableProps.indexOf("LOC")] = "Locais";
+filterableProps[filterableProps.indexOf("DAT")] = "Datas";
 
 const DEFAULT_AGGS = {
     MaxAno : aggs.MaxAno,
