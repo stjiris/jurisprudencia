@@ -37,6 +37,7 @@ block main
     table.table.table-sm
         thead 
             tr
+                th #
                 th Campo
                     a.ms-1(href=`./indices.csv?${querystring}`): i.bi.bi-filetype-csv
                 th(class="text-end") Quantidade
@@ -45,10 +46,11 @@ block main
                 th(class="text-center" colspan="2") Datas
                 th
             tr 
-                th
+                td !{aggs[term].buckets.length}
+                td
                     select#form-select(name="term")
                         for op of fields 
-                            option(selected=op==term) !{op}
+                            option(value=op selected=op==term) !{op}
                 th(class="text-end") Total
                 if !("Secção" in filters)
                     th(class="text-end" title="1.ª Secção (Cível)") 1.ª
@@ -69,8 +71,9 @@ block main
                     | !{buck.doc_count}
                 else
                     | 0
-            for agg in aggs[term].buckets
+            each agg, index in aggs[term].buckets
                 tr
+                    td.text-muted !{index}
                     td: a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
                     td(class="text-end") !{agg.doc_count}
                     if !("Secção" in filters)
