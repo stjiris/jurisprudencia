@@ -563,7 +563,7 @@ app.get("/indices", (req, res) => {
 app.get("/indices.csv", (req, res) => {
     const term = req.query.term || "Relator";
     const fields = filterableProps;
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     if( fields.indexOf(term) == -1 ){
         res.write(`"Erro"\r\n`);
         res.write(`O campo "${term}" não foi indexado.\r\n`);
@@ -572,11 +572,11 @@ app.get("/indices.csv", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
     let secs = ["1.ª Secção (Cível)","2.ª Secção (Cível)","3.ª Secção (Criminal)","4.ª Secção (Social)","5.ª Secção (Criminal)","6.ª Secção (Cível)","7.ª Secção (Cível)","Secção Contencioso"]
-    res.write(`"${term}"\t"Quantidade Total"\t"Primeira Data"\t"Última Data"\t${secs.map( s => `"${s}"`).join('\t')}\r\n`)
+    res.write(`"${term}","Quantidade Total","Primeira Data","Última Data",${secs.map( s => `"${s}"`).join(',')}\r\n`)
     search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then( body => {
         let getSecCount = (bucks, key) => bucks.find( o => o.key == key )?.doc_count || 0;
         body.aggregations[term].buckets.forEach( bucket => {
-            res.write(`"${bucket.key}"\t${bucket.doc_count}\t"${bucket.MinAno.value_as_string}"\t"${bucket.MaxAno.value_as_string}"\t${secs.map(n => getSecCount(bucket.Secções.buckets, n)).join('\t')}\r\n`);
+            res.write(`"${bucket.key}",${bucket.doc_count},"${bucket.MinAno.value_as_string}","${bucket.MaxAno.value_as_string}",${secs.map(n => getSecCount(bucket.Secções.buckets, n)).join(',')}\r\n`);
         });
         res.end();
     }).catch( err => {

@@ -39,7 +39,7 @@ block main
             tr
                 th #
                 th Campo
-                    a.ms-1(href=`./indices.csv?${querystring}`): i.bi.bi-filetype-csv
+                    a.ms-1(href=`./indices.csv?${querystring}` download): i.bi.bi-filetype-csv
                 th(class="text-end") Quantidade
                 if !("Secção" in filters)
                     th(colspan="8") por Secção
