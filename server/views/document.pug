@@ -34,11 +34,13 @@ block allmain
                     tr
                         th Número de Processo:
                         td !{source.Processo}
-                            | &nbsp;(
-                            a(href=source.URL,target="_blank")
-                                | !{new URL(source.URL).host}
-                                sup: i.bi.bi-box-arrow-up-right
-                            | )
+                            if source.URL
+                                -console.log(source.URL)
+                                | &nbsp;(
+                                a(href=source.URL,target="_blank")
+                                    | !{new URL(source.URL).host}
+                                    sup: i.bi.bi-box-arrow-up-right
+                                | )
                     tr#related
                     +field("Secção", "Secção", false)
                     +field("Relator")
@@ -116,6 +118,11 @@ block allmain
         if source.Texto
             h6.border-top.border-2.mt-2: b Decisão Texto Integral:
             div.p-2 !{source.Texto}
+        if source.FILES_PATH
+            h6.border-top.border-2.mt-2: b Ficheiros:
+            .ratio.ratio-4x3
+                for src in source.FILES_PATH
+                    iframe(src=src, frameborder="0")
 
     style.
         #related {

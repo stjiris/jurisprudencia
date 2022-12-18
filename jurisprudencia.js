@@ -157,6 +157,9 @@ const Properties = module.exports.Properties = {
     "URL": {
         type: 'keyword',
     },
+    "FILES_PATH": {
+        type: 'keyword',
+    },
     "UUID": {
         type: 'keyword'
     },
