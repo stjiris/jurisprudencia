@@ -9,7 +9,7 @@ app.set('views', './views');
 
 const {Index: INDEXNAME, Properties: properties} = require('../jurisprudencia');
 const saveSearch = require('./save-search');
-const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword' || (obj.fields && obj.fields.keyword)).map( ([name, _]) => name).filter( o => o != "URL" && o != "UUID")
+const filterableProps = Object.entries(properties).filter(([_, obj]) => obj.type == 'keyword' || (obj.fields && obj.fields.keyword)).map( ([name, _]) => name).filter( o => o != "URL" && o != "UUID" && o != "FILES_PATH")
 let DATA_FIELD = "Data";
 const aggs = {
     MinAno: {
