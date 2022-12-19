@@ -73,7 +73,7 @@ block main
                     | 0
             each agg, index in aggs[term].buckets
                 tr
-                    td.text-muted !{index}
+                    td.text-muted !{index+1}
                     td: a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
                     td(class="text-end") !{agg.doc_count}
                     if !("Secção" in filters)
