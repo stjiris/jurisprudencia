@@ -101,15 +101,15 @@ block allmain
                     if( l.length > 0 ){
                         let c = parent.insertCell(0);
                         c.innerHTML = "<i class='bi bi-link'></i> Relacionados: ";
+                        let s = parent.insertCell(1);
+                        l.forEach( o => {
+                            let a = document.createElement("a");
+                            a.innerText = `${o.Processo}`
+                            a.href = `./p/${encodeURIComponent(o.Processo)}/${o.UUID.substring(0,6)}/`
+                            s.appendChild(a);
+                            s.append(` (${o["!{DATA_FIELD}"]}) / `);
+                        })
                     }
-                    let s = parent.insertCell(1);
-                    l.forEach( o => {
-                        let a = document.createElement("a");
-                        a.innerText = `${o.Processo}`
-                        a.href = `./p/${encodeURIComponent(o.Processo)}/${o.UUID.substring(0,6)}/`
-                        s.appendChild(a);
-                        s.append(` (${o["!{DATA_FIELD}"]}) / `);
-                    })
                 });
         if source.Sumário
             h6.border-top.border-2.mt-2: b Sumário:
