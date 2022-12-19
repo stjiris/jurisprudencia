@@ -35,7 +35,6 @@ block allmain
                         th Número de Processo:
                         td !{source.Processo}
                             if source.URL
-                                -console.log(source.URL)
                                 | &nbsp;(
                                 a(href=source.URL,target="_blank")
                                     | !{new URL(source.URL).host}
