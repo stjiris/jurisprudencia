@@ -111,20 +111,24 @@ forEachDgsiLink(async url => {
         "Tipo": tipo,
         "Processo": table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, ""),
         "Data": data,
-        "Relator": table["Relator"].textContent.trim(),
+        "Relator Nome Profissional": table["Relator"].textContent.trim(),
+        "Relator Nome Completo": table["Relator"].textContent.trim(),
         "Descritores": getDescritores(table),
         "Meio Processual": getMeioProcessual(table),
-        "Votação": getVotação(table),
+        "Votação Decisão": getVotação(table),
+        "Votação Vencidos": getVotação(table),
+        "Votação Declarações": getVotação(table),
         "Secção": getSecçãoFromDocument(original),
+        "Área": getSecçãoFromDocument(original),
         "Decisão": getDecisao(table),
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
+        "Fonte": "STJ (DGSI)",
         "CONTENT": CONTENT,
         "URL": url
     }
     object["HASH"] = {
         "Original": calculateUUID(object, ["Original"]),
-        "Metadados": calculateUUID(object, ["Tipo","Processo","Data","Relator","Descritores","Meio Processual", "Votação", "Secção", "Decisão"]),
         "Sumário": calculateUUID(object, ["Sumário"]),
         "Texto": calculateUUID(object, ["Texto"]),
         "Processo": calculateUUID(object, ["Processo"])
@@ -148,21 +152,21 @@ function getDescritores(table){
         // TODO: handle , and ; in descritores (e.g. "Ação Civil; Ação Civil e Administrativa") however dont split some cases (e.g. "Art 321º, do código civil")
         return table.Descritores.textContent.trim().split(/\n|;/).map( desc => desc.trim().replace(/\.$/g,'').replace(/^(:|-|,|"|“|”|«|»|‘|’)/,'').trim() ).filter( desc => desc.length > 0 )
     }
-    return []
+    return ["sem Descritores"]
 }
 
 function getMeioProcessual(table){
     if( table["Meio Processual"] ){
-        return table["Meio Processual"].textContent.trim();
+        return table["Meio Processual"].textContent.trim().split(/(\/|-)/g);
     }
-    return null;
+    return ["sem Meio Processual"];
 }
 
 function getDecisao(table){
     if( table["Decisão"] ){
-        return table["Decisão"].textContent.trim();
+        return table["Decisão"].textContent.trim().split(".");
     }
-    return null;
+    return ["sem Decisão"];
 }
 
 function getVotação(table){
@@ -170,20 +174,13 @@ function getVotação(table){
         let text = table.Votação.textContent.trim();
         if( text.match(/^-+$/) ) return null;
         if( text.match(/unanimidade/i) ){
-            return "Unanimidade";
+            return ["Unanimidade"];
         }
         else{
-            return text;
+            return [text];
         }
     }
-    return null;
-}
-
-function getSeccao(table){
-    if( table["Nº Convencional"] ){
-        return table["Nº Convencional"].textContent.trim();
-    }
-    return null;
+    return ["sem Votação"];
 }
 
 function calculateUUID(table, keys=[]){
@@ -267,7 +264,10 @@ async function forEachDgsiLink( fn ){
         for( let decision of courtList ){
             if( decision in visited ) continue;
             visited[decision] = true;
-            await fn(decision);
+            await fn(decision).catch(e => {
+                console.log("ERROR on", decision)
+                console.log(e)
+            });
         }
         if( next == currurl ){
             break;

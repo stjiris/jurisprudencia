@@ -1,7 +1,7 @@
 const es = require('@elastic/elasticsearch')
 const client = new es.Client({ node: process.env.ES_URL || 'http://localhost:9200' });
 
-const Index = module.exports.Index = "jurisprudencia.7.0";
+const Index = module.exports.Index = "jurisprudencia.8.0";
 const Properties = module.exports.Properties = {
     "Original": {
         type: 'object',
@@ -19,8 +19,22 @@ const Properties = module.exports.Properties = {
         type: 'date',
         format: 'dd/MM/yyyy'
     },
-    "Relator": {
+    "Relator Nome Profissional": {
         type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: "keyword",
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Relator Nome Completo": {
+        type: 'text',
+        fielddata: true,
         fields: {
             raw: {
                 type: "keyword"
@@ -57,7 +71,33 @@ const Properties = module.exports.Properties = {
             }
         }
     },
-    "Votação": {
+    "Votação Decisão": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Votação Vencidos": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Votação Declarações": {
         type: 'text',
         fielddata: true,
         fields: {
@@ -72,6 +112,20 @@ const Properties = module.exports.Properties = {
     },
     "Secção": {
         type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Área": {
+        type: 'text',
+        fielddata: true,
         fields: {
             raw: {
                 type: "keyword"
@@ -84,6 +138,7 @@ const Properties = module.exports.Properties = {
     },
     "Decisão": {
         type: 'text',
+        fielddata: true,
         fields: {
             raw: {
                 type: "keyword"
@@ -102,6 +157,9 @@ const Properties = module.exports.Properties = {
         type: 'text',
         term_vector: 'with_positions_offsets_payloads'
     },
+    "Fonte": {
+        type: 'keyword',
+    },
     "URL": {
         type: 'keyword',
     },
@@ -112,7 +170,6 @@ const Properties = module.exports.Properties = {
         type: "object",
         properties: {
             "Original": { type: "keyword" },
-            "Metadados": { type: "keyword" },
             "Texto": { type: "keyword" },
             "Sumário" : { type: "keyword" },
             "Processo" : { type: "keyword" }

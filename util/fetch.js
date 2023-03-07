@@ -31,6 +31,9 @@ const fetch = module.exports = (url, options={}) => new Promise((resolve, reject
         res.setEncoding('utf-8');
         let data = "";
         let bytes = 0;
+        res.on('error', (err) => {
+            reject(err);
+        })
         res.on('data', (d) => {
             data += d;
             bytes += Buffer.byteLength(d);

@@ -27,9 +27,10 @@ block allmain
                 tbody
                     mixin field(key, showkey, str=true)
                         if source[key]
+                            - let titleCaseOrMap = (value) => value.map ? value.map(titleCase) : titleCase(value) 
                             tr
                                 th !{showkey ? showkey : key}:
-                                td: a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{str ? titleCase(source[key]) : source[key]}
+                                td: a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{str ? titleCaseOrMap(source[key]) : source[key]}
                     +field("Meio Processual")
                     tr
                         th Número de Processo:

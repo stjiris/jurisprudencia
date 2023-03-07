@@ -38,12 +38,21 @@ filterableProps.forEach(name => {
     }
 });
 
-aggs["Tipo de Processo"] = aggs["Tipo"];
-delete aggs["Tipo"];
-aggs["Número de Processo"] = aggs["Processo"];
-delete aggs["Processo"];
-filterableProps[filterableProps.indexOf("Tipo")] = "Tipo de Processo";
-filterableProps[filterableProps.indexOf("Processo")] = "Número de Processo";
+function renameElasticField(newName, oldName){
+    aggs[newName] = aggs[oldName];
+    delete aggs[oldName];
+    filterableProps[filterableProps.indexOf(oldName)] = newName;
+}
+
+function dropElasticField(name){
+    filterableProps.splice(filterableProps.indexOf(name),1)
+    delete aggs[name];
+}
+
+renameElasticField("Relator", "Relator Nome Profissional")
+renameElasticField("Tipo de Processo", "Tipo")
+renameElasticField("Número de Processo", "Processo")
+dropElasticField("Relator Nome Completo")
 
 const DEFAULT_AGGS = {
     MaxAno : aggs.MaxAno,
