@@ -124,6 +124,8 @@ forEachDgsiLink(async url => {
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
         "Fonte": "STJ (DGSI)",
+        "ECLI": "sem ECLI",
+        "Jurisprudência": "Não",
         "CONTENT": CONTENT,
         "URL": url
     }
@@ -164,7 +166,7 @@ function getMeioProcessual(table){
 
 function getDecisao(table){
     if( table["Decisão"] ){
-        return table["Decisão"].textContent.trim().split(".");
+        return [table["Decisão"].textContent.trim()];
     }
     return ["sem Decisão"];
 }

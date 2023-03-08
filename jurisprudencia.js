@@ -175,6 +175,9 @@ const Properties = module.exports.Properties = {
             "Processo" : { type: "keyword" }
         }
     },
+    "ECLI": {
+        type: 'keyword'
+    },
     "CONTENT": {
         type: 'text'
     }
