@@ -50,9 +50,9 @@ function dropElasticField(name){
 }
 
 renameElasticField("Relator", "Relator Nome Profissional")
-renameElasticField("Tipo de Processo", "Tipo")
 renameElasticField("Número de Processo", "Processo")
 dropElasticField("Relator Nome Completo")
+dropElasticField("Tipo")
 
 const DEFAULT_AGGS = {
     MaxAno : aggs.MaxAno,

@@ -27,10 +27,12 @@ block allmain
                 tbody
                     mixin field(key, showkey, str=true)
                         if source[key]
-                            - let titleCaseOrMap = (value) => value.map ? value.map(titleCase) : titleCase(value) 
                             tr
                                 th !{showkey ? showkey : key}:
-                                td: a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{str ? titleCaseOrMap(source[key]) : source[key]}
+                                if Array.isArray(source[key])
+                                    td !{source[key].map( d => `<a href='./?${showkey ? showkey : key}="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
+                                else
+                                    td: a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{str ? titleCase(source[key]) : source[key]}
                     +field("Meio Processual")
                     tr
                         th Número de Processo:
@@ -42,16 +44,14 @@ block allmain
                             | )
                     tr#related
                     +field("Secção", "Secção", false)
-                    +field("Relator")
+                    +field("Área","Área",false)
+                    +field("Relator Nome Profissional","Relator")
                     tr
                         th Data:
                         td !{source.Data}
-                    +field("Votação")
+                    +field("Votação Decisão","Votação")
                     +field("Decisão")
-                    if source.Descritores
-                        tr
-                            th Descritores:
-                            td !{source.Descritores.map( d => `<a href='./?Descritores="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
+                    +field("Descritores")
                     //-tr
                         td: small Metadados Originais
                         td: details

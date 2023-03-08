@@ -178,6 +178,9 @@ const Properties = module.exports.Properties = {
     "ECLI": {
         type: 'keyword'
     },
+    "Jurisprudência": {
+        type: 'keyword'
+    },
     "CONTENT": {
         type: 'text'
     }
