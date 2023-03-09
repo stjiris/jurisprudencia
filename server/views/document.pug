@@ -44,7 +44,7 @@ block allmain
                             | )
                     tr
                         th ECLI:
-                        if ECLI != "sem ECLI"
+                        if source.ECLI != "sem ECLI"
                             td: a(href=`https://jurisprudencia.csm.org.pt/ecli/${source.ECLI}`,target="_blank") !{source.ECLI}
                         else 
                             td sem ECLI
