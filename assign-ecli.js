@@ -14,7 +14,8 @@ function findMathingECLI(ecli){
 let builder = new ECLI().setCountry("PT").setJurisdiction("STJ").setYear("0000");
 
 let timeSinceLastRequest = new Date();
-async function getOfficialECLI(process, year){
+async function getOfficialECLI(process, date){
+    let year = date.match(/\d{4}/)[0];
     let maybeECLI = builder.setYear(year).setNumber(process).build();
     let cached = findMathingECLI(maybeECLI);
     if( cached.length > 1 ) {
@@ -34,6 +35,12 @@ async function getOfficialECLI(process, year){
         let r = await fetch.json(url);
         if( r.records.length == 1 ){
             trueECLI = r.records[0].ecli;
+        }
+        else if(r.records.length > 1 ){
+            let matchingEclis = r.records.filter( o => o.dataAcordao == date );
+            if( matchingEclis.length == 1 ){
+                trueECLI = matchingEclis[0];
+            }
         }
         if( trueECLI && findMathingECLI(trueECLI).length == 0 ){
             appendFileSync("eclis.txt", trueECLI+'\n')
@@ -56,9 +63,9 @@ client.search({
 }).then(async r => {
     while(r.hits.hits.length > 0){
         for( let hit of r.hits.hits ){
-            let year = hit._source["Data"].match(/\d{4}/)[0];
+            let data = hit._source["Data"];
             let proc = hit._source["Processo"];
-            let ecli = await getOfficialECLI(proc, year);
+            let ecli = await getOfficialECLI(proc, data);
             if( ecli ){
                 await client.update({
                     index: hit._index,
