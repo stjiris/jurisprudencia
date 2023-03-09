@@ -13,6 +13,7 @@ function findMathingECLI(ecli){
 
 let builder = new ECLI().setCountry("PT").setJurisdiction("STJ").setYear("0000");
 
+let timeSinceLastRequest = new Date();
 async function getOfficialECLI(process, year){
     let maybeECLI = builder.setYear(year).setNumber(process).build();
     let cached = findMathingECLI(maybeECLI);
@@ -23,10 +24,14 @@ async function getOfficialECLI(process, year){
     }; // Too many matching values
     let trueECLI = cached[0];
     if( !trueECLI ){
+        let needsSleep = new Date() - timeSinceLastRequest;
+        if( needsSleep<10000 ){
+            await fetch.sleep(10000-needsSleep)
+        }
+        timeSinceLastRequest = new Date();
         let url = `https://jurisprudencia.csm.org.pt/items/loadItems?queries[courts][]=1&sorts[dataAcordao]=-1&queries[filter_unique_number]=${encodeURIComponent(process)}`
         console.error("Fetching", url)
         let r = await fetch.json(url);
-        await fetch.sleep(10*1000);
         if( r.records.length == 1 ){
             trueECLI = r.records[0].ecli;
         }
