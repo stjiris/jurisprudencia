@@ -8,21 +8,24 @@ for doc in hits
                         i.bi.bi-square.me-1
                     else
                         i.bi.bi-square-fill.me-1
-            if doc._source["Meio Processual"]
-                span #{doc._source["Meio Processual"].map(titleCase)} -&nbsp;
-            a(href=`./p/${encodeURIComponent(doc._source.Processo)}/${doc._source.UUID.substr(0,6)}/?search=${searchId}`, target="_blank")
-                | !{doc._source.Processo}
-            if doc._source.Secção
-                span &nbsp;- #{doc._source.Secção}
+            -let currUrl = `./p/${encodeURIComponent(doc._source.Processo)}/${doc._source.UUID.substr(0,6)}/?search=${searchId}`
+            if doc._source.ECLI != "sem ECLI"
+                -currUrl = `./p/ecli/${doc._source.ECLI}/?search=${searchId}`
+            a(href=currUrl,target="_blank") !{doc._source.Processo}
             if doc._source.Área
                 span &nbsp;- #{doc._source.Área}
+            if doc._source["Meio Processual"]
+                span &nbsp;- #{doc._source["Meio Processual"].map(titleCase).join(" / ")}
         .col-12.d-flex.flex-wrap
+            div.mx-1
+                b Data:&nbsp;
+                span #{doc.fields[DATA_FIELD]}
             div.mx-1
                 b Relator:&nbsp;
                 span #{titleCase(doc._source["Relator Nome Profissional"])}
             div.mx-1
-                b Data:&nbsp;
-                span #{doc.fields[DATA_FIELD]}
+                b Secção:&nbsp;
+                span #{doc._source.Secção}
         .col-12.d-flex.flex-wrap
             if doc._source.Votação
                 div.mx-1
