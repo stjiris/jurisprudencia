@@ -181,6 +181,9 @@ const Properties = module.exports.Properties = {
     "Jurisprudência": {
         type: 'keyword'
     },
+    "Revista Excecional": {
+        type: 'keyword'
+    },
     "CONTENT": {
         type: 'text'
     }
