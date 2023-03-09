@@ -16,7 +16,11 @@ let builder = new ECLI().setCountry("PT").setJurisdiction("STJ").setYear("0000")
 async function getOfficialECLI(process, year){
     let maybeECLI = builder.setYear(year).setNumber(process).build();
     let cached = findMathingECLI(maybeECLI);
-    if( cached.length > 1 ) return null; // Too many matching values
+    if( cached.length > 1 ) {
+        let subCached = cached.filter( o => o.indexOf(maybeECLI+'.') == 0);
+        if( subCached.length > 1 ) return null;
+        cached = subCached;
+    }; // Too many matching values
     let trueECLI = cached[0];
     if( !trueECLI ){
         let url = `https://jurisprudencia.csm.org.pt/items/loadItems?queries[courts][]=1&sorts[dataAcordao]=-1&queries[filter_unique_number]=${encodeURIComponent(process)}`
