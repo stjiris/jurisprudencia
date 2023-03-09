@@ -42,12 +42,12 @@ block allmain
                                 | !{new URL(source.URL).host}
                                 sup: i.bi.bi-box-arrow-up-right
                             | )
-                    tr
-                        th ECLI:
-                        if source.ECLI != "sem ECLI"
-                            td: a(href=`https://jurisprudencia.csm.org.pt/ecli/${source.ECLI}`,target="_blank") !{source.ECLI}
-                        else 
-                            td sem ECLI
+                            if source.ECLI != "sem ECLI"
+                                | &nbsp;(
+                                a(href=`https://jurisprudencia.csm.org.pt/ecli/${source.ECLI}`,target="_blank")
+                                    | !{source.ECLI}
+                                    sup: i.bi.bi-box-arrow-up-right
+                                | )
                     tr#related
                     +field("Secção", "Secção", false)
                     +field("Área","Área",false)
