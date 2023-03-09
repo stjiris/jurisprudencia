@@ -39,7 +39,7 @@ async function getOfficialECLI(process, date){
         else if(r.records.length > 1 ){
             let matchingEclis = r.records.filter( o => o.dataAcordao == date );
             if( matchingEclis.length == 1 ){
-                trueECLI = matchingEclis[0];
+                trueECLI = matchingEclis[0].ecli;
             }
         }
         if( trueECLI && findMathingECLI(trueECLI).length == 0 ){
