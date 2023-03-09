@@ -643,21 +643,25 @@ app.get("/related/:proc/:partialuuid/", (req, res) => {
     }).then( l => res.json(l))
 })
 
-app.get("/p/:proc?/:partialuuid?/", (req, res, next) => {
+app.get("/p/:procOrStringEcli?/:partialuuidOrEcli?/", (req, res, next) => {
     if( req.query.search ){
-        saveSearch.trackClickedDocument(req.query.search, req.params.proc).catch(e => {
+        saveSearch.trackClickedDocument(req.query.search, req.params.procOrStringEcli).catch(e => {
             console.log(e);
         });
     }
 
     let must = [];
-    let proc = req.params.proc;
+    let proc = req.params.procOrStringEcli;
     if(proc){
         must.push({term: {Processo: proc}})
     }
-    let puuid = req.params.partialuuid;
-    if( puuid ){
-        must.push({wildcard: {UUID: `${puuid}*`}})
+    let puuidOrEcli = req.params.partialuuidOrEcli;
+    if( puuidOrEcli ){
+        must.push({wildcard: {UUID: `${puuidOrEcli}*`}})
+    }
+    if( proc == "ecli" && puuidOrEcli ){
+        proc = puuidOrEcli;
+        must = [{term: {ECLI: puuidOrEcli}}]
     }
     if( must.length == 0 ){
         return next();
