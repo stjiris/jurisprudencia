@@ -28,14 +28,14 @@ block allmain
                     mixin field(key, showkey, str=true)
                         if source[key]
                             tr
-                                th !{showkey ? showkey : key}:
+                                th.w-0.text-nowrap !{showkey ? showkey : key}:
                                 if Array.isArray(source[key])
                                     td !{source[key].map( d => `<a href='./?${showkey ? showkey : key}="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
                                 else
                                     td: a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{str ? titleCase(source[key]) : source[key]}
                     +field("Meio Processual")
                     tr
-                        th Número de Processo:
+                        th.w-0.text-nowrap N.º de Processo:
                         td !{source.Processo}
                             | &nbsp;(
                             a(href=source.URL,target="_blank")
@@ -53,7 +53,7 @@ block allmain
                     +field("Área","Área",false)
                     +field("Relator Nome Profissional","Relator")
                     tr
-                        th Data:
+                        th.w-0.text-nowrap Data:
                         td !{source.Data}
                     +field("Votação Decisão","Votação")
                     +field("Decisão")

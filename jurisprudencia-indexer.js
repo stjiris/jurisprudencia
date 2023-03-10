@@ -126,7 +126,7 @@ forEachDgsiLink(async url => {
         "Fonte": "STJ (DGSI)",
         "ECLI": "sem ECLI",
         "Jurisprudência": "Não",
-        "Revista Excecional": "Não",
+        "Formação": "Não",
         "CONTENT": CONTENT,
         "URL": url
     }
