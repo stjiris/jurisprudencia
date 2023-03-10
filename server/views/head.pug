@@ -83,18 +83,17 @@ html(lang="en")
                                                 .input-group-prepend.flex-shrink
                                                     label.input-group-text.rounded-0.p-1(for="data_fim") Até:
                                                 input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MaxAno", min=aggsGlobal.MinAno.value_as_string, max=aggsGlobal.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder=aggsGlobal.MaxAno.value_as_string)#data_fim
-                                        +filterlist("Meio Processual")
-                                        if "Tipo de Processo" in filters
-                                            +filterlist("Tipo de Processo")
                                         +filterlist("Número de Processo")
                                         +filterlist("ECLI")
+                                        +filterlist("Meio Processual")
+                                        +filterlist("Decisão")
                                         +filterlist("Secção")
                                         +filterlist("Área")
                                         +filterlist("Relator")
-                                        +filterlist("Votação Decisão")
-                                        +filterlist("Votação Vencidos")
-                                        +filterlist("Votação Declarações")
-                                        +filterlist("Decisão")
+                                        +filterlist("Votação - Decisão")
+                                        +filterlist("Votação - Vencidos")
+                                        +filterlist("Votação - Declarações")
+                                        +filterlist("Decisão - Integral")
                                         +filterlist("Descritores")
                                         //for p of properties
                                             +filterlist(p)

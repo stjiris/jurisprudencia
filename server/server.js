@@ -51,8 +51,12 @@ function dropElasticField(name){
 
 renameElasticField("Relator", "Relator Nome Profissional")
 renameElasticField("Número de Processo", "Processo")
+renameElasticField("Decisão - Integral", "Decisão")
+renameElasticField("Decisão", "Tipo")
+renameElasticField("Votação - Decisão", "Votação Decisão")
+renameElasticField("Votação - Vencidos", "Votação Vencidos")
+renameElasticField("Votação - Declarações", "Votação Declarações")
 dropElasticField("Relator Nome Completo")
-dropElasticField("Tipo")
 
 const DEFAULT_AGGS = {
     MaxAno : aggs.MaxAno,
@@ -711,7 +715,10 @@ app.get("/datalist", (req, res) => {
     let finalAgg = {
         terms: {
             field: agg.terms.field.replace("keyword","raw"),
-            size: agg.terms.size
+            size: agg.terms.size,
+            order: {
+                _key: "asc"
+            }
         }
     }
     const sfilters = {pre: [], after: []};
