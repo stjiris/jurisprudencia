@@ -12,14 +12,12 @@ for doc in hits
             if doc._source.ECLI != "sem ECLI"
                 -currUrl = `./p/ecli/${doc._source.ECLI}/?search=${searchId}`
             a(href=currUrl,target="_blank") !{doc._source.Processo}
+            span &nbsp;- #{doc._source.Data}
             if doc._source.Área
                 span &nbsp;- #{doc._source.Área}
             if doc._source["Meio Processual"]
                 span &nbsp;- #{doc._source["Meio Processual"].map(titleCase).join(" / ")}
         .col-12.d-flex.flex-wrap
-            div.mx-1
-                b Data:&nbsp;
-                span #{doc.fields[DATA_FIELD]}
             div.mx-1
                 b Relator:&nbsp;
                 span #{titleCase(doc._source["Relator Nome Profissional"])}
@@ -33,7 +31,7 @@ for doc in hits
                     span #{doc._source.Votação.map(titleCase)}
             if doc._source.Decisão
                 div.mx-1.d-flex
-                    b Decisão:&nbsp;
+                    b Decisão - Integral:&nbsp;
                     div !{doc._source.Decisão.map(titleCase)}
         if Array.isArray(doc._source.Descritores)
             .col-12

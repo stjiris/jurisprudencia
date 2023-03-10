@@ -22,72 +22,61 @@ block allmain
             ol
                 li O recurso não foi encontrado ou ainda não foi publicado neste arquivo
     else
-        .border.border-dark
-            table.table.table-sm.small.m-0.p-0(style="background: #f9f9f9")
-                tbody
-                    mixin field(key, showkey, str=true)
-                        if source[key]
-                            tr
-                                th.w-0.text-nowrap !{showkey ? showkey : key}:
-                                if Array.isArray(source[key])
-                                    td !{source[key].map( d => `<a href='./?${showkey ? showkey : key}="${encodeURIComponent(d)}"'>${titleCase(d)}</a>`).join(' / ')}
-                                else
-                                    td: a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(source[key])}"`) !{str ? titleCase(source[key]) : source[key]}
-                    +field("Meio Processual")
-                    tr
-                        th.w-0.text-nowrap N.º de Processo:
-                        td !{source.Processo}
-                            | &nbsp;(
-                            a(href=source.URL,target="_blank")
-                                | !{new URL(source.URL).host}
-                                sup: i.bi.bi-box-arrow-up-right
-                            | )
-                            if source.ECLI != "sem ECLI"
-                                | &nbsp;(
-                                a(href=`https://jurisprudencia.csm.org.pt/ecli/${source.ECLI}`,target="_blank")
-                                    | !{source.ECLI}
-                                    sup: i.bi.bi-box-arrow-up-right
-                                | )
-                    tr#related
-                    +field("Secção", "Secção", false)
-                    +field("Área","Área",false)
-                    +field("Relator Nome Profissional","Relator")
-                    tr
-                        th.w-0.text-nowrap Data:
-                        td !{source.Data}
-                    +field("Votação Decisão","Votação")
-                    +field("Decisão")
-                    +field("Descritores")
-                    //-tr
-                        td: small Metadados Originais
-                        td: details
-                            summary: small Ver
-                            table.table.table-sm(style="font-family:'Times New Roman'")
-                                tbody 
-                                    for key of Object.keys(source.Original)
-                                        if key != "Sumário" && key != "Decisão Texto Integral"
-                                            tr
-                                                td !{key}
-                                                td !{source.Original[key]}
-                                    if "Sumário" in source.Original
-                                        tr
-                                            td(colspan="2")
-                                                details 
-                                                    summary Ver Sumário Original
-                                                    div !{source.Original["Sumário"]}
-                                    if "Decisão Texto Integral" in source.Original
-                                        tr
-                                            td(colspan="2")
-                                                details 
-                                                    summary Ver Decisão Texto Integral Original
-                                                    div !{source.Original["Decisão Texto Integral"]}
+        .border.border-dark.container-fluid(style="background: #f9f9f9")
+            .row.border-bottom
+                .col-1: b N.º de Processo:
+                .col-7 !{source.Processo}
+                .col-4.text-end
+                    if source.ECLI != "sem ECLI"
+                        small: a(href=`https://jurisprudencia.csm.org.pt/ecli/${source.ECLI}`,target="_blank")
+                            | !{source.ECLI}
+                            sup: i.bi.bi-box-arrow-up-right
+                    |&nbsp;
+                    small: a(href=source.URL,target="_blank")
+                        | !{new URL(source.URL).host}
+                        sup: i.bi.bi-box-arrow-up-right
+            .row.border-bottom#related.d-none
+                .col-1
+                    i.bi.bi-link
+                    | Relacionados:
+                .col-11#related-children
+            .row.border-bottom
+                .col-1: b Data:
+                .col-11: span !{source.Data}
+            mixin field(key, showkey, str=true, ref=true)
+                .row.border-bottom
+                    .col-1: b !{showkey ? showkey : key}:
+                    .col-11
+                        if Array.isArray(source[key])
+                            each value, index in source[key]
+                                a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(value)}"`) !{!str ? value : titleCase(value)}
+                                if index < source[key].length-1
+                                    span &nbsp;/&nbsp;
+                        else
+                            -let value = source[key]
+                            a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(value)}"`) !{!str ? value : titleCase(value)}
+            +field("Jurisprudência")
+            +field("Formação")
+            +field("Área","Área",false)
+            +field("Meio Processual")
+            +field("Relator Nome Profissional","Relator")
+            +field("Secção","Secção",false)
+            +field("Decisão","Decisão - Integral")
+            .row.border-bottom
+                .col-1: b Votação
+                .col-11
+                    a(href=`./?Votação - Decisão="${encodeURIComponent(source["Votação Decisão"])}"`) !{source["Votação Decisão"]}
+                    span &nbsp;Vencidos:&nbsp;
+                        a(href=`./?Votação - Vencidos="${encodeURIComponent(source["Votação Vencidos"])}"`) !{source["Votação Vencidos"]}
+                    span &nbsp;Declarações:&nbsp;
+                        a(href=`./?Votação - Declarações="${encodeURIComponent(source["Votação Declarações"])}"`) !{source["Votação Vencidos"]}
+            +field("Descritores")
             script.
                 fetch(`./related/!{encodeURIComponent(source.Processo)}/!{source.UUID}/`).then(r => r.json() ).then(l =>{
                     let parent = document.getElementById("related");
                     if( l.length > 0 ){
-                        let c = parent.insertCell(0);
-                        c.innerHTML = "<i class='bi bi-link'></i> Relacionados: ";
-                        let s = parent.insertCell(1);
+                        parent.classList.remove("d-none")
+                        let s = document.getElementById("related-children");
                         l.forEach( o => {
                             let a = document.createElement("a");
                             a.innerText = `${o.Processo}`
