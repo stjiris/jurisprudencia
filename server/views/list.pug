@@ -84,7 +84,7 @@ block main
                         td(class="text-end"): +getSecCount(agg.Secções.buckets, "5.ª Secção (Criminal)")
                         td(class="text-end"): +getSecCount(agg.Secções.buckets, "6.ª Secção (Cível)")
                         td(class="text-end"): +getSecCount(agg.Secções.buckets, "7.ª Secção (Cível)")
-                        td(class="text-end"): +getSecCount(agg.Secções.buckets, "Secção Contencioso")
+                        td(class="text-end"): +getSecCount(agg.Secções.buckets, "Contencioso")
                     td(class="text-end") !{agg.MinAno.value_as_string}
                     td !{agg.MaxAno.value_as_string}
                     td: a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) Ver
