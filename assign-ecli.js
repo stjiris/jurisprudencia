@@ -20,7 +20,10 @@ async function getOfficialECLI(process, date){
     let cached = findMathingECLI(maybeECLI);
     if( cached.length > 1 ) {
         let subCached = cached.filter( o => o.indexOf(maybeECLI+'.') == 0);
-        if( subCached.length > 1 ) return null;
+        if( subCached.length > 1 ){
+            // it is cached but we dont have date info retry
+            cached = []
+        };
         cached = subCached;
     }; // Too many matching values
     let trueECLI = cached[0];
