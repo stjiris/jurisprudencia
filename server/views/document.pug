@@ -35,6 +35,8 @@ block allmain
                     small: a(href=source.URL,target="_blank")
                         | !{new URL(source.URL).host}
                         sup: i.bi.bi-box-arrow-up-right
+                    |&nbsp;
+                    small <b>Fonte:</b> !{source.Fonte}
             .row.border-bottom#related.d-none
                 .col-1
                     i.bi.bi-link
@@ -61,6 +63,7 @@ block allmain
             +field("Meio Processual")
             +field("Relator Nome Profissional","Relator")
             +field("Secção","Secção",false)
+            +field("Tipo","Decisão")
             +field("Decisão","Decisão - Integral")
             .row.border-bottom
                 .col-1: b Votação
