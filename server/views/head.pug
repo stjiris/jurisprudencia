@@ -97,8 +97,7 @@ html(lang="en")
                                         +filterlist("Votação - Vencidos")
                                         +filterlist("Votação - Declarações")
                                         +filterlist("Descritores")
-                                        if "Fonte" in filters
-                                            +filterlist("Fonte")
+                                        +filterlist("Fonte")
                                         //for p of properties
                                             +filterlist(p)
                                         +await(`./datalist?id=datalist-Campos&agg=Campos&${querystring}`)
