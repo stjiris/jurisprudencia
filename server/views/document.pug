@@ -72,7 +72,7 @@ block allmain
                     span &nbsp;Vencidos:&nbsp;
                         a(href=`./?Votação - Vencidos="${encodeURIComponent(source["Votação Vencidos"])}"`) !{source["Votação Vencidos"]}
                     span &nbsp;Declarações:&nbsp;
-                        a(href=`./?Votação - Declarações="${encodeURIComponent(source["Votação Declarações"])}"`) !{source["Votação Vencidos"]}
+                        a(href=`./?Votação - Declarações="${encodeURIComponent(source["Votação Declarações"])}"`) !{source["Votação Declarações"]}
             +field("Descritores")
             script.
                 fetch(`./related/!{encodeURIComponent(source.Processo)}/!{source.UUID}/`).then(r => r.json() ).then(l =>{

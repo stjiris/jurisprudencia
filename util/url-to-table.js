@@ -27,8 +27,11 @@ addParser(/jurisprudencia.csm.org.pt\/ecli\/ECLI:PT:(?<tribcod>[^:]*):(?<year>\d
         let metaObjectValue = metaObjectTitle.parentElement.querySelector('.content');
         table[metaObjectTitle.textContent.replace(":","").trim()] = metaObjectValue;
     }
+    table["ECLI"] = page.window.document.querySelector("#ecli-title");
     table["Sumário"] = page.window.document.querySelector("#summary");
     table["Sumário"].querySelector('.main-title').remove();
+    table["Decisão Texto Parcial"] = page.window.document.querySelector("#parcial-text");
+    table["Decisão Texto Parcial"].querySelector('.main-title').remove();
     table["Decisão Texto Integral"] = page.window.document.querySelector("#integral-text");
     table["Decisão Texto Integral"].querySelector('.main-title').remove();
     return table;

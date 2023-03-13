@@ -10,8 +10,8 @@ const Secções = {
     SECÇÃO_5: "5.ª Secção (Criminal)",
     SECÇÃO_6: "6.ª Secção (Cível)",
     SECÇÃO_7: "7.ª Secção (Cível)",
-    SECÇÃO_C: "Secção Contencioso",
-    SECÇÃO_NULL: "sem Secção"
+    SECÇÃO_C: "Contencioso",
+    SECÇÃO_NULL: "(sem secção registada)"
 };
 
 module.exports = function getSecçãoFromDocument(originalTable){
