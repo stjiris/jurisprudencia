@@ -50,12 +50,6 @@ function dropElasticField(name){
 }
 
 renameElasticField("Relator", "Relator Nome Profissional")
-renameElasticField("Número de Processo", "Processo")
-renameElasticField("Decisão - Integral", "Decisão")
-renameElasticField("Decisão", "Tipo")
-renameElasticField("Votação - Decisão", "Votação Decisão")
-renameElasticField("Votação - Vencidos", "Votação Vencidos")
-renameElasticField("Votação - Declarações", "Votação Declarações")
 dropElasticField("Relator Nome Completo")
 
 const DEFAULT_AGGS = {
@@ -637,9 +631,9 @@ app.get("/related/:proc/:partialuuid/", (req, res) => {
     if( !m ){
         return res.json([]);
     }
-    search({wildcard: {Processo: `${m.groups.base}*`}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Processo', "UUID", DATA_FIELD]}).then( related => {
+    search({wildcard: {"Número de Processo": `${m.groups.base}*`}}, {pre:[], after:[]}, 0, {}, 100, {_source: ['Número de Processo', "UUID", DATA_FIELD]}).then( related => {
         return related.hits.hits.map( hit => ({
-            Processo: hit._source.Processo,
+            "Número de Processo": hit._source["Número de Processo"],
             UUID: hit._source.UUID,
             Data: hit._source[DATA_FIELD]
         })).filter( hit => hit.UUID.indexOf(puuid) != 0);
@@ -656,7 +650,7 @@ app.get("/p/:procOrStringEcli?/:partialuuidOrEcli?/", (req, res, next) => {
     let must = [];
     let proc = req.params.procOrStringEcli;
     if(proc){
-        must.push({term: {Processo: proc}})
+        must.push({term: {"Número de Processo": proc}})
     }
     let puuidOrEcli = req.params.partialuuidOrEcli;
     if( puuidOrEcli ){
@@ -683,7 +677,7 @@ app.get("/p/:procOrStringEcli?/:partialuuidOrEcli?/", (req, res, next) => {
                 let html = ''
                 let i=1;
                 for( let hit of body.hits.hits ){
-                    html += `<li><a href=./p/${encodeURIComponent(hit._source.Processo)}/${hit._source.UUID.substr(0,6)}/>Abrir documento ${i++}</a></li>`
+                    html += `<li><a href=./p/${encodeURIComponent(hit._source["Número de Processo"])}/${hit._source.UUID.substr(0,6)}/>Abrir documento ${i++}</a></li>`
                 }
                 res.render("document", {proc, error: `<ul><p>Encontrados multiplos documentos.</p>${html}</ul>`});
             }

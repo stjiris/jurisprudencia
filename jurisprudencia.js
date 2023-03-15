@@ -1,19 +1,18 @@
 const es = require('@elastic/elasticsearch')
 const client = new es.Client({ node: process.env.ES_URL || 'http://localhost:9200' });
 
-const Index = module.exports.Index = "jurisprudencia.8.0";
+const Index = module.exports.Index = "jurisprudencia.9.0";
 const Properties = module.exports.Properties = {
     "Original": {
         type: 'object',
         enabled: false
     },
-    "Tipo": {
+    "Número de Processo": {
         type: 'keyword',
         normalizer: 'term_normalizer'
     },
-    "Processo": {
-        type: 'keyword',
-        normalizer: 'term_normalizer'
+    "ECLI": {
+        type: 'keyword'
     },
     "Data": {
         type: 'date',
@@ -71,7 +70,7 @@ const Properties = module.exports.Properties = {
             }
         }
     },
-    "Votação Decisão": {
+    "Votação - Decisão": {
         type: 'text',
         fielddata: true,
         fields: {
@@ -84,7 +83,7 @@ const Properties = module.exports.Properties = {
             }
         }
     },
-    "Votação Vencidos": {
+    "Votação - Vencidos": {
         type: 'text',
         fielddata: true,
         fields: {
@@ -97,7 +96,7 @@ const Properties = module.exports.Properties = {
             }
         }
     },
-    "Votação Declarações": {
+    "Votação - Declarações": {
         type: 'text',
         fielddata: true,
         fields: {
@@ -136,7 +135,59 @@ const Properties = module.exports.Properties = {
             }
         }
     },
-    "Decisão": {
+    "Decisão - Composta": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Decisão - Integral": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Tribunal de Recurso - Tribunal": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Tribunal de Recurso - Tribunal": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Tribunal de Recurso - Processo": {
         type: 'text',
         fielddata: true,
         fields: {
@@ -175,13 +226,7 @@ const Properties = module.exports.Properties = {
             "Processo" : { type: "keyword" }
         }
     },
-    "ECLI": {
-        type: 'keyword'
-    },
     "Jurisprudência": {
-        type: 'keyword'
-    },
-    "Formação": {
         type: 'keyword'
     },
     "CONTENT": {

@@ -108,25 +108,26 @@ forEachDgsiLink(async url => {
     data = table[keyData].textContent.trim().replace(/-/g, '/');
     let object = {
         "Original": original,
-        "Tipo": tipo,
-        "Processo": table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, ""),
+        "Número de Processo": table.Processo.textContent.trim().replace(/\s-\s.*$/, "").replace(/ver\s.*/, ""),
+        "ECLI": "{sem ECLI}",
         "Data": data,
         "Relator Nome Profissional": table["Relator"].textContent.trim(),
         "Relator Nome Completo": table["Relator"].textContent.trim(),
         "Descritores": getDescritores(table),
         "Meio Processual": getMeioProcessual(table),
-        "Votação Decisão": getVotação(table),
-        "Votação Vencidos": getVotação(table),
-        "Votação Declarações": getVotação(table),
+        "Votação - Decisão": getVotação(table),
+        "Votação - Vencidos": getVotação(table),
+        "Votação - Declarações": getVotação(table),
         "Secção": getSecçãoFromDocument(original),
         "Área": getSecçãoFromDocument(original),
-        "Decisão": getDecisao(table),
+        "Decisão - Composta": getDecisao(table),
+        "Decisão - Integral": getDecisao(table),
+        "Tribunal de Recurso - Tribunal": getTribunalRecurso(table),
+        "Tribunal de Recurso - Processo": getTribunalRecursoProc(table),
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
         "Fonte": "STJ (DGSI)",
-        "ECLI": "sem ECLI",
-        "Jurisprudência": "Não",
-        "Formação": "Não",
+        "Jurisprudência": "{sem Jurisprudência}",
         "CONTENT": CONTENT,
         "URL": url
     }
@@ -170,6 +171,20 @@ function getDecisao(table){
         return [table["Decisão"].textContent.trim()];
     }
     return ["sem Decisão"];
+}
+
+function getTribunalRecurso(table){
+    if( table["Tribunal Recurso"] ){
+        return table["Tribunal Recurso"].textContent.trim()
+    }
+    return "{sem Tribunal de Recurso}"
+}
+
+function getTribunalRecursoProc(table){
+    if( table["Processo no Tribunal Recurso"] ){
+        return table["Processo no Tribunal Recurso"].textContent.trim()
+    }
+    return "{sem Processo no Tribunal de Recurso}"
 }
 
 function getVotação(table){

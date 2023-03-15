@@ -8,10 +8,10 @@ for doc in hits
                         i.bi.bi-square.me-1
                     else
                         i.bi.bi-square-fill.me-1
-            -let currUrl = `./p/${encodeURIComponent(doc._source.Processo)}/${doc._source.UUID.substr(0,6)}/?search=${searchId}`
+            -let currUrl = `./p/${encodeURIComponent(doc._source["Número de Processo"])}/${doc._source.UUID.substr(0,6)}/?search=${searchId}`
             if doc._source.ECLI != "sem ECLI"
                 -currUrl = `./p/ecli/${doc._source.ECLI}/?search=${searchId}`
-            a(href=currUrl,target="_blank") !{doc._source.Processo}
+            a(href=currUrl,target="_blank") !{doc._source["Número de Processo"]}
             span &nbsp;- #{doc._source.Data}
             if doc._source.Área
                 span &nbsp;- #{doc._source.Área}
@@ -25,14 +25,14 @@ for doc in hits
                 b Secção:&nbsp;
                 span #{doc._source.Secção}
         .col-12.d-flex.flex-wrap
-            if doc._source.Votação
+            if doc._source["Votação - Decisão"]
                 div.mx-1
                     b Votação:&nbsp;
-                    span #{doc._source.Votação.map(titleCase)}
-            if doc._source.Decisão
+                    span #{doc._source["Votação - Decisão"].map(titleCase)}
+            if doc._source["Decisão - Integral"]
                 div.mx-1.d-flex
                     b Decisão - Integral:&nbsp;
-                    div !{doc._source.Decisão.map(titleCase)}
+                    div !{doc._source["Decisão - Integral"].map(titleCase)}
         if Array.isArray(doc._source.Descritores)
             .col-12
                 div.mx-1

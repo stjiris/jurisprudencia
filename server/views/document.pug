@@ -25,7 +25,7 @@ block allmain
         .border.border-dark.container-fluid(style="background: #f9f9f9")
             .row.border-bottom
                 .col-1: b N.º de Processo:
-                .col-7 !{source.Processo}
+                .col-7 !{source["Número de Processo"]}
                 .col-4.text-end
                     if source.ECLI != "sem ECLI"
                         small: a(href=`https://jurisprudencia.csm.org.pt/ecli/${source.ECLI}`,target="_blank")
@@ -58,32 +58,37 @@ block allmain
                             -let value = source[key]
                             a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(value)}"`) !{!str ? value : titleCase(value)}
             +field("Jurisprudência")
-            +field("Formação")
             +field("Área","Área",false)
             +field("Meio Processual")
             +field("Relator Nome Profissional","Relator")
             +field("Secção","Secção",false)
-            +field("Tipo","Decisão")
-            +field("Decisão","Decisão - Integral")
+            .row.border-bottom
+                .col-1: b T. de Recurso:
+                .col-11
+                    a(href=`./?Tribunal de Recurso - Tribunal="${encodeURIComponent(source["Votação - Decisão"])}"`) !{source["Tribunal de Recurso - Tribunal"]}
+                    span &nbsp;Processo:&nbsp;
+                        a(href=`./?Tribunal de Recurso - Processo="${encodeURIComponent(source["Votação - Vencidos"])}"`) !{source["Tribunal de Recurso - Processo"]}
+            +field("Decisão - Composta")
+            +field("Decisão - Integral")
             .row.border-bottom
                 .col-1: b Votação
                 .col-11
-                    a(href=`./?Votação - Decisão="${encodeURIComponent(source["Votação Decisão"])}"`) !{source["Votação Decisão"]}
+                    a(href=`./?Votação - Decisão="${encodeURIComponent(source["Votação - Decisão"])}"`) !{source["Votação - Decisão"]}
                     span &nbsp;Vencidos:&nbsp;
-                        a(href=`./?Votação - Vencidos="${encodeURIComponent(source["Votação Vencidos"])}"`) !{source["Votação Vencidos"]}
+                        a(href=`./?Votação - Vencidos="${encodeURIComponent(source["Votação - Vencidos"])}"`) !{source["Votação - Vencidos"]}
                     span &nbsp;Declarações:&nbsp;
-                        a(href=`./?Votação - Declarações="${encodeURIComponent(source["Votação Declarações"])}"`) !{source["Votação Declarações"]}
+                        a(href=`./?Votação - Declarações="${encodeURIComponent(source["Votação - Declarações"])}"`) !{source["Votação - Declarações"]}
             +field("Descritores")
             script.
-                fetch(`./related/!{encodeURIComponent(source.Processo)}/!{source.UUID}/`).then(r => r.json() ).then(l =>{
+                fetch(`./related/!{encodeURIComponent(source["Número de Processo"])}/!{source.UUID}/`).then(r => r.json() ).then(l =>{
                     let parent = document.getElementById("related");
                     if( l.length > 0 ){
                         parent.classList.remove("d-none")
                         let s = document.getElementById("related-children");
                         l.forEach( o => {
                             let a = document.createElement("a");
-                            a.innerText = `${o.Processo}`
-                            a.href = `./p/${encodeURIComponent(o.Processo)}/${o.UUID.substring(0,6)}/`
+                            a.innerText = `${o["Número de Processo"]}`
+                            a.href = `./p/${encodeURIComponent(o["Número de Processo"])}/${o.UUID.substring(0,6)}/`
                             s.appendChild(a);
                             s.append(` (${o["!{DATA_FIELD}"]}) / `);
                         })
