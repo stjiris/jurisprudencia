@@ -224,7 +224,7 @@ function queryString(originalUrl, drop=["page", "sort"]){
 }
 
 function parseSort(value, array){
-    const sortV = value || "desc";
+    const sortV = value || "des";
     if( sortV == "des" ){
         array.push({
             [DATA_FIELD]: "desc"
