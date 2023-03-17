@@ -51,10 +51,9 @@ block main
                     select#form-select(name="term")
                         mixin option(value)
                             option(value=value selected=value==term) !{value}
-                        +option("Jurisprudência")
                         +option("Área")
                         +option("Meio Processual")
-                        +option("Decisão - Composta")
+                        +option("Decisão - Decomposta")
                         +option("Decisão - Integral")
                         +option("Secção")
                         +option("Relator")
@@ -85,7 +84,7 @@ block main
                 if buck 
                     | !{buck.doc_count}
                 else
-                    | 0
+                    span.text-muted 0
             if !userConfirm && aggs[term].buckets.length > 10000
                 .alert.alert-danger(role="alert")
                     h5.alert-heading
