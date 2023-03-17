@@ -120,14 +120,13 @@ forEachDgsiLink(async url => {
         "Votação - Declarações": getVotação(table),
         "Secção": getSecçãoFromDocument(original),
         "Área": getSecçãoFromDocument(original),
-        "Decisão - Composta": getDecisao(table),
+        "Decisão - Decomposta": getDecisao(table),
         "Decisão - Integral": getDecisao(table),
         "Tribunal de Recurso - Tribunal": getTribunalRecurso(table),
         "Tribunal de Recurso - Processo": getTribunalRecursoProc(table),
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
         "Fonte": "STJ (DGSI)",
-        "Jurisprudência": "{sem Jurisprudência}",
         "CONTENT": CONTENT,
         "URL": url
     }

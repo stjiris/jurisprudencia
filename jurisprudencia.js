@@ -1,7 +1,7 @@
 const es = require('@elastic/elasticsearch')
 const client = new es.Client({ node: process.env.ES_URL || 'http://localhost:9200' });
 
-const Index = module.exports.Index = "jurisprudencia.9.0";
+const Index = module.exports.Index = "jurisprudencia.9.1";
 const Properties = module.exports.Properties = {
     "Original": {
         type: 'object',
@@ -135,7 +135,7 @@ const Properties = module.exports.Properties = {
             }
         }
     },
-    "Decisão - Composta": {
+    "Decisão - Decomposta": {
         type: 'text',
         fielddata: true,
         fields: {
@@ -225,9 +225,6 @@ const Properties = module.exports.Properties = {
             "Sumário" : { type: "keyword" },
             "Processo" : { type: "keyword" }
         }
-    },
-    "Jurisprudência": {
-        type: 'keyword'
     },
     "CONTENT": {
         type: 'text'

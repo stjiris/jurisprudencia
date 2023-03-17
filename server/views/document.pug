@@ -57,7 +57,6 @@ block allmain
                         else
                             -let value = source[key]
                             a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(value)}"`) !{!str ? value : titleCase(value)}
-            +field("Jurisprudência")
             +field("Área","Área",false)
             +field("Meio Processual")
             +field("Relator Nome Profissional","Relator")
@@ -68,7 +67,7 @@ block allmain
                     a(href=`./?Tribunal de Recurso - Tribunal="${encodeURIComponent(source["Votação - Decisão"])}"`) !{source["Tribunal de Recurso - Tribunal"]}
                     span &nbsp;Processo:&nbsp;
                         a(href=`./?Tribunal de Recurso - Processo="${encodeURIComponent(source["Votação - Vencidos"])}"`) !{source["Tribunal de Recurso - Processo"]}
-            +field("Decisão - Composta")
+            +field("Decisão - Decomposta")
             +field("Decisão - Integral")
             .row.border-bottom
                 .col-1: b Votação
