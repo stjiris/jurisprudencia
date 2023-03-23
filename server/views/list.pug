@@ -43,8 +43,7 @@ block main
                 th(class="text-end") Quantidade
                 if !("Secção" in filters)
                     th(colspan="8") por Secção
-                th(class="text-center" colspan="2") Datas
-                th
+                th(class="text-center") Datas
             tr 
                 td !{aggs[term].buckets.length}
                 td
@@ -75,9 +74,7 @@ block main
                     th(class="text-end" title="6.ª Secção (Cível)") 6.ª
                     th(class="text-end" title="7.ª Secção (Cível)") 7.ª
                     th(class="text-end" title="Secção Contencioso") Cont.
-                th(class="text-end") Primeira
-                th Última
-                th Histograma
+                th(class="text-center") Primeira - Última
         tbody 
             mixin getSecCount(bucks, key)
                 - let buck = bucks.find( o => o.key == key )
@@ -108,9 +105,7 @@ block main
                             td(class="text-end"): +getSecCount(agg.Secções.buckets, "6.ª Secção (Cível)")
                             td(class="text-end"): +getSecCount(agg.Secções.buckets, "7.ª Secção (Cível)")
                             td(class="text-end"): +getSecCount(agg.Secções.buckets, "Contencioso")
-                        td(class="text-end") !{agg.MinAno.value_as_string}
-                        td !{agg.MaxAno.value_as_string}
-                        td: a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) Ver
+                        td(class="text-center"): a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) !{agg.MinAno.value_as_string} - !{agg.MaxAno.value_as_string}
             
     script.
         document.getElementById("form-select").addEventListener("change", (e) => {
