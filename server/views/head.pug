@@ -62,11 +62,11 @@ html(lang="en")
                                                 for f in filters[key]
                                                     if cache.indexOf(f) == -1
                                                         -cache.push(f)
-                                                        .form-check.form-check-inline.my-0(style="--border-color: #0f0")
+                                                        .p-1.m-0.d-flex.align-items-center(style="background: var(--secondary-gold); border-bottom: 1px solid var(--primary-gold)")
                                                             input.form-check-input(type="checkbox", name=key, value=f, checked, id=`checkbox-${f.replace(/\s/g, "")}`, hidden)
-                                                            label.form-check-label(for=`checkbox-${f.replace(/\s/g, "")}`).d-flex.justify-content-between.align-items-center.w-100
+                                                            label(role="button",for=`checkbox-${f.replace(/\s/g, "")}`).form-check-label.d-flex.justify-content-between.align-items-center.w-100
                                                                 span.d-block !{f}
-                                                                span.d-block: i.bi-trash
+                                                                span.d-block.text-danger: i.bi-trash
                                         mixin filterlist(key)
                                             .d-flex.flex-column.my-1.border.pb-1
                                                 //- +await(`./datalist?id=datalist-${key.replace(/\s/g,'')}&agg=${key}&${querystring}`)

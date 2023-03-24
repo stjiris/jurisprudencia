@@ -49,7 +49,8 @@ block main
                 th(class="text-end border-end" title="6.ª Secção (Cível)") 6.ª
                 th(class="text-end border-end" title="7.ª Secção (Cível)") 7.ª
                 th(class="text-end border-end" title="Secção Contencioso") Cont.
-                th(class="text-center") Datas
+                td
+                th(class="text-start") Datas
             tr 
                 td !{aggs[term].buckets.length}
                 td
@@ -72,7 +73,7 @@ block main
                         +option("ECLI")
                 -let obj = {}
                 -aggs[term].buckets.forEach(b => b.Secções.buckets.forEach(s => obj[s.key] = (obj[s.key] || 0) + s.doc_count))
-                th(class="text-end border-end") Totais: !{Object.values(obj).reduce((acc,s) => acc+s)}
+                th(class="text-end border-end") !{Object.values(obj).reduce((acc,s) => acc+s)}
                 td(class="text-end border-end" title="1.ª Secção (Cível)") !{obj["1.ª Secção (Cível)"]}
                 td(class="text-end border-end" title="2.ª Secção (Cível)") !{obj["2.ª Secção (Cível)"]}
                 td(class="text-end border-end" title="3.ª Secção (Criminal)") !{obj["3.ª Secção (Criminal)"]}
@@ -81,7 +82,8 @@ block main
                 td(class="text-end border-end" title="6.ª Secção (Cível)") !{obj["6.ª Secção (Cível)"]}
                 td(class="text-end border-end" title="7.ª Secção (Cível)") !{obj["7.ª Secção (Cível)"]}
                 td(class="text-end border-end" title="Secção Contencioso")  !{obj["Contencioso"]}
-                th(class="text-center") de - até
+                td
+                th(class="text-start") de ... até
         tbody 
             mixin getSecCount(bucks, key)
                 - let buck = bucks.find( o => o.key == key )
@@ -109,10 +111,11 @@ block main
                         td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "6.ª Secção (Cível)")
                         td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "7.ª Secção (Cível)")
                         td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "Contencioso")
+                        td
                         if agg.MinAno.value_as_string == agg.MaxAno.value_as_string
-                            td(class="text-center text-nowrap") !{agg.MaxAno.value_as_string}
+                            td(class="text-start text-nowrap") !{agg.MaxAno.value_as_string}
                         else
-                            td(class="text-center text-nowrap"): a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) !{agg.MinAno.value_as_string} - !{agg.MaxAno.value_as_string}
+                            td(class="text-start text-nowrap"): a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) !{agg.MinAno.value_as_string} ... !{agg.MaxAno.value_as_string}
             
     script.
         document.getElementById("form-select").addEventListener("change", (e) => {
