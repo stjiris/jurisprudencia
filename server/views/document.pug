@@ -45,18 +45,18 @@ block allmain
             .row.border-bottom
                 .col-1: b Data:
                 .col-11: span !{source.Data}
-            mixin field(key, showkey, str=true, ref=true)
+            mixin field(key, showkey, ref=true)
                 .row.border-bottom
                     .col-1: b !{showkey ? showkey : key}:
                     .col-11
                         if Array.isArray(source[key])
                             each value, index in source[key]
-                                a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(value)}"`) !{!str ? value : titleCase(value)}
+                                a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(value)}"`) !{value}
                                 if index < source[key].length-1
                                     span &nbsp;/&nbsp;
                         else
                             -let value = source[key]
-                            a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(value)}"`) !{!str ? value : titleCase(value)}
+                            a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(value)}"`) !{value}
             +field("Área","Área",false)
             +field("Meio Processual")
             +field("Relator Nome Profissional","Relator")
