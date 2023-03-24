@@ -40,9 +40,15 @@ block main
                 th #
                 th Índice
                     a.ms-1(href=`./indices.csv?${querystring}` download): i.bi.bi-filetype-csv
-                th(class="text-end") Quantidade
-                if !("Secção" in filters)
-                    th(colspan="8") por Secção
+                th(class="text-end border-end") Secções:
+                th(class="text-end border-end" title="1.ª Secção (Cível)") 1.ª
+                th(class="text-end border-end" title="2.ª Secção (Cível)") 2.ª
+                th(class="text-end border-end" title="3.ª Secção (Criminal)") 3.ª
+                th(class="text-end border-end" title="4.ª Secção (Social)") 4.ª
+                th(class="text-end border-end" title="5.ª Secção (Criminal)") 5.ª
+                th(class="text-end border-end" title="6.ª Secção (Cível)") 6.ª
+                th(class="text-end border-end" title="7.ª Secção (Cível)") 7.ª
+                th(class="text-end border-end" title="Secção Contencioso") Cont.
                 th(class="text-center") Datas
             tr 
                 td !{aggs[term].buckets.length}
@@ -64,24 +70,23 @@ block main
                         +option("Tribunal de Recurso - Processo")
                         +option("Número de Processo")
                         +option("ECLI")
-                th(class="text-end") Total
-                if !("Secção" in filters)
-                    th(class="text-end" title="1.ª Secção (Cível)") 1.ª
-                    th(class="text-end" title="2.ª Secção (Cível)") 2.ª
-                    th(class="text-end" title="3.ª Secção (Criminal)") 3.ª
-                    th(class="text-end" title="4.ª Secção (Social)") 4.ª
-                    th(class="text-end" title="5.ª Secção (Criminal)") 5.ª
-                    th(class="text-end" title="6.ª Secção (Cível)") 6.ª
-                    th(class="text-end" title="7.ª Secção (Cível)") 7.ª
-                    th(class="text-end" title="Secção Contencioso") Cont.
-                th(class="text-center") Primeira - Última
+                -let obj = {}
+                -aggs[term].buckets.forEach(b => b.Secções.buckets.forEach(s => obj[s.key] = (obj[s.key] || 0) + s.doc_count))
+                th(class="text-end border-end") Totais: !{Object.values(obj).reduce((acc,s) => acc+s)}
+                td(class="text-end border-end" title="1.ª Secção (Cível)") !{obj["1.ª Secção (Cível)"]}
+                td(class="text-end border-end" title="2.ª Secção (Cível)") !{obj["2.ª Secção (Cível)"]}
+                td(class="text-end border-end" title="3.ª Secção (Criminal)") !{obj["3.ª Secção (Criminal)"]}
+                td(class="text-end border-end" title="4.ª Secção (Social)") !{obj["4.ª Secção (Social)"]}
+                td(class="text-end border-end" title="5.ª Secção (Criminal)") !{obj["5.ª Secção (Criminal)"]}
+                td(class="text-end border-end" title="6.ª Secção (Cível)") !{obj["6.ª Secção (Cível)"]}
+                td(class="text-end border-end" title="7.ª Secção (Cível)") !{obj["7.ª Secção (Cível)"]}
+                td(class="text-end border-end" title="Secção Contencioso")  !{obj["Contencioso"]}
+                th(class="text-center") de - até
         tbody 
             mixin getSecCount(bucks, key)
                 - let buck = bucks.find( o => o.key == key )
                 if buck 
                     | !{buck.doc_count}
-                else
-                    span.text-muted 0
             if !userConfirm && aggs[term].buckets.length > 10000
                 .alert.alert-danger(role="alert")
                     h5.alert-heading
@@ -95,17 +100,19 @@ block main
                     tr
                         td.text-muted !{index+1}
                         td: a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
-                        td(class="text-end") !{agg.doc_count}
-                        if !("Secção" in filters)
-                            td(class="text-end"): +getSecCount(agg.Secções.buckets, "1.ª Secção (Cível)")
-                            td(class="text-end"): +getSecCount(agg.Secções.buckets, "2.ª Secção (Cível)")
-                            td(class="text-end"): +getSecCount(agg.Secções.buckets, "3.ª Secção (Criminal)")
-                            td(class="text-end"): +getSecCount(agg.Secções.buckets, "4.ª Secção (Social)")
-                            td(class="text-end"): +getSecCount(agg.Secções.buckets, "5.ª Secção (Criminal)")
-                            td(class="text-end"): +getSecCount(agg.Secções.buckets, "6.ª Secção (Cível)")
-                            td(class="text-end"): +getSecCount(agg.Secções.buckets, "7.ª Secção (Cível)")
-                            td(class="text-end"): +getSecCount(agg.Secções.buckets, "Contencioso")
-                        td(class="text-center"): a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) !{agg.MinAno.value_as_string} - !{agg.MaxAno.value_as_string}
+                        td(class="text-end border-end") !{agg.doc_count}
+                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "1.ª Secção (Cível)")
+                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "2.ª Secção (Cível)")
+                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "3.ª Secção (Criminal)")
+                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "4.ª Secção (Social)")
+                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "5.ª Secção (Criminal)")
+                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "6.ª Secção (Cível)")
+                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "7.ª Secção (Cível)")
+                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "Contencioso")
+                        if agg.MinAno.value_as_string == agg.MaxAno.value_as_string
+                            td(class="text-center text-nowrap") !{agg.MaxAno.value_as_string}
+                        else
+                            td(class="text-center text-nowrap"): a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) !{agg.MinAno.value_as_string} - !{agg.MaxAno.value_as_string}
             
     script.
         document.getElementById("form-select").addEventListener("change", (e) => {
