@@ -678,6 +678,16 @@ app.get("/p/:procOrStringEcli?/:partialuuidOrEcli?/", (req, res, next) => {
     });
 });
 
+app.get("/term-info", (req, res) => {
+    let term = req.query.term;
+    client.get({
+        index: "terms-info.0.0",
+        id: term
+    }).then(r => res.send(r._source.text) ).catch( e => {
+        res.status(404).send(`Erro a obter a informação.`)
+    })
+})
+
 app.get("/datalist", (req, res) => {
     let aggKey = req.query.agg;
     let agg = aggs[aggKey];

@@ -34,6 +34,22 @@ block main
                     | Atenção:
                 ul
                     li Existem !{aggs[term].sum_other_doc_count} outros valores não listados.
+    if !userConfirm && aggs[term].buckets.length > 10000
+        .alert.alert-danger(role="alert")
+            h5.alert-heading
+                strong 
+                    i.bi.bi-exclamation-circle
+                    | Atenção:
+                ul
+                    li Esta página irá descarregar uma tabela com !{aggs[term].buckets.length} linhas. <a href="./indices?!{querystring}&userConfirm=true">Continuar</a>
+    .alert.alert-info(role="alert")
+        h6.alert-heading
+            strong 
+                i.bi.bi-info-circle
+                | &nbsp;Notas sobre o índice "!{term}":
+            p.m-0#term-info A Carregar informação...
+            script.
+                fetch("./term-info?term=!{encodeURIComponent(term)}").then( r => r.status == 200 ? r.text() : "Sem informação..." ).catch( e => "Sem informação...").then( txt => document.getElementById("term-info").textContent = txt)
     table.table.table-sm
         thead 
             tr
@@ -90,13 +106,7 @@ block main
                 if buck 
                     | !{buck.doc_count}
             if !userConfirm && aggs[term].buckets.length > 10000
-                .alert.alert-danger(role="alert")
-                    h5.alert-heading
-                        strong 
-                            i.bi.bi-exclamation-circle
-                            | Atenção:
-                        ul
-                            li Esta página irá descarregar uma tabela com !{aggs[term].buckets.length} linhas. <a href="./indices?!{querystring}&userConfirm=true">Continuar</a>
+                
             else
                 each agg, index in aggs[term].buckets
                     tr
