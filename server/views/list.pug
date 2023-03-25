@@ -89,7 +89,7 @@ block main
                         +option("ECLI")
                 -let obj = {}
                 -aggs[term].buckets.forEach(b => b.Secções.buckets.forEach(s => obj[s.key] = (obj[s.key] || 0) + s.doc_count))
-                th(class="text-end border-end") !{Object.values(obj).reduce((acc,s) => acc+s)}
+                th(class="text-end border-end") !{Object.values(obj).reduce((acc,s) => acc+s,0)}
                 td(class="text-end border-end" title="1.ª Secção (Cível)") !{obj["1.ª Secção (Cível)"]}
                 td(class="text-end border-end" title="2.ª Secção (Cível)") !{obj["2.ª Secção (Cível)"]}
                 td(class="text-end border-end" title="3.ª Secção (Criminal)") !{obj["3.ª Secção (Criminal)"]}
