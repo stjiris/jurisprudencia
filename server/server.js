@@ -519,7 +519,7 @@ function listAggregation(term, group){
                     terms: {
                         field: aggs[group].terms.field.replace("keyword","raw"),
                         size: 10,
-                        min_doc_count: 10,
+                        min_doc_count: 1,
                         order: {
                             _count: "desc"
                         }
@@ -549,28 +549,39 @@ app.get("/indices", (req, res) => {
 
 app.get("/indices.csv", (req, res) => {
     const term = req.query.term || "Área";
+    const group = "group" in req.query ? req.query.group : "Secção"
     const fields = filterableProps;
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    if( fields.indexOf(term) == -1 ){
+    if( !aggs[term] || (group != "" && !aggs[group]) ){
         res.write(`"Erro"\r\n`);
-        res.write(`O campo "${term}" não foi indexado.\r\n`);
-        return res.end();
+        res.write(`"Um dos campos \\"${term}\\" ou \\"${group}\\" não foi indexado."\r\n`);
+        return res.end();        
     }
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
-    let secs = ["1.ª Secção (Cível)","2.ª Secção (Cível)","3.ª Secção (Criminal)","4.ª Secção (Social)","5.ª Secção (Criminal)","6.ª Secção (Cível)","7.ª Secção (Cível)","Secção Contencioso"]
-    res.write(`"${term}","Quantidade Total","Primeira Data","Última Data",${secs.map( s => `"${s}"`).join(',')}\r\n`)
-    search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then( body => {
-        let getSecCount = (bucks, key) => bucks.find( o => o.key == key )?.doc_count || 0;
+    search(queryObject(req.query.q), sfilters, 0, listAggregation(term,group), 0).then( body => {
+        let groupHeader = [];
+        let getGroupCount = (bucks, key) => {
+            let b = bucks.find(b => b.key == key);
+            return b ? b.doc_count : 0
+        }
         body.aggregations[term].buckets.forEach( bucket => {
-            res.write(`"${bucket.key}",${bucket.doc_count},"${bucket.MinAno.value_as_string}","${bucket.MaxAno.value_as_string}",${secs.map(n => getSecCount(bucket.Secções.buckets, n)).join(',')}\r\n`);
+            bucket.Group?.buckets?.forEach( g => {
+                if( groupHeader.indexOf(g.key) == -1 ){
+                    groupHeader.push(g.key)
+                }
+            })
+        });
+        res.write(`"${term}","Quantidade Total","Primeira Data","Última Data",${groupHeader.map( s => `"${s}"`).join(',')}\r\n`)
+        body.aggregations[term].buckets.forEach( bucket => {
+            res.write(`"${bucket.key}",${bucket.doc_count},"${bucket.MinAno.value_as_string}","${bucket.MaxAno.value_as_string}",${groupHeader.map(header => getGroupCount(bucket.Group.buckets, header)).join(',')}\r\n`);
         });
         res.end();
     }).catch( err => {
         console.log(req.originalUrl, err)
         res.write(`"Erro"\r\n`);
         res.write(`"${err.message}"\r\n`)
-        res.end();
+        res.end(); 
     });
 })
 

@@ -118,7 +118,7 @@ block main
             -    return r ? r.doc_count : 0
             -}
             mixin showPositive(num)
-                if num > 0
+                if num >= 0
                     | !{num}
             if !userConfirm && aggs[term].buckets.length > 10000
                 // Await user confirm
