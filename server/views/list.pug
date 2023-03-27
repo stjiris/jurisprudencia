@@ -23,7 +23,8 @@ block printpageinfo
     p Lista de !{term} da pesquisa por: "!{q || ""}"
 
 prepend form
-    input(type="text",name="term",hidden,value=term)#form-select-input
+    input(type="text",name="term",hidden,value=term)#form-select-term-input
+    input(type="text",name="group",hidden,value=group)#form-select-group-input
 
 block main
     if aggs[term].sum_other_doc_count > 0
@@ -44,33 +45,51 @@ block main
                     li Esta página irá descarregar uma tabela com !{aggs[term].buckets.length} linhas. <a href="./indices?!{querystring}&userConfirm=true">Continuar</a>
     .alert.alert-info(role="alert")
         h6.alert-heading
-            strong 
-                i.bi.bi-info-circle
-                | &nbsp;Notas sobre o índice "!{term}":
             p.m-0#term-info A Carregar informação...
             script.
-                fetch("./term-info?term=!{encodeURIComponent(term)}").then( r => r.status == 200 ? r.text() : "Sem informação..." ).catch( e => "Sem informação...").then( txt => document.getElementById("term-info").textContent = txt)
+                fetch("./term-info?term=!{encodeURIComponent(term)}").then( r => r.status == 200 ? r.text() : "Sem informação..." ).catch( e => "Sem informação...").then( txt => document.getElementById("term-info").innerHTML = txt)
+    -const OTHERS = "[Outros]"
+    -let othersCounts = 0;
+    -let groupObj = {}
+    -let sortedGroup = []
+    if group
+        -aggs[term].buckets.forEach(b => b.Group ? b.Group.buckets.forEach(s => groupObj[s.key] = (groupObj[s.key] || 0) + s.doc_count) : null)
+        -aggs[term].buckets.forEach(b => othersCounts += b.Group.sum_other_doc_count)
+        -sortedGroup = Object.entries(groupObj).sort((a, b) => b[1]-a[1]);
+        -sortedGroup.slice(10).forEach( a => {
+        -    othersCounts += groupObj[a[0]]
+        -})
+        -sortedGroup.splice(10)
+        if othersCounts > 0
+            -sortedGroup.push([OTHERS, othersCounts])
+    else
+        -console.log(aggs[term].buckets)
     table.table.table-sm
         thead 
             tr
                 th #
                 th Índice
                     a.ms-1(href=`./indices.csv?${querystring}` download): i.bi.bi-filetype-csv
-                th(class="text-end border-end") Secções:
-                th(class="text-end border-end" title="1.ª Secção (Cível)") 1.ª
-                th(class="text-end border-end" title="2.ª Secção (Cível)") 2.ª
-                th(class="text-end border-end" title="3.ª Secção (Criminal)") 3.ª
-                th(class="text-end border-end" title="4.ª Secção (Social)") 4.ª
-                th(class="text-end border-end" title="5.ª Secção (Criminal)") 5.ª
-                th(class="text-end border-end" title="6.ª Secção (Cível)") 6.ª
-                th(class="text-end border-end" title="7.ª Secção (Cível)") 7.ª
-                th(class="text-end border-end" title="Secção Contencioso") Cont.
+                th(class="text-end border-end")
+                    select#form-group-select(name="group") 
+                        mixin option(value)
+                            option(value=value selected=value==group) !{value}
+                        // for now just some fields
+                        +option("") 
+                        +option("Área")
+                        +option("Secção")
+                for [name,count] of sortedGroup
+                    if name == OTHERS
+                        td !{name}
+                    else
+                        td: a(href=`./indices?${querystring}&${group}="${encodeURIComponent(name)}"`) !{name}
+                    
                 td
                 th(class="text-start") Datas
             tr 
                 td !{aggs[term].buckets.length}
                 td
-                    select#form-select(name="term")
+                    select#form-term-select(name="term")
                         mixin option(value)
                             option(value=value selected=value==term) !{value}
                         +option("Área")
@@ -87,40 +106,37 @@ block main
                         +option("Tribunal de Recurso - Processo")
                         +option("Número de Processo")
                         +option("ECLI")
-                -let obj = {}
-                -aggs[term].buckets.forEach(b => b.Secções.buckets.forEach(s => obj[s.key] = (obj[s.key] || 0) + s.doc_count))
-                th(class="text-end border-end") !{Object.values(obj).reduce((acc,s) => acc+s,0)}
-                td(class="text-end border-end" title="1.ª Secção (Cível)") !{obj["1.ª Secção (Cível)"]}
-                td(class="text-end border-end" title="2.ª Secção (Cível)") !{obj["2.ª Secção (Cível)"]}
-                td(class="text-end border-end" title="3.ª Secção (Criminal)") !{obj["3.ª Secção (Criminal)"]}
-                td(class="text-end border-end" title="4.ª Secção (Social)") !{obj["4.ª Secção (Social)"]}
-                td(class="text-end border-end" title="5.ª Secção (Criminal)") !{obj["5.ª Secção (Criminal)"]}
-                td(class="text-end border-end" title="6.ª Secção (Cível)") !{obj["6.ª Secção (Cível)"]}
-                td(class="text-end border-end" title="7.ª Secção (Cível)") !{obj["7.ª Secção (Cível)"]}
-                td(class="text-end border-end" title="Secção Contencioso")  !{obj["Contencioso"]}
+                
+                th(class="text-end border-end") !{groupObj.length > 0 ? Object.values(groupObj).reduce((acc,s) => acc+s,0) : aggs[term].buckets.reduce((acc,b) => acc+b.doc_count,0)}
+                for [name,count] of sortedGroup
+                    td(class="text-end border-end") !{count}
                 td
                 th(class="text-start") de ... até
         tbody 
-            mixin getSecCount(bucks, key)
-                - let buck = bucks.find( o => o.key == key )
-                if buck 
-                    | !{buck.doc_count}
+            -let getGroupCount = (bucks, key) => {
+            -    let r = bucks.find( o => o.key == key );
+            -    return r ? r.doc_count : 0
+            -}
+            mixin showPositive(num)
+                if num > 0
+                    | !{num}
             if !userConfirm && aggs[term].buckets.length > 10000
-                
+                // Await user confirm
             else
                 each agg, index in aggs[term].buckets
                     tr
                         td.text-muted !{index+1}
                         td: a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
                         td(class="text-end border-end") !{agg.doc_count}
-                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "1.ª Secção (Cível)")
-                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "2.ª Secção (Cível)")
-                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "3.ª Secção (Criminal)")
-                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "4.ª Secção (Social)")
-                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "5.ª Secção (Criminal)")
-                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "6.ª Secção (Cível)")
-                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "7.ª Secção (Cível)")
-                        td(class="text-end border-end"): +getSecCount(agg.Secções.buckets, "Contencioso")
+                        -let count = 0
+                        each [name,_count] of sortedGroup
+                            if name == OTHERS
+                                td(class="text-end border-end"): +showPositive(agg.doc_count - count)
+                            else
+                                td(class="text-end border-end")
+                                    -let c = getGroupCount(agg.Group.buckets, name)
+                                    -count+=c;
+                                    +showPositive(c)
                         td
                         if agg.MinAno.value_as_string == agg.MaxAno.value_as_string
                             td(class="text-start text-nowrap") !{agg.MaxAno.value_as_string}
@@ -128,8 +144,13 @@ block main
                             td(class="text-start text-nowrap"): a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) !{agg.MinAno.value_as_string} ... !{agg.MaxAno.value_as_string}
             
     script.
-        document.getElementById("form-select").addEventListener("change", (e) => {
-            document.getElementById("form-select-input").value = e.target.value;
+        document.getElementById("form-term-select").addEventListener("change", (e) => {
+            document.getElementById("form-select-term-input").value = e.target.value;
+            document.getElementById("filter-form").submit();
+        })
+
+        document.getElementById("form-group-select").addEventListener("change", (e) => {
+            document.getElementById("form-select-group-input").value = e.target.value;
             document.getElementById("filter-form").submit();
         })
 

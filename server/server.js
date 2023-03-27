@@ -491,7 +491,7 @@ app.get("/allStats", (req, res) => {
     });
 });*/
 
-function listAggregation(term){
+function listAggregation(term, group){
     return {
         MinAno: aggs.MinAno,
         MaxAno: aggs.MaxAno,
@@ -514,35 +514,41 @@ function listAggregation(term){
                         field: DATA_FIELD
                     }
                 },
-                Secções: {
+
+                Group: group ? {
                     terms: {
-                        field: "Secção.raw",
-                        size: 9
+                        field: aggs[group].terms.field.replace("keyword","raw"),
+                        size: 10,
+                        min_doc_count: 10,
+                        order: {
+                            _count: "desc"
+                        }
                     }
-                }
+                } : undefined
             }
         }
     }
 }
 
 app.get("/indices", (req, res) => {
-    const term = req.query.term || "Relator";
+    const term = req.query.term || "Área";
+    const group = "group" in req.query ? req.query.group : "Secção"
     const fields = filterableProps;
-    if( fields.indexOf(term) == -1 ){
-        return res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: `O campo "${term}" não foi indexado.`, aggs: {}, letters: {}, filters: {}, term: term, fields: fields, userConfirm: true})
+    if( !aggs[term] || (group != "" && !aggs[group]) ){
+        return res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: `Um dos campos "${term}" ou "${group}" não foi indexado.`, aggs: {}, letters: {}, filters: {}, term: term, group: group, fields: fields, userConfirm: true})
     }
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
-    search(queryObject(req.query.q), sfilters, 0, listAggregation(term), 0).then( body => {
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: body, aggs: body.aggregations, filters: filters, term: term, open: Object.keys(filters).length > 0, fields: fields, userConfirm: "userConfirm" in req.query});
+    search(queryObject(req.query.q), sfilters, 0, listAggregation(term,group), 0).then( body => {
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: body, aggs: body.aggregations, filters: filters, term: term, group: group, open: Object.keys(filters).length > 0, fields: fields, userConfirm: "userConfirm" in req.query});
     }).catch( err => {
         console.log(req.originalUrl, err)
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: err, aggs: {}, letters: {}, filters: {}, term: term, fields: fields, userConfirm: true});
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: err, aggs: {}, letters: {}, filters: {}, term: term, group: group, fields: fields, userConfirm: true});
     });
 });
 
 app.get("/indices.csv", (req, res) => {
-    const term = req.query.term || "Relator";
+    const term = req.query.term || "Área";
     const fields = filterableProps;
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     if( fields.indexOf(term) == -1 ){
@@ -682,7 +688,7 @@ app.get("/term-info", (req, res) => {
     let term = req.query.term;
     client.get({
         index: "terms-info.0.0",
-        id: term
+        id: aggs[term].terms.field.replace(".keyword","")
     }).then(r => res.send(r._source.text) ).catch( e => {
         res.status(404).send(`Erro a obter a informação.`)
     })
