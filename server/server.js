@@ -530,24 +530,25 @@ function listAggregation(term, group){
 }
 
 app.get("/indices", (req, res) => {
+    const LIMIT_ROWS = req.query.LIMIT_ROWS;
     const term = req.query.term || "Área";
     const group = "group" in req.query ? req.query.group : "Secção"
     const fields = filterableProps;
     if( !aggs[term] || (group != "" && !aggs[group]) ){
-        return res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: `Um dos campos "${term}" ou "${group}" não foi indexado.`, aggs: {}, letters: {}, filters: {}, term: term, group: group, fields: fields, userConfirm: true})
+        return res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: `Um dos campos "${term}" ou "${group}" não foi indexado.`, aggs: {}, letters: {}, filters: {}, term: term, group: group, fields: fields})
     }
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
     search(queryObject(req.query.q), sfilters, 0, listAggregation(term,group), 0).then( body => {
         body.aggregations[term].buckets.sort((a,b) => {
-            let ak = a.key.startsWith("`") ? a.key.substr(1) : a.key
-            let bk = b.key.startsWith("`") ? b.key.substr(1) : b.key
+            let ak = a.key.replace(/^[^A-Za-zÀ-ÖØ-öø-ÿ0-9]*/,"")
+            let bk = b.key.replace(/^[^A-Za-zÀ-ÖØ-öø-ÿ0-9]*/,"")
             return ak.localeCompare(bk)
         })
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: body, aggs: body.aggregations, filters: filters, term: term, group: group, open: Object.keys(filters).length > 0, fields: fields, userConfirm: "userConfirm" in req.query});
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: body, aggs: body.aggregations, filters: filters, term: term, group: group, open: Object.keys(filters).length > 0, fields: fields, LIMIT_ROWS});
     }).catch( err => {
         console.log(req.originalUrl, err)
-        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: err, aggs: {}, letters: {}, filters: {}, term: term, group: group, fields: fields, userConfirm: true});
+        res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: err, aggs: {}, letters: {}, filters: {}, term: term, group: group, fields: fields});
     });
 });
 

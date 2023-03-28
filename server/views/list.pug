@@ -31,14 +31,6 @@ block main
                     | Atenção:
                 ul
                     li Existem !{aggs[term].sum_other_doc_count} outros valores não listados.
-    if !userConfirm && aggs[term].buckets.length > 10000
-        .alert.alert-danger(role="alert")
-            h5.alert-heading
-                strong 
-                    i.bi.bi-exclamation-circle
-                    | Atenção:
-                ul
-                    li Esta página irá descarregar uma tabela com !{aggs[term].buckets.length} linhas. <a href="./indices?!{querystring}&userConfirm=true">Continuar</a>
     .alert.alert-info(role="alert")
         h6.alert-heading
             p.m-0#term-info A Carregar informação...
@@ -98,25 +90,21 @@ block main
                         +option("Descritores")
                         +option("Tribunal de Recurso - Tribunal")
                         +option("Tribunal de Recurso - Processo")
-                        +option("Número de Processo")
-                        +option("ECLI")
                 
                 th(class="text-end border-end") !{groupObj.length > 0 ? Object.values(groupObj).reduce((acc,s) => acc+s,0) : aggs[term].buckets.reduce((acc,b) => acc+b.doc_count,0)}
                 for [name,count] of sortedGroup
                     td(class="text-end border-end") !{count}
                 td
                 th(class="text-start") de ... até
-        tbody 
-            -let getGroupCount = (bucks, key) => {
-            -    let r = bucks.find( o => o.key == key );
-            -    return r ? r.doc_count : 0
-            -}
-            mixin showPositive(num)
-                if num > 0
-                    | !{num}
-            if !userConfirm && aggs[term].buckets.length > 10000
-                // Await user confirm
-            else
+        if aggs[term].buckets.length <= (LIMIT_ROWS || 5000)
+            tbody
+                -let getGroupCount = (bucks, key) => {
+                -    let r = bucks.find( o => o.key == key );
+                -    return r ? r.doc_count : 0
+                -}
+                mixin showPositive(num)
+                    if num > 0
+                        | !{num}
                 each agg, index in aggs[term].buckets
                     tr
                         td.text-muted !{index+1}
@@ -136,7 +124,14 @@ block main
                             td(class="text-start text-nowrap") !{agg.MaxAno.value_as_string}
                         else
                             td(class="text-start text-nowrap"): a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) !{agg.MinAno.value_as_string} ... !{agg.MaxAno.value_as_string}
-            
+    if aggs[term].buckets.length > (LIMIT_ROWS || 5000)
+        tbody
+        div.d-flex.flex-wrap
+            each agg, index in aggs[term].buckets
+                div
+                    a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
+                    span &nbsp;(!{agg.doc_count})&nbsp;
+                
     script.
         document.getElementById("form-term-select").addEventListener("change", (e) => {
             document.getElementById("form-select-term-input").value = e.target.value;
