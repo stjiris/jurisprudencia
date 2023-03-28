@@ -514,14 +514,13 @@ function listAggregation(term, group){
                         field: DATA_FIELD
                     }
                 },
-
                 Group: group ? {
                     terms: {
                         field: aggs[group].terms.field.replace("keyword","raw"),
                         size: 10,
                         min_doc_count: 1,
                         order: {
-                            _key: "asc"
+                            _key: "desc"
                         }
                     }
                 } : undefined
@@ -540,6 +539,11 @@ app.get("/indices", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
     search(queryObject(req.query.q), sfilters, 0, listAggregation(term,group), 0).then( body => {
+        body.aggregations[term].buckets.sort((a,b) => {
+            let ak = a.key.startsWith("`") ? a.key.substr(1) : a.key
+            let bk = b.key.startsWith("`") ? b.key.substr(1) : b.key
+            return ak.localeCompare(bk)
+        })
         res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: body, aggs: body.aggregations, filters: filters, term: term, group: group, open: Object.keys(filters).length > 0, fields: fields, userConfirm: "userConfirm" in req.query});
     }).catch( err => {
         console.log(req.originalUrl, err)
