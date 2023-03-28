@@ -22,10 +22,6 @@ prepend header
 block printpageinfo
     p Lista de !{term} da pesquisa por: "!{q || ""}"
 
-prepend form
-    input(type="text",name="term",hidden,value=term)#form-select-term-input
-    input(type="text",name="group",hidden,value=group)#form-select-group-input
-
 block main
     if aggs[term].sum_other_doc_count > 0
         .alert.alert-warning(role="alert")
@@ -55,15 +51,13 @@ block main
     if group
         -aggs[term].buckets.forEach(b => b.Group ? b.Group.buckets.forEach(s => groupObj[s.key] = (groupObj[s.key] || 0) + s.doc_count) : null)
         -aggs[term].buckets.forEach(b => othersCounts += b.Group.sum_other_doc_count)
-        -sortedGroup = Object.entries(groupObj).sort((a, b) => b[1]-a[1]);
+        -sortedGroup = Object.entries(groupObj).sort((a, b) => a[0].localeCompare(b[0]));
         -sortedGroup.slice(10).forEach( a => {
         -    othersCounts += groupObj[a[0]]
         -})
         -sortedGroup.splice(10)
         if othersCounts > 0
             -sortedGroup.push([OTHERS, othersCounts])
-    else
-        -console.log(aggs[term].buckets)
     table.table.table-sm
         thead 
             tr
@@ -75,14 +69,14 @@ block main
                         mixin option(value)
                             option(value=value selected=value==group) !{value}
                         // for now just some fields
-                        +option("") 
+                        option(value="") (nada)
                         +option("Área")
                         +option("Secção")
                 for [name,count] of sortedGroup
                     if name == OTHERS
-                        td !{name}
+                        td(class="text-end border-end") !{name}
                     else
-                        td: a(href=`./indices?${querystring}&${group}="${encodeURIComponent(name)}"`) !{name}
+                        td(class="text-end border-end"): a(href=`./indices?${querystring}&${group}="${encodeURIComponent(name)}"`) !{name}
                     
                 td
                 th(class="text-start") Datas
@@ -118,7 +112,7 @@ block main
             -    return r ? r.doc_count : 0
             -}
             mixin showPositive(num)
-                if num >= 0
+                if num > 0
                     | !{num}
             if !userConfirm && aggs[term].buckets.length > 10000
                 // Await user confirm
@@ -126,14 +120,14 @@ block main
                 each agg, index in aggs[term].buckets
                     tr
                         td.text-muted !{index+1}
-                        td: a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
-                        td(class="text-end border-end") !{agg.doc_count}
+                        td(class="text-nowrap",style="width: 0px"): a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
+                        td(class="text-end border-end text-nowrap w-25") !{agg.doc_count}
                         -let count = 0
                         each [name,_count] of sortedGroup
                             if name == OTHERS
-                                td(class="text-end border-end"): +showPositive(agg.doc_count - count)
+                                td(class="text-end border-end text-nowrap"): +showPositive(agg.doc_count - count)
                             else
-                                td(class="text-end border-end")
+                                td(class="text-end border-end text-nowrap")
                                     -let c = getGroupCount(agg.Group.buckets, name)
                                     -count+=c;
                                     +showPositive(c)

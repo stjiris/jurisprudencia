@@ -44,6 +44,8 @@ html(lang="en")
                     .row
                         .col-12.col-sm-4.col-md-3.col-xl-2.d-print-none.infofilters
                             form(method="get",style="top:0;")#filter-form.position-sticky
+                                input(type="text",name="term",hidden,value=term)#form-select-term-input
+                                input(type="text",name="group",hidden,value=group)#form-select-group-input
                                 block form
                                     .d-block
                                         .d-flex.align-items-center.justify-content-between

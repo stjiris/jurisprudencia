@@ -521,7 +521,7 @@ function listAggregation(term, group){
                         size: 10,
                         min_doc_count: 1,
                         order: {
-                            _count: "desc"
+                            _key: "asc"
                         }
                     }
                 } : undefined
