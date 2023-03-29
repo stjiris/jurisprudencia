@@ -45,9 +45,9 @@ block allmain
             .row.border-bottom
                 .col-1: b Data:
                 .col-11: span !{source.Data}
-            mixin field(key, showkey, ref=true)
+            mixin field(key, showkey,col)
                 .row.border-bottom
-                    .col-1: b !{showkey ? showkey : key}:
+                    .col-1: b !{col ? col : (showkey ? showkey : key)}:
                     .col-11
                         if Array.isArray(source[key])
                             each value, index in source[key]
@@ -57,10 +57,10 @@ block allmain
                         else
                             -let value = source[key]
                             a(href=`./?${showkey ? showkey : key}="${encodeURIComponent(value)}"`) !{value}
-            +field("Área","Área",false)
+            +field("Área")
             +field("Meio Processual")
             +field("Relator Nome Profissional","Relator")
-            +field("Secção","Secção",false)
+            +field("Secção")
             .row.border-bottom
                 .col-1: b T. de Recurso:
                 .col-11
@@ -79,7 +79,7 @@ block allmain
                         a(href=`./?Votação - Declarações="${encodeURIComponent(source["Votação - Declarações"])}"`) !{source["Votação - Declarações"]}
             +field("Descritores")
             +field("Referências")
-            +field("Referência de publicação","R. de publicação")
+            +field("Referência de publicação",null,"R. de publicação")
             +field("Área Temática")
             script.
                 fetch(`./related/!{encodeURIComponent(source["Número de Processo"])}/!{source.UUID}/`).then(r => r.json() ).then(l =>{
