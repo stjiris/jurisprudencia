@@ -61,7 +61,7 @@ block main
                         mixin option(value)
                             option(value=value selected=value==group) !{value}
                         // for now just some fields
-                        option(value="") (nada)
+                        option(value="") (total)
                         +option("Área")
                         +option("Secção")
                 for [name,count] of sortedGroup
@@ -79,17 +79,20 @@ block main
                         mixin option(value)
                             option(value=value selected=value==term) !{value}
                         +option("Área")
-                        +option("Meio Processual")
-                        +option("Decisão - Decomposta")
-                        +option("Decisão - Integral")
                         +option("Secção")
                         +option("Relator")
+                        +option("Meio Processual")
+                        +option("Decisão")
+                        +option("Decisão (textual)")
                         +option("Votação - Decisão")
                         +option("Votação - Vencidos")
                         +option("Votação - Declarações")
                         +option("Descritores")
-                        +option("Tribunal de Recurso - Tribunal")
+                        +option("Tribunal de Recurso")
                         +option("Tribunal de Recurso - Processo")
+                        +option("Área Temática")
+                        +option("Referências")
+                        +option("Referência de publicação")
                 
                 th(class="text-end border-end") !{groupObj.length > 0 ? Object.values(groupObj).reduce((acc,s) => acc+s,0) : aggs[term].buckets.reduce((acc,b) => acc+b.doc_count,0)}
                 for [name,count] of sortedGroup

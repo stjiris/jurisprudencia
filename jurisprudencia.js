@@ -1,7 +1,7 @@
 const es = require('@elastic/elasticsearch')
 const client = new es.Client({ node: process.env.ES_URL || 'http://localhost:9200' });
 
-const Index = module.exports.Index = "jurisprudencia.9.2";
+const Index = module.exports.Index = "jurisprudencia.9.3";
 const Properties = module.exports.Properties = {
     "Original": {
         type: 'object',
@@ -135,7 +135,7 @@ const Properties = module.exports.Properties = {
             }
         }
     },
-    "Decisão - Decomposta": {
+    "Decisão": {
         type: 'text',
         fielddata: true,
         fields: {
@@ -148,7 +148,7 @@ const Properties = module.exports.Properties = {
             }
         }
     },
-    "Decisão - Integral": {
+    "Decisão (textual)": {
         type: 'text',
         fielddata: true,
         fields: {
@@ -161,20 +161,7 @@ const Properties = module.exports.Properties = {
             }
         }
     },
-    "Tribunal de Recurso - Tribunal": {
-        type: 'text',
-        fielddata: true,
-        fields: {
-            raw: {
-                type: "keyword"
-            },
-            keyword: {
-                type: 'keyword',
-                normalizer: 'term_normalizer'
-            }
-        }
-    },
-    "Tribunal de Recurso - Tribunal": {
+    "Tribunal de Recurso": {
         type: 'text',
         fielddata: true,
         fields: {
@@ -188,6 +175,45 @@ const Properties = module.exports.Properties = {
         }
     },
     "Tribunal de Recurso - Processo": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Área Temática": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Referências": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Referência de publicação": {
         type: 'text',
         fielddata: true,
         fields: {

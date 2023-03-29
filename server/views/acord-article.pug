@@ -17,22 +17,17 @@ for doc in hits
                 span &nbsp;- #{doc._source.Área}
             if doc._source["Meio Processual"]
                 span &nbsp;- #{doc._source["Meio Processual"].join(" / ")}
-        .col-12.d-flex.flex-wrap
-            div.mx-1
-                b Relator:&nbsp;
-                span #{doc._source["Relator Nome Profissional"]}
-            div.mx-1
-                b Secção:&nbsp;
-                span #{doc._source.Secção}
+            span &nbsp;- #{doc._source["Relator Nome Profissional"]}
+            span &nbsp;- #{doc._source.Secção}
         .col-12.d-flex.flex-wrap
             if doc._source["Votação - Decisão"]
                 div.mx-1
                     b Votação:&nbsp;
                     span #{doc._source["Votação - Decisão"]}
-            if doc._source["Decisão - Integral"]
+            if doc._source["Decisão (textual)"]
                 div.mx-1.d-flex
-                    b Decisão - Integral:&nbsp;
-                    div !{doc._source["Decisão - Integral"]}
+                    b Decisão (textual):&nbsp;
+                    div !{doc._source["Decisão (textual)"]}
         if Array.isArray(doc._source.Descritores)
             .col-12
                 div.mx-1

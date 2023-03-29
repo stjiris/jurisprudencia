@@ -289,6 +289,8 @@ app.get("/", (req, res) => {
         console.log(e);
         return ""
     });
+    const term = req.query.term || "Área";
+    const group = "group" in req.query ? req.query.group : "Secção";
     search(queryObject(req.query.q), sfilters, page, DEFAULT_AGGS, 0, { sort }).then(async results => {
         res.render("search", {
             q: req.query.q, querystring: queryString(req.originalUrl),
@@ -298,6 +300,8 @@ app.get("/", (req, res) => {
             hits: results.hits.hits,
             aggs: results.aggregations,
             filters: filtersUsed,
+            term: term,
+            group: group,
             page: page,
             pages: Math.ceil(results.hits.total.value/RESULTS_PER_PAGE),
             open: Object.keys(filtersUsed).length > 0,
@@ -314,6 +318,8 @@ app.get("/", (req, res) => {
             hits: [],
             aggs: {},
             filters: {},
+            term: term,
+            group: group,
             page: page,
             pages: 0,
             open: true,
@@ -532,7 +538,7 @@ function listAggregation(term, group){
 app.get("/indices", (req, res) => {
     const LIMIT_ROWS = req.query.LIMIT_ROWS;
     const term = req.query.term || "Área";
-    const group = "group" in req.query ? req.query.group : "Secção"
+    const group = "group" in req.query ? req.query.group : "Secção";
     const fields = filterableProps;
     if( !aggs[term] || (group != "" && !aggs[group]) ){
         return res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: {}, error: `Um dos campos "${term}" ou "${group}" não foi indexado.`, aggs: {}, letters: {}, filters: {}, term: term, group: group, fields: fields})
