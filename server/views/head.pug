@@ -55,7 +55,7 @@ html(lang="en")
                                                         i.bi-archive 
                                                         | !{body.hits.total.value} Processos        
                                             if Object.keys(filters).length > 0 || q
-                                                a(href=`?q=`).text-danger.text-decoration-none
+                                                a(href=`?q=&term=${encodeURIComponent(term)}&group=${encodeURIComponent(group)}`).text-danger.text-decoration-none
                                                     i.bi-eraser-fill
                                                     | Limpar
                                         mixin usedFilters(key)

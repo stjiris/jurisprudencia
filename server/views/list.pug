@@ -50,7 +50,7 @@ block main
         -sortedGroup.splice(10)
         if othersCounts > 0
             -sortedGroup.push([OTHERS, othersCounts])
-    table.table.table-sm
+    table.table.table-sm(style="width: fit-content")
         thead 
             tr
                 th #
@@ -112,7 +112,7 @@ block main
                     tr
                         td.text-muted !{index+1}
                         td(class="text-nowrap",style="width: 0px"): a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
-                        td(class="text-end border-end text-nowrap w-25") !{agg.doc_count}
+                        td(class="text-end border-end text-nowrap") !{agg.doc_count}
                         -let count = 0
                         each [name,_count] of sortedGroup
                             if name == OTHERS
