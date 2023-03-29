@@ -78,6 +78,9 @@ block allmain
                     span &nbsp;Declarações:&nbsp;
                         a(href=`./?Votação - Declarações="${encodeURIComponent(source["Votação - Declarações"])}"`) !{source["Votação - Declarações"]}
             +field("Descritores")
+            +field("Referências")
+            +field("Referência de Publicação")
+            +field("Área Temática")
             script.
                 fetch(`./related/!{encodeURIComponent(source["Número de Processo"])}/!{source.UUID}/`).then(r => r.json() ).then(l =>{
                     let parent = document.getElementById("related");
