@@ -126,7 +126,10 @@ block main
                         if agg.MinAno.value_as_string == agg.MaxAno.value_as_string
                             td(class="text-start text-nowrap") !{agg.MaxAno.value_as_string}
                         else
-                            td(class="text-start text-nowrap"): a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) !{agg.MinAno.value_as_string} ... !{agg.MaxAno.value_as_string}
+                            if agg.doc_count <= 2
+                                td(class="text-start text-nowrap"): !{agg.MinAno.value_as_string} ... !{agg.MaxAno.value_as_string}
+                            else
+                                td(class="text-start text-nowrap"): a(href="#histogram", data-bs-toggle="modal", data-bs-target="#modal-histogram", data-key=term, data-value=agg.key data-query=`./histogram?${querystring}&histogram_value=${encodeURIComponent(agg.key)}`) !{agg.MinAno.value_as_string} ... !{agg.MaxAno.value_as_string}
     if aggs[term].buckets.length > (LIMIT_ROWS || 5000)
         tbody
         div.d-flex.flex-wrap
