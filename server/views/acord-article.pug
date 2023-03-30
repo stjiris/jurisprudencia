@@ -1,7 +1,7 @@
 for doc in hits
     -let relevanciaColor = (per) => per < 0.2 ? '#E3D5A1' : per < 0.4 ? '#CEB65E' : per < 0.6 ? '#B49936' : per < 0.8 ? '#8C752C' : '#6C5A22';
     article.row.border-top.result
-        .col-12.pt-1.d-flex
+        .col-12.pt-1.d-flex.flex-wrap
             small.relevancia(style=`color: ${relevanciaColor(doc._score/max_score)}`)
                 each bin in [0.2,0.4,0.6,0.8,1]
                     if doc._score/max_score < bin
