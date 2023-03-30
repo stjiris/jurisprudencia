@@ -19,6 +19,7 @@ html(lang="en")
                         h5.m-0.fancy-font Jurisprudência
                 div.flex-fill.d-none.d-lg-block
                 nav.d-print-none
+                    input(type="submit", formaction=currentPage=="search"?"./":"./indices", form="filter-form").d-none
                     ul.container.d-flex.nav.align-items-center.justify-content-evenly.flex-wrap
                         li.nav-link.py-1.px-2.mx-1
                             input(type="submit", formaction="./", value="Processos", form="filter-form",class=currentPage=="search"?"active":"").border-0.nav-link.fs-6.bg-transparent
