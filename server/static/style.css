@@ -12,6 +12,7 @@ body {
 
 a {
     color: var(--primary-blue);
+    text-decoration: none;
 }
 
 .fancy-font {
