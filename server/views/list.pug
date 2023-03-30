@@ -65,10 +65,11 @@ block main
                         +option("Área")
                         +option("Secção")
                 for [name,count] of sortedGroup
-                    if name == OTHERS
-                        td(class="text-end border-end") !{name}
-                    else
-                        td(class="text-end border-end"): a(href=`./indices?${querystring}&${group}="${encodeURIComponent(name)}"`) !{name}
+                    td(class="text-end border-end") !{name}
+                    //- if name == OTHERS
+                            td(class="text-end border-end") !{name}
+                        else
+                            td(class="text-end border-end"): a(href=`./indices?${querystring}&${group}="${encodeURIComponent(name)}"`) !{name}
                     
                 td
                 th(class="text-start") Datas
