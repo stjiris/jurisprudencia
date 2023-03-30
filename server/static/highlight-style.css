@@ -86,13 +86,13 @@ details[open] .bi-caret-downright-fill::before {
 }
 
 .pesquisa-sep {
-    background: var(--primary-red);
+    background: var(--hidden-gray);
     color: white;
     font-size: smaller;
     display: inline;
     font-weight: normal;
     font-style: italic;
-    margin: 0 0.4rem;
+    margin: 0 0.6rem;
 }
 .pesquisa-sep::before {
     content: "(...)";

@@ -131,7 +131,7 @@ block main
         tbody
         div.d-flex.flex-wrap
             each agg, index in aggs[term].buckets
-                div
+                div.mx-2
                     a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
                     span &nbsp;(!{agg.doc_count})&nbsp;
                 

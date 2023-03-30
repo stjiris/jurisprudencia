@@ -18,6 +18,9 @@ a {
     font-family: 'Cinzel', serif;
 }
 
+mark {
+    background-color: var(--secondary-gold);
+}
 
 header{
     background-color: var(--secondary-gold);
