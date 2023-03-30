@@ -547,6 +547,8 @@ app.get("/indices", (req, res) => {
     const filters = populateFilters(sfilters, req.query, []);
     search(queryObject(req.query.q), sfilters, 0, listAggregation(term,group), 0).then( body => {
         body.aggregations[term].buckets.sort((a,b) => {
+            if( a.key.startsWith("«") && !b.key.startsWith("«")) return 1
+            if( b.key.startsWith("«") && !a.key.startsWith("«")) return -1
             let ak = a.key.replace(/^[^A-Za-zÀ-ÖØ-öø-ÿ0-9]*/,"")
             let bk = b.key.replace(/^[^A-Za-zÀ-ÖØ-öø-ÿ0-9]*/,"")
             return ak.localeCompare(bk)
