@@ -128,7 +128,7 @@ const populateFilters = (filters, body={}, afters=["MinAno","MaxAno"]) => { // f
                 bool: {
                     should: filtersUsed[aggName].map( o => (o.startsWith("\"") && o.endsWith("\"") ? {
                         term: {
-                            [aggObj[aggField].field]: { value: `${o.slice(1,-1)}` }
+                            [aggObj[aggField].field.replace("keyword","raw")]: { value: `${o.slice(1,-1)}` }
                         }
                     } : {
                         wildcard: {
