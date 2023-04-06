@@ -1,7 +1,7 @@
 const es = require('@elastic/elasticsearch')
 const client = new es.Client({ node: process.env.ES_URL || 'http://localhost:9200' });
 
-const Index = module.exports.Index = "jurisprudencia.9.3";
+const Index = module.exports.Index = "jurisprudencia.9.4";
 const Properties = module.exports.Properties = {
     "Original": {
         type: 'object',
@@ -200,7 +200,111 @@ const Properties = module.exports.Properties = {
             }
         }
     },
-    "Referências": {
+    "Jurisprudência Estrangeira": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Jurisprudência Internacional": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Jurisprudência Nacional": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Doutrina": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Legislação Comunitária": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Legislação Estrangeira": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Legislação Nacional": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Referências Internacionais": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
+    "Indicações Eventuais": {
         type: 'text',
         fielddata: true,
         fields: {

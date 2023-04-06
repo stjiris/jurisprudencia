@@ -124,8 +124,16 @@ forEachDgsiLink(async url => {
         "Decisão (textual)": getDecisao(table),
         "Tribunal de Recurso": getTribunalRecurso(table),
         "Tribunal de Recurso - Processo": getTribunalRecursoProc(table),
-        "Área Temática": ["«n.d.»"],
-        "Referências": ["«n.d.»"],
+        "Área Temática": ["«n.d.»"], // TODO: auto-populate this fields START
+        "Jurisprudência Estrangeira": ["«n.d.»"], 
+        "Jurisprudência Internacional": ["«n.d.»"],
+        "Doutrina": ["«n.d.»"],
+        "Jurisprudência Nacional": ["«n.d.»"],
+        "Legislação Comunitária": ["«n.d.»"],
+        "Legislação Estrangeira": ["«n.d.»"],
+        "Legislação Nacional": ["«n.d.»"],
+        "Referências Internacionais": ["«n.d.»"],
+        "Indicações Eventuais": ["«n.d.»"], // END
         "Referência de publicação": ["«n.d.»"],
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),

@@ -78,9 +78,17 @@ block allmain
                     span &nbsp;Declarações:&nbsp;
                         a(href=`./?Votação - Declarações="${encodeURIComponent(source["Votação - Declarações"])}"`) !{source["Votação - Declarações"]}
             +field("Descritores")
-            +field("Referências")
+            +field("Jurisprudência Estrangeira")
+            +field("Jurisprudência Internacional")
+            +field("Doutrina")
+            +field("Jurisprudência Nacional")
+            +field("Legislação Comunitária")
+            +field("Legislação Estrangeira")
+            +field("Legislação Nacional")
+            +field("Referências Internacionais")
             +field("Referência de publicação",null,"R. de publicação")
             +field("Área Temática")
+            +field("Indicações Eventuais")
             script.
                 fetch(`./related/!{encodeURIComponent(source["Número de Processo"])}/!{source.UUID}/`).then(r => r.json() ).then(l =>{
                     let parent = document.getElementById("related");

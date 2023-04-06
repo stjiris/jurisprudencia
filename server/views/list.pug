@@ -92,8 +92,16 @@ block main
                         +option("Tribunal de Recurso")
                         +option("Tribunal de Recurso - Processo")
                         +option("Área Temática")
-                        +option("Referências")
+                        +option("Jurisprudência Estrangeira")
+                        +option("Jurisprudência Internacional")
+                        +option("Doutrina")
+                        +option("Jurisprudência Nacional")
+                        +option("Legislação Comunitária")
+                        +option("Legislação Estrangeira")
+                        +option("Legislação Nacional")
+                        +option("Referências Internacionais")
                         +option("Referência de publicação")
+                        +option("Indicações Eventuais")
                 
                 th(class="text-end border-end") !{groupObj.length > 0 ? Object.values(groupObj).reduce((acc,s) => acc+s,0) : aggs[term].buckets.reduce((acc,b) => acc+b.doc_count,0)}
                 for [name,count] of sortedGroup
