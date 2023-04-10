@@ -246,6 +246,17 @@ function parseSort(value, array){
     return sortV;
 }
 
+function sortBucketsAlphabetically(a,b) {
+    if (a.key.startsWith("«") && !b.key.startsWith("«"))
+        return 1;
+    if (b.key.startsWith("«") && !a.key.startsWith("«"))
+        return -1;
+    let ak = a.key.replace(/^[^A-Za-zÀ-ÖØ-öø-ÿ0-9]*/, "");
+    let bk = b.key.replace(/^[^A-Za-zÀ-ÖØ-öø-ÿ0-9]*/, "");
+    return ak.localeCompare(bk);
+}
+
+
 let searchedArray = (string) => client.indices.analyze({
     index: INDEXNAME,
     text: string
@@ -546,13 +557,7 @@ app.get("/indices", (req, res) => {
     const sfilters = {pre: [], after: []};
     const filters = populateFilters(sfilters, req.query, []);
     search(queryObject(req.query.q), sfilters, 0, listAggregation(term,group), 0).then( body => {
-        body.aggregations[term].buckets.sort((a,b) => {
-            if( a.key.startsWith("«") && !b.key.startsWith("«")) return 1
-            if( b.key.startsWith("«") && !a.key.startsWith("«")) return -1
-            let ak = a.key.replace(/^[^A-Za-zÀ-ÖØ-öø-ÿ0-9]*/,"")
-            let bk = b.key.replace(/^[^A-Za-zÀ-ÖØ-öø-ÿ0-9]*/,"")
-            return ak.localeCompare(bk)
-        })
+        body.aggregations[term].buckets.sort(sortBucketsAlphabetically)
         res.render("list", {q: req.query.q, querystring: queryString(req.originalUrl), body: body, aggs: body.aggregations, filters: filters, term: term, group: group, open: Object.keys(filters).length > 0, fields: fields, LIMIT_ROWS});
     }).catch( err => {
         console.log(req.originalUrl, err)
@@ -744,7 +749,7 @@ app.get("/datalist", (req, res) => {
     const sfilters = {pre: [], after: []};
     populateFilters(sfilters, req.query, [aggKey]);
     search(queryObject(req.query.q), sfilters, 0, { [aggKey]: finalAgg}, 10).then(body => {
-        res.render("datalist", {aggs: body.aggregations[aggKey].buckets, id: id});
+        res.render("datalist", {aggs: body.aggregations[aggKey].buckets.sort(sortBucketsAlphabetically), id: id});
     }).catch(err => {
         console.log(req.originalUrl, err.body.error);
         res.render("datalist", {aggs: [], error: err, id: id});

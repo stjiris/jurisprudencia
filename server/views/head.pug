@@ -70,10 +70,10 @@ html(lang="en")
                                                             label(role="button",for=`checkbox-${f.replace(/\s/g, "")}`).form-check-label.d-flex.justify-content-between.align-items-center.w-100
                                                                 span.d-block !{f}
                                                                 span.d-block.text-danger: i.bi-trash
-                                        mixin filterlist(key)
+                                        mixin filterlist(key,suggest=true)
                                             .d-flex.flex-column.my-1.border.pb-1
                                                 //- +await(`./datalist?id=datalist-${key.replace(/\s/g,'')}&agg=${key}&${querystring}`)
-                                                input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name=key, autocomplete="off", list=`datalist-${key.replace(/\s/g,'')}`, placeholder=`${key}`, onfocus=`loadDatalist(this,"./datalist?id=datalist-${key.replace(/\s/g,'')}&agg=${key}&${querystring}")`)
+                                                input.form-control.form-control-sm.border-0.border-bottom.rounded-0(type="text", name=key, autocomplete="off", list=`datalist-${key.replace(/\s/g,'')}`, placeholder=`${key}`, onfocus=suggest?`loadDatalist(this,"./datalist?id=datalist-${key.replace(/\s/g,'')}&agg=${key}&${querystring}")`:"")
                                                 +usedFilters(key)
                                         .d-flex.flex-column.my-1
                                             input.form-control.form-control-sm.rounded-0(type="search", name="q", placeholder=`Texto Livre`, value=q||"")
@@ -86,8 +86,8 @@ html(lang="en")
                                                 .input-group-prepend.flex-shrink
                                                     label.input-group-text.rounded-0.p-1(for="data_fim") Até:
                                                 input.form-control.form-control-sm.rounded-0.p-1(type="number", name="MaxAno", min=aggsGlobal.MinAno.value_as_string, max=aggsGlobal.MaxAno.value_as_string, value=filters["MaxAno"], step="1",placeholder=aggsGlobal.MaxAno.value_as_string)#data_fim
-                                        +filterlist("Número de Processo")
-                                        +filterlist("ECLI")
+                                        +filterlist("Número de Processo",false)
+                                        +filterlist("ECLI",false)
                                         +filterlist("Área")
                                         +filterlist("Secção")
                                         +filterlist("Relator")
