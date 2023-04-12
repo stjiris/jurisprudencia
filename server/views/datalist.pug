@@ -1,6 +1,6 @@
 datalist(id=id)
     for agg in aggs 
         if agg.doc_count
-            option(value=`"${agg.key}"` label=`Quandidade: ${agg.doc_count}`)
+            option(value=`"${agg.key}"` label=`Quantidade: ${agg.doc_count}`)
         else
             option(value=`"${agg.key}"`)
