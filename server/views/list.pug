@@ -79,6 +79,7 @@ block main
                     select#form-term-select(name="term")
                         mixin option(value)
                             option(value=value selected=value==term) !{value}
+                        +option("Jurisprudência")
                         +option("Área")
                         +option("Secção")
                         +option("Relator")

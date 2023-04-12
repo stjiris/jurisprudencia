@@ -330,6 +330,19 @@ const Properties = module.exports.Properties = {
             }
         }
     },
+    "Jurisprudência": {
+        type: 'text',
+        fielddata: true,
+        fields: {
+            raw: {
+                type: "keyword"
+            },
+            keyword: {
+                type: 'keyword',
+                normalizer: 'term_normalizer'
+            }
+        }
+    },
     "Sumário": {
         type: 'text',
         term_vector: 'with_positions_offsets_payloads'

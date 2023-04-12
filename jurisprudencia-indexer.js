@@ -135,6 +135,7 @@ forEachDgsiLink(async url => {
         "Referências Internacionais": ["«n.d.»"],
         "Indicações Eventuais": ["«n.d.»"], // END
         "Referência de publicação": ["«n.d.»"],
+        "Jurisprudência": ["«n.d.»"],
         "Sumário": strip_attrs(table["Sumário"]?.innerHTML || ""),
         "Texto": strip_attrs(table["Decisão Texto Integral"]?.innerHTML || ""),
         "Fonte": "STJ (DGSI)",
