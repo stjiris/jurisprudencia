@@ -124,18 +124,18 @@ block main
                             td(class="text-nowrap",style="width: 0px") !{agg.key}
                         else
                             td(class="text-nowrap",style="width: 0px"): a(href=`./indices?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.key}
-                        td(class="text-end border-end text-nowrap",style="width: 0px"): a(href=`./?${querystring}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.doc_count}
+                        td(class="text-end border-end text-nowrap",style="width: 0px"): a(href=`./?${querystring.replace(new RegExp(`${term}=[^&]*`,'g'),"")}&${term}="${encodeURIComponent(agg.key)}"`) !{agg.doc_count}
                         -let count = 0
                         each [name,_count] of sortedGroup
                             if name == OTHERS
                                 td(class="text-end border-end text-nowrap")
-                                    a(href=`./?${querystring}&${term}="${encodeURIComponent(agg.key)}"&${group}="${encodeURIComponent(name)}"`)
+                                    a(href=`./?${querystring.replace(new RegExp(`${term}=[^&]*`,'g'),"")}&${term}="${encodeURIComponent(agg.key)}"&${group}="${encodeURIComponent(name)}"`)
                                         +showPositive(agg.doc_count - count)
                             else
                                 td(class="text-end border-end text-nowrap")
                                     -let c = getGroupCount(agg.Group.buckets, name)
                                     -count+=c;
-                                    a(href=`./?${querystring}&${term}="${encodeURIComponent(agg.key)}"&${group}="${encodeURIComponent(name)}"`)
+                                    a(href=`./?${querystring.replace(new RegExp(`${term}=[^&]*`,'g'),"")}&${term}="${encodeURIComponent(agg.key)}"&${group}="${encodeURIComponent(name)}"`)
                                         +showPositive(c)
                         td
                         if agg.MinAno.value_as_string == agg.MaxAno.value_as_string
