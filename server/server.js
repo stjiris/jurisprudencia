@@ -761,5 +761,9 @@ app.get("/go/:searchId", async(req, res) => {
     res.redirect(`../?${params}`);
 })
 
+app.get(encodeURI("/relatório-campos"), (req,res) => {
+    res.render("campos")
+})
+
 app.use(express.static(path.join(__dirname, "static"), {extensions: ["html"]}));
 app.listen(parseInt(process.env.PORT) || 9100)
