@@ -7,105 +7,106 @@ block printpageinfo
 
 block allmain
     form#filter-form
-        p Dados corrigidos até de 12 de abril de 2023 da importação com dados de 23 de feveiro de 2023.
-        .row
-            .col-12.col-md-6
-                table.table.table-sm(style="width: fit-content")
-                    thead
-                        tr
-                            th Campo DGSI / CSM
-                            th Contagem
-                            th Campo Base de Dados
-                    tbody
-                        mixin original(key_o,count,key_u)
-                            tr
-                                td !{key_o}
-                                td.text-end.border-1 !{count}
-                                if !key_u
-                                    td.text-end.text-muted (nenhum)
-                                else
-                                    td.text-end !{key_u}                        
-                        +original("Apenso", 39)
-                        +original("Área Temática", 11524, "Área Temática")
-                        +original("Data da Decisão Singular",2,"Data")
-                        +original("Data da Decisão Sumária",84,"Data")
-                        +original("Data da Reclamação",6,"Data")
-                        +original("Data de decisão sumária",20,"Data")
-                        +original("Data do Acordão",6079,"Data")
-                        +original("Data",3518,"Data")
-                        +original("dataAcordao",33,"Data")
-                        +original("Decisão Texto Parcial", 2)
-                        +original("Decisão", 2880, "Decisão, Decisão (textual)")
-                        +original("decisao", 32, "Decisão, Decisão (textual)")
-                        +original("Descritores", 13690, "Descritores")
-                        +original("descritores", 92, "Descritores")
-                        +original("Doutrina", 26907, "Doutrina")
-                        +original("ecli", 56, "ECLI")
-                        +original("ECLI", 835, "ECLI")
-                        +original("Indicações eventuais", 13, "Indicações Eventuais")
-                        +original("Indicações Eventuais", 5748, "Indicações Eventuais")
-                        +original("Jurisprudência Estrangeira", 99, "Jurisprudência Estrangeira")
-                        +original("Jurisprudência Internacional", 733, "Jurisprudência Internacional")
-                        +original("Jurisprudência Nacional", 37067, "Jurisprudência Nacional")
-                        +original("Legislação Comunitária", 727, "Legislação Comunitária")
-                        +original("Legislação Estrangeira", 590, "Legislação Estrangeira")
-                        +original("Legislação Nacional", 31144, "Legislação Nacional")
-                        +original("Meio Processual", 443, "Meio Processual")
-                        +original("Nº Convencional", 38363, "Secção")
-                        +original("Nº do Documento", 49279, "Secção (desambiguar)")
-                        +original("Nº Único do Processo", 6)
-                        +original("Privacidade", 3)
-                        +original("Processo no Tribunal Recurso", 21135, "Tribunal de Recurso - Processo")
-                        +original("Processo", 64434, "Número de Processo")
-                        +original("recurso", 1)
-                        +original("Recurso", 2)
-                        +original("Referência de Publicação", 10282, "Referência de publicação")
-                        +original("Referência Processo", 2)
-                        +original("Referências Internacionais", 1047, "Referências Internacionais")
-                        +original("Relator", 1103, "Relator Nome Profissional, Relator Nome Completo")
-                        +original("relator", 29, "Relator Nome Profissional, Relator Nome Completo")
-                        +original("tematica", 24, "Área Temática")
-                        +original("Texto Integral", 6)
-                        +original("Tribunal Recurso", 788, "Tribunal de Recurso")
-                        +original("tribunal", 1)
-                        +original("Votação", 170, "Votação - Decisão, Votação - Vencidos, Votação - Declarações")
-            .col-12.col-md-6
-                table.table.table-sm(style="width: fit-content")
-                    thead
-                        tr
-                            th Total Original
-                            th Campo Base de Dados
-                            th Total Corrigido (sem duplicados)
-                    tbody
-                        mixin usado(total_1,nome,total_2)
-                            tr
-                                td.text-end !{total_1}
-                                td.text-end.border-1 !{nome}
-                                td.text-end !{total_2}
-                        +usado(24+11524,"Área Temática",9817)
-                        +usado(2+84+6+20+6079+3518+33,"Data",6159)
-                        +usado(2880+32,"Decisão",1104)
-                        +usado(2880+32,"Decisão (textual)",2081)
-                        +usado(13690+92,"Descritores",11853)
-                        +usado(26907,"Doutrina",26891)
-                        +usado(56+5835, "ECLI", 65802)
-                        +usado(5748+13, "Indicações Eventuais", 5747)
-                        +usado(99, "Jurisprudência Estrangeira", 101)
-                        +usado(733, "Jurisprudência Internacional",734)
-                        +usado(37067, "Jurisprudência Nacional", 36936)
-                        +usado(727, "Legislação Comunitária", 727)
-                        +usado(590, "Legislação Estrangeira", 590)
-                        +usado(31144, "Legislação Nacional", 31144)
-                        +usado(443, "Meio Processual",45)
-                        +usado(38363+49279, "Secção (Número Convencional e do Documento)", 9)
-                        +usado(21135, "Tribunal de Recurso - Processo",21135)
-                        +usado(64434, "Número de Processo",63772)
-                        +usado(10282, "Referência de publicação", 10060)
-                        +usado(1047, "Referências Internacionais", 1041)
-                        +usado(1103+29, "Relator Nome Profissional",747)
-                        +usado(1103+29, "Relator Nome Completo",141)
-                        +usado(788, "Tribunal de Recurso", 255)
-                        +usado(170, "Votação - Decisão", 5)
-                        +usado(170, "Votação - Vencidos", 15)
-                        +usado(170, "Votação - Declarações", 10)
+        p Dados até 12 de abril de 2023 da importação com dados de 23 de feveiro de 2023.
+        table.table.table-sm(style="width: fit-content")
+            thead
+                tr
+                    th Campo
+                    th # Registos com valor (original) 
+                    th # Valores diferentes (original)
+                    th # Registos com valor (atual)
+                    th # Valores diferentes (atual)
 
+            tbody
+                mixin usado(nome,v1,v2,v3,v4)
+                    tr
+                        td.text-start !{nome}
+                        td.text-end.border-1 !{v1}
+                        td.text-end.border-1 !{v2}
+                        td.text-end.border-1 !{v3}
+                        td.text-end.border-1 !{v4}
+                +usado("Área Temática",47193,11524,46333,9816)
+                +usado("Data",92212,6079,65802,6129)
+                +usado("Decisão",62654,2880,65802,1104)
+                +usado("Decisão (textual)",62654,2880,65802,2081)
+                +usado("Descritores",64318,13687,64318,11854)
+                +usado("Doutrina",6020,26930,6041,26901)
+                +usado("ECLI",891,835,65802,65867)
+                +usado("Indicações Eventuais",9650,5748,8854,5746)
+                +usado("Jurisprudência Estrangeira",36,99,45,100)
+                +usado("Jurisprudência Internacional",233,733,251,733)
+                +usado("Jurisprudência Nacional",9167,36996,9167,36935)
+                +usado("Legislação Comunitária",445,727,471,725)
+                +usado("Legislação Estrangeira",370,590,380,591)
+                +usado("Legislação Nacional",14145,31348,45975,31251)
+                +usado("Meio Processual",64975,443,65802,45)
+                +usado("Secção",64842,38260,65802,9)
+                +usado("Tribunal de Recurso - Processo",26622,21132,65802,21132)
+                +usado("Número de Processo",65746,63756,65802,63772)
+                +usado("Referência de publicação",10104,10282,10089,10059)
+                +usado("Referências Internacionais",808,1047,815,1040)
+                +usado("Relator Nome Profissional",65802,1103,65802,747)
+                +usado("Relator Nome Completo",65802,1103,65802,141)
+                +usado("Tribunal de Recurso",26748,788,65802,255)
+                +usado("Votação - Decisão",65694,170,65628,4)
+                +usado("Votação - Vencidos",65694,170,65631,14)
+                +usado("Votação - Declarações",65694,170,65612,9)
+        table.table.table-sm(style="width: fit-content")
+            thead
+                tr
+                    th Campo DGSI / CSM
+                    th Contagem
+                    th Campo Base de Dados
+            tbody
+                mixin original(key_o,count,key_u)
+                    tr
+                        td !{key_o}
+                        td.text-end.border-1 !{count}
+                        if !key_u
+                            td.text-end.text-muted (nenhum)
+                        else
+                            td.text-end !{key_u}                        
+                +original("Apenso", 39)
+                +original("Área Temática", 11524, "Área Temática")
+                +original("Data da Decisão Singular",2,"Data")
+                +original("Data da Decisão Sumária",84,"Data")
+                +original("Data da Reclamação",6,"Data")
+                +original("Data de decisão sumária",20,"Data")
+                +original("Data do Acordão",6079,"Data")
+                +original("Data",3518,"Data")
+                +original("dataAcordao",33,"Data")
+                +original("Decisão Texto Parcial", 2)
+                +original("Decisão", 2880, "Decisão, Decisão (textual)")
+                +original("decisao", 32, "Decisão, Decisão (textual)")
+                +original("Descritores", 13690, "Descritores")
+                +original("descritores", 92, "Descritores")
+                +original("Doutrina", 26907, "Doutrina")
+                +original("ecli", 56, "ECLI")
+                +original("ECLI", 835, "ECLI")
+                +original("Indicações eventuais", 13, "Indicações Eventuais")
+                +original("Indicações Eventuais", 5748, "Indicações Eventuais")
+                +original("Jurisprudência Estrangeira", 99, "Jurisprudência Estrangeira")
+                +original("Jurisprudência Internacional", 733, "Jurisprudência Internacional")
+                +original("Jurisprudência Nacional", 37067, "Jurisprudência Nacional")
+                +original("Legislação Comunitária", 727, "Legislação Comunitária")
+                +original("Legislação Estrangeira", 590, "Legislação Estrangeira")
+                +original("Legislação Nacional", 31144, "Legislação Nacional")
+                +original("Meio Processual", 443, "Meio Processual")
+                +original("Nº Convencional", 38363, "Secção")
+                +original("Nº do Documento", 49279, "Secção (desambiguar)")
+                +original("Nº Único do Processo", 6)
+                +original("Privacidade", 3)
+                +original("Processo no Tribunal Recurso", 21135, "Tribunal de Recurso - Processo")
+                +original("Processo", 64434, "Número de Processo")
+                +original("recurso", 1)
+                +original("Recurso", 2)
+                +original("Referência de Publicação", 10282, "Referência de publicação")
+                +original("Referência Processo", 2)
+                +original("Referências Internacionais", 1047, "Referências Internacionais")
+                +original("Relator", 1103, "Relator Nome Profissional, Relator Nome Completo")
+                +original("relator", 29, "Relator Nome Profissional, Relator Nome Completo")
+                +original("tematica", 24, "Área Temática")
+                +original("Texto Integral", 6)
+                +original("Tribunal Recurso", 788, "Tribunal de Recurso")
+                +original("tribunal", 1)
+                +original("Votação", 170, "Votação - Decisão, Votação - Vencidos, Votação - Declarações")
