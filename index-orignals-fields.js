@@ -37,7 +37,6 @@ client.indices.create({index: `${Index}.original`, settings: {
                 if( key.match(/data/i) && hit._source.Original[key] == "N/D" || obj[key].length == 0 ) {
                     delete obj[key];
                 }
-                if( obj[key].length > )
             }
     	    await client.index({index: `${Index}.original`, document: obj, id: hit._id, version: hit._version})
         }
