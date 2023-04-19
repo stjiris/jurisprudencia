@@ -32,8 +32,8 @@ client.indices.create({index: `${Index}.original`, settings: {
             let obj = {};
             for( let key in hit._source.Original ){
                 if( key == "" ) continue;
-                obj[key] = new JSDOM(hit._source.Original[key]).window.document.body.textContent.map( s => s.trim()).filter(s => s.length > 0);
-                if( key.match(/data/i) && hit._source.Original[key] == "N/D" ) {
+                obj[key] = new JSDOM(hit._source.Original[key]).window.document.body.textContent.trim();
+                if( key.match(/data/i) && hit._source.Original[key] == "N/D" || obj[key].length == 0 ) {
                     delete obj[key];
                 }
             }

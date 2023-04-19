@@ -140,7 +140,7 @@ function atuais(field){
             bool: {
                 must_not: [{
                     term: {
-                        [map_source_original[field].current]: map_source_original[field].missing? map_source_original[field].missing : `«sem ${field}»`
+                        [map_source_original[field].current]: map_source_original[field].missing? map_source_original[field].missing : `«sem valor»`
                     }
                 }]
             }

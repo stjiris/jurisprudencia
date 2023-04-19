@@ -7,11 +7,12 @@ block printpageinfo
 
 block allmain
     form#filter-form
-        p Dados até 12 de abril de 2023 da importação com dados de 23 de feveiro de 2023.
+        p Importação dos dados da DGSI e CSM de 23 de fevereiro de 2023
+        p Valores atualizados a 12 de abril de 2023
         table.table.table-sm(style="width: fit-content")
             thead
                 tr
-                    th Campo
+                    th Indíce atual
                     th # Registos com valor (original) 
                     th # Valores diferentes (original)
                     th # Registos com valor (atual)
@@ -54,18 +55,18 @@ block allmain
         table.table.table-sm(style="width: fit-content")
             thead
                 tr
-                    th Campo DGSI / CSM
-                    th Contagem
-                    th Campo Base de Dados
+                    th Indíce DGSI / CSM
+                    th # valores diferentes
+                    th Indíce atual
             tbody
                 mixin original(key_o,count,key_u)
                     tr
                         td !{key_o}
                         td.text-end.border-1 !{count}
                         if !key_u
-                            td.text-end.text-muted (nenhum)
+                            td.text-muted (nenhum)
                         else
-                            td.text-end !{key_u}                        
+                            td !{key_u}                        
                 +original("Apenso", 39)
                 +original("Área Temática", 11524, "Área Temática")
                 +original("Data da Decisão Singular",2,"Data")
@@ -103,10 +104,10 @@ block allmain
                 +original("Referência de Publicação", 10282, "Referência de publicação")
                 +original("Referência Processo", 2)
                 +original("Referências Internacionais", 1047, "Referências Internacionais")
-                +original("Relator", 1103, "Relator Nome Profissional, Relator Nome Completo")
-                +original("relator", 29, "Relator Nome Profissional, Relator Nome Completo")
+                +original("Relator", 1103, "Relator Nome Profissional+Relator Nome Completo")
+                +original("relator", 29, "Relator Nome Profissional+Relator Nome Completo")
                 +original("tematica", 24, "Área Temática")
                 +original("Texto Integral", 6)
                 +original("Tribunal Recurso", 788, "Tribunal de Recurso")
                 +original("tribunal", 1)
-                +original("Votação", 170, "Votação - Decisão, Votação - Vencidos, Votação - Declarações")
+                +original("Votação", 170, "Votação - Decisão+Votação - Vencidos+Votação - Declarações")
