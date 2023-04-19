@@ -13,12 +13,11 @@ client.indices.create({index: `${Index}.original`, settings: {
         {"_all": {
             match_mapping_type: "string",
             mapping: {
-                type: "keyword",
-                index: "not_analyze"
+                type: "keyword"
             }
         }}
     ]
-}}).catch(e=>null).finally(async _ => {
+}}).then(async _ => {
     await client.indices.putSettings({
         index: `${Index}.original`,
         settings: {
@@ -33,7 +32,7 @@ client.indices.create({index: `${Index}.original`, settings: {
             let obj = {};
             for( let key in hit._source.Original ){
                 if( key == "" ) continue;
-                obj[key] = new JSDOM(hit._source.Original[key]).window.document.body.textContent.trim();
+                obj[key] = new JSDOM(hit._source.Original[key]).window.document.body.textContent.trim().substr(0, 10_000);
                 if( key.match(/data/i) && hit._source.Original[key] == "N/D" || obj[key].length == 0 ) {
                     delete obj[key];
                 }
