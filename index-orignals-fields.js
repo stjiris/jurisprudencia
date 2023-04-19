@@ -28,7 +28,7 @@ client.indices.create({index: `${Index}.original`, settings: {
     let i = 0;
     while( r.hits.hits.length > 0 ){
         for(let hit of r.hits.hits){
-            if( await client.exists({index: `${Index}.original`, id: hit._id}) ) continue;
+            if( await client.exists({index: `${Index}.original`, id: hit._id, version: hit._version}) ) continue;
             let obj = {};
             for( let key in hit._source.Original ){
                 if( key == "" ) continue;
@@ -37,7 +37,7 @@ client.indices.create({index: `${Index}.original`, settings: {
                     delete obj[key];
                 }
             }
-    	    await client.index({index: `${Index}.original`, document: obj, id: hit._id})
+    	    await client.index({index: `${Index}.original`, document: obj, id: hit._id, version: hit._version})
         }
 	    r = await client.scroll({scroll:'1m',scroll_id: r._scroll_id})
         i+=r.hits.hits.length
