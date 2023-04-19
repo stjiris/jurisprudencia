@@ -65,7 +65,7 @@ let map_source_original = {
         current: "Meio Processual.raw"
     },
     "Secção": {
-        source: ["Nº Convencional"],
+        source: ["Nº Convencional","Nº do Documento"],
         current: "Secção.raw"
     },
     "Tribunal de Recurso - Processo": {
@@ -107,12 +107,15 @@ let map_source_original = {
     "Votação - Declarações": {
         source: ["Votação"],
         current: "Votação - Declarações.raw"
+    },
+    "": { // Not used
+        source: ["Apenso","Decisão Texto Parcial","Nº Único do Processo","Privacidade","recurso","Recurso","Referêcia Processo","Texto Integral"]
     }
 }
 
 function originais(field){
     return client.search({
-        index: "jurisprudencia.original",
+        index: "jurisprudencia.9.4.original",
         track_total_hits: true,
         size: 0,
         query: {
@@ -132,6 +135,10 @@ function originais(field){
 }
 
 function atuais(field){
+    if( !map_source_original[field].current ){
+        return [0,0]
+    }
+
     return client.search({
         index: "jurisprudencia.9.4",
         track_total_hits: true,
@@ -156,19 +163,35 @@ function atuais(field){
     }).then( r => [r.hits.total.value, r.aggregations[field].value])
 }
 
-async function count(field,missing=null){
-    let res1 = await Promise.all(map_source_original[field].source.map(originais));
-    let registosOriginais = res1.reduce((acc, c) => acc + c[0],0)
-    let valoresOriginais = res1.reduce((acc, c) => Math.max(acc, c[1]),0)
-    let res2 = await atuais(field,missing)
-    let registosAtuais = res2[0]
-    let valoresAtuais = res2[1]
-    console.log(`+usado("${field}",${registosOriginais},${valoresOriginais},${registosAtuais},${valoresAtuais})`)
+async function detailedCount(field){
+    let [[currentTotal, currentUnique],...sourcesValues] = await Promise.all([atuais(field), ...map_source_original[field].source.map(originais)]);
+
+    return {
+        key: field,
+        currentTotal,
+        currentUnique,
+        sources: map_source_original[field].source,
+        sourcesTotal: sourcesValues.map( r => r[0]),
+        sourcesUnique: sourcesValues.map( r => r[1])
+    }
+    
+}
+
+module.exports = getAllFieldsInfo;
+async function getAllFieldsInfo(){
+    let r = [];
+    for( let k in map_source_original){
+        r.push( await detailedCount(k) )
+    }
+    return r;
+}
+
+async function main(){
+    let r = await getAllFieldsInfo();
+    console.log(JSON.stringify(r, null, "  "))
 }
 
 
-(async () => {
-    for( let k in map_source_original){
-        await count(k)
-    }
-})()
+if( require.main === module ){
+    main()
+}

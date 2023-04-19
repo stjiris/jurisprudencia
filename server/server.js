@@ -3,6 +3,7 @@ const app = express();
 const {Client} = require('@elastic/elasticsearch');
 const client = new Client({node: process.env.ES_URL || 'http://localhost:9200'});
 const path = require('path');
+const countValues = require("../contar-valores")
 
 app.set('view engine', 'pug');
 app.set('views', './views');
@@ -761,8 +762,13 @@ app.get("/go/:searchId", async(req, res) => {
     res.redirect(`../?${params}`);
 })
 
-app.get(encodeURI("/relatório-campos"), (req,res) => {
-    res.render("campos")
+app.get(encodeURI("/relatório-campos"), async (req,res) => {
+    countValues().catch(e => {
+        console.log(req.originalUrl, e);
+        return [];
+    }).then(values => {
+        res.render("campos", {values})
+    });
 })
 
 app.use(express.static(path.join(__dirname, "static"), {extensions: ["html"]}));

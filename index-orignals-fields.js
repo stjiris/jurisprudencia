@@ -40,8 +40,8 @@ client.indices.create({index: `${Index}.original`, settings: {
             }
     	    await client.index({index: `${Index}.original`, document: obj, id: hit._id, version: hit._version})
         }
-	    r = await client.scroll({scroll:'1m',scroll_id: r._scroll_id})
         i+=r.hits.hits.length
+	    r = await client.scroll({scroll:'1m',scroll_id: r._scroll_id})
         console.log(i, "/", r.hits.total.value)
     }
     await client.indices.putSettings({
