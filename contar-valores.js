@@ -40,6 +40,10 @@ let map_source_original = {
         source: ["Indicações Eventuais","Indicações eventuais"],
         current: "Indicações Eventuais.raw"
     },
+    "Jurisprudência": {
+        source: [],
+        current: "Jurisprudência.raw"
+    },
     "Jurisprudência Estrangeira": {
         source: ["Jurisprudência Estrangeira"],
         current: "Jurisprudência Estrangeira.raw"
