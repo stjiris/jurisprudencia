@@ -7,7 +7,7 @@ let map_source_original = {
         current: "Área Temática.raw"
     },
     "Área": {
-        source: ["Nº Convencional","Nº do Documento"],
+        source: ["Secção"],
         current: "Área.raw"
     },
     "Data": {
