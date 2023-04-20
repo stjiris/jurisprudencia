@@ -21,8 +21,8 @@ block allmain
                     if obj.key.length > 0
                         tr
                             td !{obj.key}
-                            td.text-end.border-1 !{obj.sourcesTotal.reduce((acc, o) => acc+o)}
-                            td.text-end.border-1 !{obj.sourcesUnique.reduce((acc, o) => Math.max(acc,o))}
+                            td.text-end.border-1 !{obj.sourcesTotal.reduce((acc, o) => acc+o, 0)}
+                            td.text-end.border-1 !{obj.sourcesUnique.reduce((acc, o) => Math.max(acc,o), 0)}
                             td.text-end.border-1 !{obj.currentTotal}
                             td.text-end.border-1 !{obj.currentUnique}
         table.table.table-sm(style="width: fit-content")
