@@ -33,11 +33,17 @@ block allmain
                     th Indíce atual
             tbody
                 for obj of values
-                    each source, idx in obj.sources
+                    if obj.sources.length > 0
+                        each source, idx in obj.sources
+                            tr
+                                td !{source}
+                                td.border-start-1 !{obj.sourcesUnique[idx]}
+                                if obj.key.length > 0
+                                    td !{obj.key}
+                                else
+                                    td.text-muted (nenhum)
+                    else 
                         tr
-                            td !{source}
-                            td.border-start-1 !{obj.sourcesUnique[idx]}
-                            if obj.key.length > 0
-                                td !{obj.key}
-                            else
-                                td.text-muted (nenhum)
+                            td.text-muted (nenhum)
+                            td.border-start-1 (0)
+                            td !{obj.key}
