@@ -6,6 +6,10 @@ let map_source_original = {
         source: ["Área Temática", "tematica"],
         current: "Área Temática.raw"
     },
+    "Área": {
+        source: ["Nº Convencional","Nº do Documento"],
+        current: "Área.raw"
+    },
     "Data": {
         source: ["Data da Decisão Singular","Data da Decisão Sumária","Data da Reclamação","Data de decisão sumária","Data do Acordão","Data","dataAcordao"],
         current: "Data",
