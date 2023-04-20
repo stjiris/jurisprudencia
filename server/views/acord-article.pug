@@ -27,7 +27,7 @@ for doc in hits
             if doc._source["Decisão (textual)"]
                 div.mx-1.d-flex
                     b Decisão (textual):&nbsp;
-                    div !{doc._source["Decisão (textual)"]}
+                    div !{doc._source["Decisão"].join(" / ")}
         if Array.isArray(doc._source.Descritores)
             .col-12
                 div.mx-1
