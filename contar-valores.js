@@ -117,7 +117,7 @@ let map_source_original = {
         current: "Votação - Declarações.raw"
     },
     "": { // Not used
-        source: ["Apenso","Decisão Texto Parcial","Nº Único do Processo","Privacidade","recurso","Recurso","Referêcia Processo","Texto Integral"]
+        source: ["Apenso","Decisão Texto Parcial","Nº Único do Processo","Privacidade","recurso","Recurso","Referência Processo","Texto Integral"]
     }
 }
 
