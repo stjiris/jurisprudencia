@@ -125,9 +125,20 @@ const populateFilters = (filters, body={}, afters=["MinAno","MaxAno"]) => { // f
             if( afters.indexOf(aggName) != -1 ){
                 when = "after";
             }
+            let should = filtersUsed[aggName].filter( o => !o.startsWith("not:") ).map( o => o.replace(/^not:/, ""));
+            let must_not = filtersUsed[aggName].filter( o => o.startsWith("not:") ).map( o => o.replace(/^not:/, ""));
             filters[when].push({
                 bool: {
-                    should: filtersUsed[aggName].map( o => (o.startsWith("\"") && o.endsWith("\"") ? {
+                    should: should.map( o => (o.startsWith("\"") && o.endsWith("\"") ? {
+                        term: {
+                            [aggObj[aggField].field.replace("keyword","raw")]: { value: `${o.slice(1,-1)}` }
+                        }
+                    } : {
+                        wildcard: {
+                            [aggObj[aggField].field]: { value: `*${o}*` }
+                        }
+                    })),
+                    must_not: must_not.map( o => (o.startsWith("\"") && o.endsWith("\"") ? {
                         term: {
                             [aggObj[aggField].field.replace("keyword","raw")]: { value: `${o.slice(1,-1)}` }
                         }
